@@ -1235,7 +1235,7 @@
     }
 
     function createCard(s) {
-        if (s.type === 'break') { const div = document.createElement('div'); div.className = 'break-card'; div.innerText = '☕ ' + s.Title; return div; }
+        if (s.type === 'break') { const div = document.createElement('div'); div.className = 'break-card'; div.innerText = s.Title; return div; }
         const isMedtronic = s.isMedtronic;
         const isStarred = starredSessions.includes(s.uid);
         const card = document.createElement('div');
