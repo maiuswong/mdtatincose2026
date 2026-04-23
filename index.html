@@ -113,7 +113,9 @@
       "time": "1:00 PM",
       "room": "Grand Ballroom - Salons A-D",
       "type": "event",
-      "Title": "Conference Kickoff & Introductions Day 1"
+      "Title": "Conference Kickoff & Introductions Day 1",
+      "session_id": 700,
+      "uid": "s_700"
     },
     {
       "day": "Tuesday 4/28",
@@ -432,7 +434,9 @@
       "time": "8:00 AM",
       "room": "Junior Ballroom",
       "type": "event",
-      "Title": "Introductions"
+      "Title": "Conference Kickoff & Introductions Day 2",
+      "session_id": 701,
+      "uid": "s_701"
     },
     {
       "day": "Wednesday 4/29",
@@ -1235,7 +1239,7 @@
     }
 
     function createCard(s) {
-        if (s.type === 'break') { const div = document.createElement('div'); div.className = 'break-card'; div.innerText = s.Title; return div; }
+        if (s.type === 'break') { const div = document.createElement('div'); div.className = 'break-card'; div.innerText = '☕ ' + s.Title; return div; }
         const isMedtronic = s.isMedtronic;
         const isStarred = starredSessions.includes(s.uid);
         const card = document.createElement('div');
