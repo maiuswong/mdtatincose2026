@@ -611,6 +611,10 @@
                 padding: 0 8px;
             }
 
+            .day-heading {
+                padding: 12px 8px 4px;
+            }
+
             .mobile-time-group {
                 display: grid;
                 grid-template-columns: var(--time-col-width) 1fr;
@@ -655,7 +659,7 @@
             font-size: 13px;
             font-weight: 700;
             color: var(--text-secondary);
-            padding: 12px 0 4px;
+            padding: 12px 8px 4px;
             letter-spacing: 0.03em;
             text-transform: uppercase;
         }
@@ -1361,6 +1365,7 @@ function renderMobileDayList(day, container) {
 
 function renderStarredView(container) {
     document.getElementById('trackFilters').innerHTML = '';
+    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
     
     let hasAny = false;
     Object.keys(data).forEach(day => {
@@ -1379,27 +1384,56 @@ function renderStarredView(container) {
             if (!timeGroups[s.time]) timeGroups[s.time] = [];
             timeGroups[s.time].push(s);
         });
+
+        const sortedTimes = sortTimes(Object.keys(timeGroups));
         
         const timeRowsEl = document.createElement('div');
-        timeRowsEl.className = 'time-rows';
+        timeRowsEl.className = isMobile ? 'mobile-day-list' : 'time-rows';
         
-        Object.keys(timeGroups).forEach(time => {
+        sortedTimes.forEach(time => {
+            if (isMobile) {
+                const group = document.createElement('div');
+                group.className = 'mobile-time-group';
+
+                const label = document.createElement('div');
+                label.className = 'time-col';
+                label.textContent = formatTime(time);
+                group.appendChild(label);
+
+                const stack = document.createElement('div');
+                stack.className = 'mobile-time-stack';
+
+                timeGroups[time].forEach(s => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'mobile-card-wrap';
+                    wrap.appendChild(createSessionCard(s, true));
+                    stack.appendChild(wrap);
+                });
+
+                group.appendChild(stack);
+                timeRowsEl.appendChild(group);
+                return;
+            }
+
             const row = document.createElement('div');
             row.className = 'time-row';
             row.style.gridTemplateColumns = `64px 1fr`;
-            
+
             const tCol = document.createElement('div');
             tCol.className = 'time-col';
             tCol.textContent = formatTime(time);
             row.appendChild(tCol);
-            
+
             const wrap = document.createElement('div');
             wrap.style.display = 'flex';
             wrap.style.flexDirection = 'column';
             wrap.style.gap = '6px';
-            
+
             timeGroups[time].forEach(s => {
-                wrap.appendChild(createSessionCard(s, true));
+                const cardWrap = document.createElement('div');
+                cardWrap.className = 'mobile-card-wrap';
+                cardWrap.appendChild(createSessionCard(s, true));
+                wrap.appendChild(cardWrap);
             });
             row.appendChild(wrap);
             timeRowsEl.appendChild(row);
