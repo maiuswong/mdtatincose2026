@@ -131,6 +131,7 @@
 
         #scheduleContainer.starred-view {
             padding-right: 8px;
+            padding-bottom: 28px;
         }
 
         .schedule-canvas {
@@ -400,7 +401,7 @@
         }
 
         .transfer-indicator {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             color: #244a84;
             background: var(--bg);
@@ -713,6 +714,7 @@
 
             #scheduleContainer.starred-view {
                 padding-right: 0;
+                padding-bottom: 44px;
             }
 
             .day-heading {
@@ -761,12 +763,12 @@
             }
 
             .details-panel {
-                left: 12px !important;
-                right: 12px !important;
-                bottom: 12px;
+                left: max(12px, calc(env(safe-area-inset-left) + 8px)) !important;
+                right: max(12px, calc(env(safe-area-inset-right) + 8px)) !important;
+                bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
                 top: auto !important;
                 width: auto;
-                max-height: min(76vh, 560px);
+                max-height: min(76vh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 28px));
                 border-radius: 28px 28px 24px 24px;
                 transform: translateY(24px);
             }
@@ -1027,6 +1029,14 @@ function getDefaultDurationMinutes(dayTimes, session) {
 
 function getSessionDurationMinutes(dayTimes, session) {
     return parseDurationMinutes(session.SessionLength) || getDefaultDurationMinutes(dayTimes, session);
+}
+
+function getBreakDisplayTitle(session) {
+    const baseTitle = String(session.Title || 'Break').trim() || 'Break';
+    const daySessions = data[session.day] || [];
+    const dayTimes = daySessions.map(s => s.time);
+    const durationMinutes = getSessionDurationMinutes(dayTimes.length ? dayTimes : [session.time], session);
+    return `${durationMinutes}-minute ${baseTitle}`;
 }
 
 function isBreakStyleEvent(session) {
@@ -1584,13 +1594,15 @@ function renderStarredView(container) {
             const currentEnd = parseClockMinutes(current.time) + getSessionDurationMinutes(dayTimes, current);
             const nextStart = parseClockMinutes(next.time);
             const hasGap = nextStart > currentEnd;
+            const isOverlap = nextStart < currentEnd;
             const roomChanged = (current.room || '') !== (next.room || '');
 
             let transferAnchor = currentItem;
+            let betweenBreaks = [];
 
             if (hasGap) {
                 const seenBreakKeys = new Set();
-                const betweenBreaks = breakCandidates
+                betweenBreaks = breakCandidates
                     .filter(b => {
                         const breakStart = parseClockMinutes(b.time);
                         return breakStart >= currentEnd && breakStart < nextStart;
@@ -1609,11 +1621,48 @@ function renderStarredView(container) {
             }
 
             if (!hasGap && !roomChanged) return;
-            transferAnchor.transferInfo = {
-                text: hasGap
-                    ? `Transfer after break to ${next.room || 'next room'}`
-                    : `Transfer to ${next.room || 'next room'}`
-            };
+            let transferText;
+            if (!hasGap) {
+                if (isOverlap) {
+                    // Overlapping talks — show the time to leave
+                    transferText = `Transfer mid-session to ${next.room || 'next room'} at ${formatTime(next.time)}`;
+                } else {
+                    // Back-to-back talks (next starts when current ends)
+                    transferText = `Transfer to ${next.room || 'next room'}`;
+                }
+            } else {
+                // There's a gap — check if a named meal break is between them
+                const gapMinutes = Math.max(0, nextStart - currentEnd);
+                const lastBreakSession = transferAnchor.kind === 'break' ? transferAnchor.session : null;
+                const breakMinutes = lastBreakSession ? getSessionDurationMinutes(dayTimes, lastBreakSession) : gapMinutes;
+                const breakEnd = lastBreakSession
+                    ? parseClockMinutes(lastBreakSession.time) + breakMinutes
+                    : currentEnd;
+                const postBreakGapMinutes = Math.max(0, nextStart - breakEnd);
+                const gapLabel = `${postBreakGapMinutes}-minute`;
+                const isImmediateAfterBreak = lastBreakSession
+                    ? (parseClockMinutes(lastBreakSession.time) + breakMinutes) === nextStart
+                    : false;
+                const betweenMeal = betweenBreaks.find(b => {
+                    const t = (b.Title || '').toLowerCase();
+                    return t.includes('lunch') || t.includes('breakfast');
+                });
+                let breakLabel = 'break';
+                if (betweenMeal) {
+                    const t = (betweenMeal.Title || '').toLowerCase();
+                    breakLabel = t.includes('lunch') ? 'Lunch' : 'Breakfast';
+                }
+                if (breakLabel === 'break') {
+                    transferText = isImmediateAfterBreak
+                        ? `Transfer immediately after break to ${next.room || 'next room'}`
+                        : `Transfer after ${gapLabel} gap to ${next.room || 'next room'}`;
+                } else {
+                    transferText = isImmediateAfterBreak
+                        ? `Transfer immediately after ${breakLabel} to ${next.room || 'next room'}`
+                        : `Transfer after ${breakLabel} (${gapLabel} gap) to ${next.room || 'next room'}`;
+                }
+            }
+            transferAnchor.transferInfo = { text: transferText };
         });
         
         const heading = document.createElement('div');
@@ -1708,13 +1757,14 @@ function createFullWidthCard(s) {
     const titleLower = (s.Title || '').toLowerCase();
     const isMealEvent = /\bbreakfast\b|\blunch\b/.test(titleLower);
     const isBreak = isBreakStyleEvent(s);
+    const displayTitle = (isBreak && !isMealEvent) ? getBreakDisplayTitle(s) : (s.Title || '');
     card.className = 'event-card ' + ((isBreak && !isMealEvent) ? 'break-card' : 'plenary');
     card.dataset.uid = s.uid || '';
     card.dataset.track = (s.Track || '').toLowerCase();
     card.dataset.title = (s.Title || '').toLowerCase();
     card.dataset.authors = (s.Authors || '').toLowerCase();
     
-    card.textContent = s.Title;
+    card.textContent = displayTitle;
     if (s.room && !isBreak) card.title = s.room;
     if (s.Abstract || s.Authors || s.Affiliation) {
         card.style.cursor = 'pointer';
