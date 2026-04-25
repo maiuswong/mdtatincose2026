@@ -1637,11 +1637,9 @@ function getViewportMode() {
 }
 
 function getEffectiveViewportWidth() {
-    const layoutWidths = [
-        window.innerWidth,
-        document.documentElement ? document.documentElement.clientWidth : 0
-    ].filter(w => Number.isFinite(w) && w > 0);
-    const layoutWidth = layoutWidths.length ? Math.max(...layoutWidths) : (window.innerWidth || 0);
+    const clientWidth = document.documentElement ? document.documentElement.clientWidth : 0;
+    const innerWidth = window.innerWidth;
+    const layoutWidth = [clientWidth, innerWidth].find(w => Number.isFinite(w) && w > 0) || 0;
 
     // On mobile-sized viewports, visualViewport better tracks transient browser UI.
     // On foldables in desktop mode it can fluctuate during scrolling/panning and
