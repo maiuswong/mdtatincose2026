@@ -905,6 +905,74 @@
             }
         }
 
+        /* ─── FOLDABLE DEVICES (e.g., Z Fold 7 folded ~360-480px) ─── */
+        @media (max-width: 480px) {
+            header {
+                padding: 6px 0.5rem 4px;
+                gap: 2px;
+            }
+            header h1 {
+                font-size: 0.9rem;
+                line-height: 1.1;
+            }
+            .header-right {
+                gap: 3px;
+                width: 100%;
+                grid-template-columns: auto 1fr;
+            }
+            #searchBar {
+                width: 100%;
+                font-size: 11px;
+                padding: 4px 10px;
+                grid-column: 2;
+                grid-row: 1;
+            }
+            .tabs {
+                grid-column: 1 / -1;
+                gap: 2px;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .tabs::-webkit-scrollbar {
+                display: none;
+            }
+            .tabs .tab-btn {
+                flex: 0 0 auto;
+                font-size: 9px;
+                padding: 3px 7px;
+                border-radius: 12px;
+            }
+            .tabs .tab-btn.starred-tab {
+                margin-left: auto;
+                flex-shrink: 0;
+            }
+            .track-filters {
+                padding: 4px 0.5rem;
+                gap: 3px;
+                top: calc(var(--header-height) + 2px);
+            }
+            .filter-label {
+                font-size: 9px;
+                margin-right: 2px;
+                font-weight: 700;
+            }
+            .track-chip {
+                flex: 0 0 auto;
+                padding: 2px 6px;
+                gap: 3px;
+                font-size: 9px;
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+            .track-chip .chip-dot {
+                width: 5px;
+                height: 5px;
+            }
+            .medtronic-legend { display: none; }
+        }
+
         /* ─── STARRED VIEW ─── */
         .day-heading {
             font-size: 13px;
