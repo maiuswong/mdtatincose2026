@@ -1265,10 +1265,20 @@ const detailsBackdrop = document.getElementById('detailsBackdrop');
 const detailsPanel = document.getElementById('detailsPanel');
 
 function getViewportMode() {
-    const width = window.innerWidth;
+    const width = getEffectiveViewportWidth();
     if (width <= MOBILE_BREAKPOINT) return 'mobile';
     if (width <= COMPACT_BREAKPOINT) return 'compact';
     return 'desktop';
+}
+
+function getEffectiveViewportWidth() {
+    const widths = [
+        window.innerWidth,
+        document.documentElement ? document.documentElement.clientWidth : 0,
+        window.visualViewport ? window.visualViewport.width : 0
+    ].filter(w => Number.isFinite(w) && w > 0);
+    if (widths.length === 0) return window.innerWidth || 0;
+    return Math.min(...widths);
 }
 
 function updateAdaptiveTopbarMode() {
@@ -1276,7 +1286,7 @@ function updateAdaptiveTopbarMode() {
     if (!bodyEl) return false;
 
     // Let the dedicated mobile CSS own the top bar on small screens.
-    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    if (getEffectiveViewportWidth() <= MOBILE_BREAKPOINT) {
         const changed = bodyEl.classList.contains('topbar-compact');
         bodyEl.classList.remove('topbar-compact');
         return changed;
@@ -2609,6 +2619,10 @@ window.addEventListener('keydown', (event) => {
 });
 window.addEventListener('resize', queueViewportRefresh);
 window.addEventListener('orientationchange', queueViewportRefresh);
+window.addEventListener('focus', queueViewportRefresh);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) queueViewportRefresh();
+});
 if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', queueViewportRefresh);
 }
