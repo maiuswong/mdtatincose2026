@@ -2259,7 +2259,7 @@ function renderDesktopDayGrid(day, container) {
 
     const shell = document.createElement('div');
     shell.className = 'schedule-shell';
-    shell.addEventListener('scroll', applyMobileLayout, { passive: true });
+    shell.addEventListener('scroll', applyScrollLayout, { passive: true });
     const canvas = document.createElement('div');
     canvas.className = 'schedule-canvas';
 
@@ -3477,11 +3477,11 @@ function switchDay(viewId, btn) {
     renderSchedule();
 }
 
-function applyMobileLayout() {
+function applyMobileLayout(skipTopbarModeCheck = false) {
     const viewportMode = getViewportMode();
     const isMobile = viewportMode === 'mobile';
 
-    const topbarModeChanged = updateAdaptiveTopbarMode();
+    const topbarModeChanged = skipTopbarModeCheck ? false : updateAdaptiveTopbarMode();
     if (topbarModeChanged) {
         // Re-measure on next frame after class/style changes settle.
         requestAnimationFrame(() => {
@@ -3552,6 +3552,10 @@ function applyMobileLayout() {
     updateScrollDateTimeIndicator();
 }
 
+function applyScrollLayout() {
+    applyMobileLayout(true);
+}
+
 let viewportRefreshQueued = false;
 let viewportSettlingActive = false;
 
@@ -3614,7 +3618,7 @@ document.addEventListener('visibilitychange', () => {
 if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', queueViewportRefresh);
 }
-window.addEventListener('scroll', applyMobileLayout, { passive: true });
+window.addEventListener('scroll', applyScrollLayout, { passive: true });
 window.addEventListener('scroll', scheduleScrollDateTimeIndicatorUpdate, { passive: true });
 
 init();
