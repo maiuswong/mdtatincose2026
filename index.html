@@ -61,6 +61,73 @@
         header h1 { font-size: 1.05rem; font-weight: 700; white-space: nowrap; }
         .header-right { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; flex-wrap: wrap; }
 
+        /* Adaptive compact top bar for widths where controls begin to wrap */
+        body.topbar-compact header {
+            flex-wrap: nowrap;
+            align-items: center;
+            padding: 6px 0.7rem;
+            gap: 6px;
+            height: auto;
+        }
+        body.topbar-compact header h1 {
+            width: auto;
+            font-size: 0.96rem;
+            line-height: 1.15;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+        body.topbar-compact .header-right {
+            width: auto;
+            min-width: 0;
+            flex: 1;
+            gap: 6px;
+            flex-wrap: nowrap;
+            justify-content: flex-end;
+        }
+        body.topbar-compact #searchBar {
+            width: 140px;
+            min-width: 140px;
+            font-size: 11px;
+            padding: 5px 10px;
+        }
+        body.topbar-compact .tabs {
+            flex-wrap: nowrap;
+            gap: 4px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            width: auto;
+        }
+        body.topbar-compact .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        body.topbar-compact .tabs .tab-btn {
+            flex: 0 0 auto;
+            white-space: nowrap;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 16px;
+        }
+        body.topbar-compact .track-filters {
+            flex-wrap: nowrap;
+            gap: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            white-space: nowrap;
+            padding: 6px 0.7rem;
+        }
+        body.topbar-compact .track-filters::-webkit-scrollbar {
+            display: none;
+        }
+        body.topbar-compact .filter-label,
+        body.topbar-compact .track-chip {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+
         /* ─── TABS ─── */
         .tabs { display: flex; gap: 4px; }
         .tab-btn {
@@ -1202,6 +1269,42 @@ function getViewportMode() {
     if (width <= MOBILE_BREAKPOINT) return 'mobile';
     if (width <= COMPACT_BREAKPOINT) return 'compact';
     return 'desktop';
+}
+
+function updateAdaptiveTopbarMode() {
+    const bodyEl = document.body;
+    if (!bodyEl) return false;
+
+    // Let the dedicated mobile CSS own the top bar on small screens.
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+        const changed = bodyEl.classList.contains('topbar-compact');
+        bodyEl.classList.remove('topbar-compact');
+        return changed;
+    }
+
+    const headerEl = document.querySelector('header');
+    const titleEl = headerEl?.querySelector('h1');
+    const headerRightEl = headerEl?.querySelector('.header-right');
+    if (!headerEl || !titleEl || !headerRightEl) return false;
+
+    const previousMode = bodyEl.classList.contains('topbar-compact');
+    bodyEl.classList.remove('topbar-compact');
+
+    // Compute required width from natural content width to detect impending wrap.
+    const headerStyle = window.getComputedStyle(headerEl);
+    const paddingX = parseFloat(headerStyle.paddingLeft || '0') + parseFloat(headerStyle.paddingRight || '0');
+    const gapX = parseFloat(headerStyle.columnGap || headerStyle.gap || '0');
+    const requiredWidth = titleEl.scrollWidth + headerRightEl.scrollWidth + paddingX + gapX;
+    const availableWidth = headerEl.clientWidth;
+
+    // Also detect actual line break by comparing top positions.
+    const titleTop = Math.round(titleEl.getBoundingClientRect().top);
+    const controlsTop = Math.round(headerRightEl.getBoundingClientRect().top);
+    const hasWrapped = controlsTop > titleTop + 2;
+    const shouldCompact = hasWrapped || requiredWidth > (availableWidth - 8);
+
+    bodyEl.classList.toggle('topbar-compact', shouldCompact);
+    return previousMode !== shouldCompact;
 }
 
 function getTrackColor(trackName) {
@@ -2419,6 +2522,16 @@ function switchDay(viewId, btn) {
 function applyMobileLayout() {
     const viewportMode = getViewportMode();
     const isMobile = viewportMode === 'mobile';
+
+    const topbarModeChanged = updateAdaptiveTopbarMode();
+    if (topbarModeChanged) {
+        // Re-measure on next frame after class/style changes settle.
+        requestAnimationFrame(() => {
+            applyMobileLayout();
+            requestAnimationFrame(updateSessionTitleLayout);
+        });
+        return;
+    }
     
     const headerH = document.querySelector('header').offsetHeight;
     const trackFiltersEl = document.getElementById('trackFilters');
