@@ -311,6 +311,51 @@
             margin-top: 7px;
         }
 
+        .timeline-break-indicator {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: var(--time-col-width) 1fr;
+            align-items: center;
+            margin: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .timeline-break-label {
+            justify-self: end;
+            margin-right: 8px;
+            width: calc(var(--time-col-width) - 14px);
+            padding: 1px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.015em;
+            color: #6b778d;
+            background: var(--bg);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1.08;
+            white-space: normal;
+            text-transform: uppercase;
+            text-align: right;
+            overflow: visible;
+        }
+
+        .timeline-break-label .to-line {
+            opacity: 0.9;
+        }
+
+        .timeline-break-line {
+            align-self: center;
+            height: 8px;
+            margin: 0 8px 0 6px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'%3E%3Cpath d='M0 6.5 L6 1.5 L12 6.5 L18 1.5 L24 6.5' fill='none' stroke='%236b778d' stroke-width='1.0' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.45'/%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-size: 24px 8px;
+            background-position: left center;
+        }
+
         .schedule-item {
             position: relative;
             z-index: 3;
@@ -663,16 +708,16 @@
         }
 
         .transfer-indicator.break-only {
-            color: #4c5568;
+            color: #244a84;
             background: var(--bg);
-            border-top: 2px dashed rgba(76, 85, 104, 0.45);
             border-radius: 0;
-            padding-top: 6px;
-            margin-top: 2px;
+            padding-top: 2px;
+            margin-top: 0;
         }
 
         .transfer-indicator.break-only::before {
-            content: '';
+            content: '⇄ ';
+            color: #244a84;
         }
 
         .transfer-row {
@@ -1815,8 +1860,99 @@ function renderDesktopDayGrid(day, container) {
     const colRooms = rooms;
     const gridTemplate = `var(--time-col-width) repeat(${colRooms.length}, var(--desktop-col-width))`;
     const dayTimes = sessions.map(s => s.time);
-    const slotMetrics = getSlotMetrics(sessions);
+    const baseSlotMetrics = getSlotMetrics(sessions);
     const dayBounds = getDayBounds(sessions);
+    const TIMETABLE_BREAK_MIN_GAP = 90;
+    const TIMETABLE_BREAK_VISIBLE_MINUTES = 25;
+
+    // Compress long sparse windows by room coverage (not raw session count).
+    // This preserves normal single-track plenary blocks while still compressing
+    // edge cases like one-room tutorials with most columns empty.
+    const salonSpanCount = colRooms.filter(room => /^Salon [A-D]$/.test(room)).length || 4;
+    const roomCoverageThreshold = Math.max(1, Math.floor(colRooms.length * 0.2));
+    const occupancyRanges = sessions
+        .filter(session => !isBreakStyleEvent(session))
+        .map(session => {
+            const start = parseClockMinutes(session.time);
+            const end = start + getSessionDurationMinutes(dayTimes, session);
+            let coverage = 1;
+            if (session.room === 'Grand Ballroom - Salons A-D') {
+                coverage = salonSpanCount;
+            }
+            return { start, end, coverage };
+        });
+
+    const lowDensityRuns = [];
+    let runStart = null;
+    for (let minute = dayBounds.start; minute < dayBounds.end; minute += SLOT_MINUTES) {
+        const slotEnd = minute + SLOT_MINUTES;
+        let activeCoverage = 0;
+        for (const range of occupancyRanges) {
+            if (range.start < slotEnd && range.end > minute) {
+                activeCoverage += range.coverage;
+                if (activeCoverage > roomCoverageThreshold) break;
+            }
+        }
+
+        const isLowDensity = activeCoverage <= roomCoverageThreshold;
+        if (isLowDensity) {
+            if (runStart === null) runStart = minute;
+        } else if (runStart !== null) {
+            lowDensityRuns.push({ start: runStart, end: minute });
+            runStart = null;
+        }
+    }
+    if (runStart !== null) {
+        lowDensityRuns.push({ start: runStart, end: dayBounds.end });
+    }
+
+    const compressedGaps = [];
+    let cumulativeRemoved = 0;
+    for (const run of lowDensityRuns) {
+        const runDuration = run.end - run.start;
+        if (runDuration < TIMETABLE_BREAK_MIN_GAP) continue;
+        const visibleDuration = Math.min(TIMETABLE_BREAK_VISIBLE_MINUTES, runDuration);
+        const removed = runDuration - visibleDuration;
+        compressedGaps.push({
+            start: run.start,
+            end: run.end,
+            visibleDuration,
+            removed,
+            cumulativeRemovedBefore: cumulativeRemoved,
+            scale: visibleDuration / runDuration
+        });
+        cumulativeRemoved += removed;
+    }
+
+    const mapMinuteToVisual = minute => {
+        for (const gap of compressedGaps) {
+            if (minute < gap.start) {
+                return minute - gap.cumulativeRemovedBefore;
+            }
+            if (minute <= gap.end) {
+                const withinGap = minute - gap.start;
+                return (gap.start - gap.cumulativeRemovedBefore) + (withinGap * gap.scale);
+            }
+        }
+        return minute - cumulativeRemoved;
+    };
+
+    const visualDayStart = mapMinuteToVisual(baseSlotMetrics.dayStart);
+    const visualDayEnd = mapMinuteToVisual(dayBounds.end);
+    const slotMetrics = {
+        dayStart: visualDayStart,
+        totalSlots: Math.max(1, Math.ceil((visualDayEnd - visualDayStart) / SLOT_MINUTES))
+    };
+
+    const getPlacementForRange = (startMinute, endMinute) => {
+        const visualStart = mapMinuteToVisual(startMinute);
+        const visualEnd = mapMinuteToVisual(endMinute);
+        const startSlot = Math.floor((visualStart - slotMetrics.dayStart) / SLOT_MINUTES) + 1;
+        const slotSpan = Math.max(1, Math.ceil((visualEnd - visualStart) / SLOT_MINUTES));
+        return { startSlot, slotSpan };
+    };
+
+    const isInsideCompressedGap = minute => compressedGaps.some(gap => minute > gap.start && minute < gap.end);
 
     const shell = document.createElement('div');
     shell.className = 'schedule-shell';
@@ -1850,9 +1986,26 @@ function renderDesktopDayGrid(day, container) {
     const salonAIndex = roomIndexMap.get('Salon A');
     const salonDIndex = roomIndexMap.get('Salon D');
 
+    const markerMinutes = new Set();
     for (let marker = dayBounds.start; marker <= dayBounds.end; marker += 30) {
-        const startSlot = Math.floor((marker - slotMetrics.dayStart) / SLOT_MINUTES) + 1;
-        if (startSlot < 1 || startSlot > slotMetrics.totalSlots) continue;
+        markerMinutes.add(marker);
+    }
+    compressedGaps.forEach(gap => {
+        markerMinutes.add(gap.start);
+        markerMinutes.add(gap.end);
+    });
+
+    const renderedMarkerSlots = new Set();
+    [...markerMinutes].sort((a, b) => a - b).forEach(marker => {
+        if (isInsideCompressedGap(marker)) return;
+
+        const visualMarker = mapMinuteToVisual(marker);
+        const startSlot = Math.floor((visualMarker - slotMetrics.dayStart) / SLOT_MINUTES) + 1;
+        if (startSlot < 1 || startSlot > slotMetrics.totalSlots) return;
+
+        const isGapBoundary = compressedGaps.some(gap => marker === gap.start || marker === gap.end);
+        if (renderedMarkerSlots.has(startSlot) && !isGapBoundary) return;
+        renderedMarkerSlots.add(startSlot);
 
         const label = document.createElement('div');
         label.className = 'timeline-slot-label';
@@ -1868,7 +2021,7 @@ function renderDesktopDayGrid(day, container) {
         divider.dataset.slot = startSlot;
         divider.style.gridRow = `${startSlot} / span 1`;
         grid.appendChild(divider);
-    }
+    });
 
     colRooms.forEach((room, index) => {
         const background = document.createElement('div');
@@ -1877,6 +2030,30 @@ function renderDesktopDayGrid(day, container) {
         background.style.gridColumn = `${index + 2}`;
         background.style.gridRow = `1 / span ${slotMetrics.totalSlots}`;
         grid.appendChild(background);
+    });
+
+    compressedGaps.forEach(gap => {
+        const placement = getPlacementForRange(gap.start, gap.end);
+        const indicator = document.createElement('div');
+        indicator.className = 'timeline-break-indicator';
+        indicator.style.gridRow = `${placement.startSlot} / span ${placement.slotSpan}`;
+
+        const label = document.createElement('div');
+        label.className = 'timeline-break-label';
+        const startLine = document.createElement('span');
+        startLine.textContent = formatTime(minuteToLabel(gap.start));
+        const endLine = document.createElement('span');
+        endLine.className = 'to-line';
+        endLine.textContent = `to ${formatTime(minuteToLabel(gap.end))}`;
+        label.appendChild(startLine);
+        label.appendChild(endLine);
+
+        const line = document.createElement('div');
+        line.className = 'timeline-break-line';
+
+        indicator.appendChild(label);
+        indicator.appendChild(line);
+        grid.appendChild(indicator);
     });
 
     const mealBreaks = sessions.filter(s => isMealStyleEvent(s));
@@ -1913,9 +2090,7 @@ function renderDesktopDayGrid(day, container) {
     });
 
     const placeSessionPart = (originalSession, partStart, partEnd, overlay) => {
-        const duration = partEnd - partStart;
-        const startSlot = Math.floor((partStart - slotMetrics.dayStart) / SLOT_MINUTES) + 1;
-        const slotSpan = Math.max(1, Math.ceil(duration / SLOT_MINUTES));
+        const placement = getPlacementForRange(partStart, partEnd);
         const isAdSpanSession = originalSession.room === 'Grand Ballroom - Salons A-D';
 
         const wrap = document.createElement('div');
@@ -1933,7 +2108,7 @@ function renderDesktopDayGrid(day, container) {
             wrap.style.gridColumn = `${roomIndex + 2}`;
         }
 
-        wrap.style.gridRow = `${startSlot} / span ${slotSpan}`;
+        wrap.style.gridRow = `${placement.startSlot} / span ${placement.slotSpan}`;
         wrap.appendChild(createSessionCard(originalSession, false));
         grid.appendChild(wrap);
     };
@@ -1955,7 +2130,9 @@ function renderDesktopDayGrid(day, container) {
             return;
         }
 
-        const placement = getGridPlacement(dayTimes, slotMetrics, session);
+        const sessionStart = parseClockMinutes(session.time);
+        const sessionEnd = sessionStart + getSessionDurationMinutes(dayTimes, session);
+        const placement = getPlacementForRange(sessionStart, sessionEnd);
         const isAdSpanSession = session.room === 'Grand Ballroom - Salons A-D';
 
         const wrap = document.createElement('div');
@@ -1989,9 +2166,9 @@ function renderDesktopDayGrid(day, container) {
 
     // Place a break by filling consecutive runs of empty columns at that time range.
     const placeBreakSession = (session) => {
-        const placement = getGridPlacement(dayTimes, slotMetrics, session);
         const breakStart = parseClockMinutes(session.time);
         const breakEnd = breakStart + getSessionDurationMinutes(dayTimes, session);
+        const placement = getPlacementForRange(breakStart, breakEnd);
 
         // Collect column indices occupied by non-break sessions during this break window.
         const occupiedIndices = new Set();
