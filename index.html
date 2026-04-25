@@ -1637,13 +1637,24 @@ function getViewportMode() {
 }
 
 function getEffectiveViewportWidth() {
-    const widths = [
+    const layoutWidths = [
         window.innerWidth,
-        document.documentElement ? document.documentElement.clientWidth : 0,
-        window.visualViewport ? window.visualViewport.width : 0
+        document.documentElement ? document.documentElement.clientWidth : 0
     ].filter(w => Number.isFinite(w) && w > 0);
-    if (widths.length === 0) return window.innerWidth || 0;
-    return Math.min(...widths);
+    const layoutWidth = layoutWidths.length ? Math.max(...layoutWidths) : (window.innerWidth || 0);
+
+    // On mobile-sized viewports, visualViewport better tracks transient browser UI.
+    // On foldables in desktop mode it can fluctuate during scrolling/panning and
+    // causes the top bar to thrash between compact and normal states.
+    const visualWidth = window.visualViewport && Number.isFinite(window.visualViewport.width)
+        ? window.visualViewport.width
+        : 0;
+
+    if (layoutWidth <= COMPACT_BREAKPOINT && visualWidth > 0) {
+        return Math.min(layoutWidth, visualWidth);
+    }
+
+    return layoutWidth;
 }
 
 function isMobileLayoutViewport() {
