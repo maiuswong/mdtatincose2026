@@ -2607,6 +2607,43 @@ function applyMobileLayout() {
 }
 
 let viewportRefreshQueued = false;
+let viewportSettlingActive = false;
+
+function startViewportSettlingChecks() {
+    if (viewportSettlingActive) return;
+    viewportSettlingActive = true;
+
+    let passesRemaining = 8;
+    let lastMode = getViewportMode();
+    let lastWidth = Math.round(getEffectiveViewportWidth());
+    let stableCount = 0;
+
+    const runPass = () => {
+        applyMobileLayout();
+        requestAnimationFrame(updateSessionTitleLayout);
+
+        const modeNow = getViewportMode();
+        const widthNow = Math.round(getEffectiveViewportWidth());
+        if (modeNow === lastMode && Math.abs(widthNow - lastWidth) <= 1) {
+            stableCount += 1;
+        } else {
+            stableCount = 0;
+            lastMode = modeNow;
+            lastWidth = widthNow;
+        }
+
+        passesRemaining -= 1;
+        if (passesRemaining <= 0 || stableCount >= 2) {
+            viewportSettlingActive = false;
+            return;
+        }
+
+        requestAnimationFrame(runPass);
+    };
+
+    requestAnimationFrame(runPass);
+}
+
 function queueViewportRefresh() {
     if (viewportRefreshQueued) return;
     viewportRefreshQueued = true;
@@ -2614,6 +2651,7 @@ function queueViewportRefresh() {
         viewportRefreshQueued = false;
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
+        startViewportSettlingChecks();
     });
 }
 
