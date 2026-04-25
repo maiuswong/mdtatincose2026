@@ -248,14 +248,15 @@
         .room-header-cell {
             background: white;
             border: none;
-            border-radius: 8px;
-            padding: 6px 10px;
+            border-radius: 4px;
+            padding: 7px 10px;
             text-align: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            letter-spacing: 0.02em;
-            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 600;
+            color: #3f4d63;
+            letter-spacing: 0.005em;
+            text-transform: none;
+            line-height: 1.25;
             box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
         }
         .room-header-cell.active-room { color: var(--primary); background: #eef4ff; box-shadow: 0 1px 6px rgba(26, 115, 232, 0.18); }
@@ -952,6 +953,10 @@
                 color: #1f3f7a;
                 border: none;
             }
+            .tabs .tab-btn.starred-tab.active {
+                background: var(--star-color);
+                color: #ffffff;
+            }
             .medtronic-legend { display: none; }
 
             .track-filters {
@@ -988,13 +993,15 @@
             /* On mobile, room name appears in the card header */
             .card-top { flex-wrap: wrap; }
             .room-name-mobile {
-                font-size: 10px;
-                font-weight: 700;
-                color: var(--text-secondary);
+                font-size: 11px;
+                font-weight: 600;
+                color: #4a5a72;
                 width: 100%;
                 margin-bottom: 3px;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
+                text-transform: none;
+                letter-spacing: 0.01em;
+                line-height: 1.2;
+                border-radius: 3px;
             }
 
             .time-row { grid-template-columns: var(--time-col-width) 1fr !important; }
@@ -1413,11 +1420,18 @@ function updateAdaptiveTopbarMode() {
     const previousMode = bodyEl.classList.contains('topbar-compact');
     bodyEl.classList.remove('topbar-compact');
 
-    // Compute required width from natural content width to detect impending wrap.
+    // Compute required width from intrinsic child widths (not flex container scrollWidth),
+    // otherwise the header can appear "always compact" on desktop.
     const headerStyle = window.getComputedStyle(headerEl);
     const paddingX = parseFloat(headerStyle.paddingLeft || '0') + parseFloat(headerStyle.paddingRight || '0');
     const gapX = parseFloat(headerStyle.columnGap || headerStyle.gap || '0');
-    const requiredWidth = titleEl.scrollWidth + headerRightEl.scrollWidth + paddingX + gapX;
+    const rightStyle = window.getComputedStyle(headerRightEl);
+    const rightGap = parseFloat(rightStyle.columnGap || rightStyle.gap || '0');
+    const controls = Array.from(headerRightEl.children).filter(el => el instanceof HTMLElement && window.getComputedStyle(el).display !== 'none');
+    const controlsWidth = controls.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
+    const controlsGapsWidth = Math.max(0, controls.length - 1) * rightGap;
+    const titleWidth = titleEl.getBoundingClientRect().width;
+    const requiredWidth = titleWidth + controlsWidth + controlsGapsWidth + paddingX + gapX;
     const availableWidth = headerEl.clientWidth;
 
     // Also detect actual line break by comparing top positions.
@@ -1760,7 +1774,9 @@ function renderTrackFilters() {
         ? Object.values(data).flat().map(s => s.Track).filter(Boolean)
         : getAllTracksForDay(currentView);
     
-    const uniqueTracks = [...new Set(tracks)].sort();
+    const uniqueTracks = [...new Set(tracks)]
+        .filter(track => String(track).trim().toLowerCase() !== 'general')
+        .sort();
     if (uniqueTracks.length === 0) return;
 
     const label = document.createElement('span');
