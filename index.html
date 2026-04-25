@@ -945,6 +945,36 @@
 
         /* ─── MOBILE: track-based list view ─── */
         @media (max-width: 700px) {
+            body.topbar-compact header {
+                flex-wrap: wrap;
+                align-items: flex-start;
+                height: auto;
+                padding: 8px 0.75rem 6px;
+                gap: 4px;
+            }
+            body.topbar-compact header h1 {
+                width: 100%;
+                font-size: 1rem;
+                line-height: 1.2;
+                flex: initial;
+            }
+            body.topbar-compact .header-right {
+                width: 100%;
+                flex: 1 1 100%;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: nowrap;
+            }
+            body.topbar-compact #searchBar {
+                width: 100%;
+                min-width: 0;
+            }
+            body.topbar-compact .tabs {
+                width: 100%;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
             :root { --time-col-width: 52px; }
             header {
                 flex-wrap: wrap;
@@ -1649,13 +1679,6 @@ function isMobileLayoutViewport() {
 function updateAdaptiveTopbarMode() {
     const bodyEl = document.body;
     if (!bodyEl) return false;
-
-    // On true mobile widths, let the mobile CSS own the header wrapping behavior.
-    if (getEffectiveViewportWidth() <= MOBILE_BREAKPOINT) {
-        const changed = bodyEl.classList.contains('topbar-compact');
-        bodyEl.classList.remove('topbar-compact');
-        return changed;
-    }
 
     const headerEl = document.querySelector('header');
     const titleEl = headerEl?.querySelector('h1');
