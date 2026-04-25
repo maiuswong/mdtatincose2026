@@ -2803,7 +2803,7 @@ function applyFilters() {
         const text = (card.dataset.title || '') + ' ' + (card.dataset.authors || '') + ' ' + track;
 
         const medtronicFilterActive = activeTrackFilters.has('__medtronic__');
-        if (medtronicFilterActive && !isKeynoteSpecial) {
+        if (medtronicFilterActive) {
             const target = card.closest('.schedule-item, .mobile-card-wrap') || card;
             if (!isMedtronicCard) {
                 if (isDesktopTimeline) {
