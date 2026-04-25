@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INCOSE HWGC 2026</title>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #1a73e8;
             --bg: #e9ecf0;
+            --column-bg-solid: #f1f3f6;
             --card-bg: #ffffff;
             --text-main: #1a1c1e;
             --text-secondary: #5c6070;
@@ -186,7 +187,8 @@
 
         .timeline-slot-label {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
+            align-self: start;
             justify-content: flex-end;
             padding-top: 0;
             padding-right: 8px;
@@ -197,8 +199,13 @@
             font-family: 'DM Mono', monospace;
             white-space: nowrap;
             background: var(--bg);
-            transform: translateY(-1px);
+            transform: translateY(calc(-50% - 1px));
             z-index: 2;
+        }
+
+        /* First timeline divider is intentionally pushed down; match the first label to that offset. */
+        .timeline-slot-label[data-slot="1"] {
+            transform: translateY(calc(-50% + 7px));
         }
 
         .timeline-divider {
@@ -244,6 +251,13 @@
             z-index: 8;
         }
 
+        .schedule-item.track-faded .session-card,
+        .schedule-item.track-faded .event-card {
+            opacity: 0.22;
+            filter: saturate(0.55);
+            transition: opacity 0.16s ease, filter 0.16s ease;
+        }
+
         /* ─── TIME ROWS ─── */
         .time-rows { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
 
@@ -287,7 +301,6 @@
         }
         .event-card.plenary,
         .event-card.break-card {
-            background: transparent;
             border: none;
             color: #4a5568;
             font-size: 13px;
@@ -295,20 +308,24 @@
             letter-spacing: 0.02em;
             box-shadow: none;
             outline: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='1.5' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
             justify-content: flex-start;
             align-items: center;
             padding-left: 14px;
         }
 
+        .event-card.break-card {
+            background: var(--column-bg-solid);
+        }
+
         /* Per-column break number cell in desktop timetable */
         .event-card.break-col {
-            background: transparent;
+            background: var(--column-bg-solid);
             border: none;
             color: #4a5568;
             box-shadow: none;
             outline: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='1.5' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
             justify-content: center;
             align-items: center;
             padding: 0 8px;
@@ -323,15 +340,24 @@
             white-space: nowrap;
         }
 
-        /* Frosted style for plenary + break cards in My Schedule (starred) view */
-        #scheduleContainer.starred-view .event-card.plenary,
-        #scheduleContainer.starred-view .event-card.break-card {
+        /* Frosted style for plenary cards in My Schedule (starred) view */
+        #scheduleContainer.starred-view .event-card.plenary {
             background: rgba(255, 255, 255, 0.62);
             box-shadow: none;
             color: var(--text-secondary);
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 0.04em;
+        }
+
+        #scheduleContainer.starred-view .event-card.break-card {
+            background: var(--column-bg-solid);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+            box-shadow: none;
+            color: #4a5568;
+            justify-content: flex-start;
+            align-items: center;
+            padding-left: 14px;
         }
 
         /* ─── SESSION CARDS ─── */
@@ -387,6 +413,7 @@
             align-items: flex-start;
             gap: 6px;
             margin-bottom: 6px;
+            padding-right: 22px;
         }
 
         .card-top.has-room {
@@ -396,6 +423,7 @@
         .card-top.has-room .room-name-mobile {
             flex: 0 0 100%;
             margin-bottom: 3px;
+            padding-right: 22px;
         }
 
         .card-top.has-room .track-badge {
@@ -418,7 +446,11 @@
             padding: 0;
             background: none;
             border: none;
-            margin-right: -2px;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            margin-right: 0;
+            z-index: 3;
         }
         .star-btn:hover { transform: scale(1.2); }
         .star-btn.active { color: var(--star-color); }
@@ -434,6 +466,26 @@
             display: block;
             overflow: visible;
             word-break: break-word;
+        }
+
+        .session-card.has-inline-keynote-abstract .session-title {
+            flex: 0 0 auto;
+            margin-bottom: 2px;
+        }
+
+        .keynote-abstract {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #2f3f57;
+            font-weight: 500;
+            white-space: pre-line;
+            display: -webkit-box;
+            line-clamp: 8;
+            -webkit-line-clamp: 8;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .card-bottom {
@@ -457,7 +509,6 @@
 
         .transfer-indicator {
             font-size: 11px;
-            font-weight: 600;
             color: #244a84;
             background: var(--bg);
             border: none;
@@ -832,15 +883,25 @@
                 transform: translateY(24px);
             }
 
-            /* Frosted plenary + break cards in mobile stacked view */
-            .event-card.plenary,
-            .event-card.break-card {
+            /* Frosted plenary cards in mobile stacked view */
+            .event-card.plenary {
                 background: rgba(255, 255, 255, 0.62);
                 box-shadow: none;
                 color: var(--text-secondary);
                 font-size: 11px;
                 font-weight: 600;
                 letter-spacing: 0.04em;
+            }
+
+            /* Keep true breaks dashed on mobile */
+            .event-card.break-card {
+                background: var(--column-bg-solid);
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+                box-shadow: none;
+                color: #4a5568;
+                justify-content: flex-start;
+                align-items: center;
+                padding-left: 14px;
             }
         }
 
@@ -909,34 +970,33 @@ const data = {
     {"day":"Tuesday 4/28","time":"1:15 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"Sponsor","Title":"Premier Sponsor Presentation: Vitech Corp","Abstract":null,"Affiliation":"Vitech Corp","SessionLength":"20m","isMedtronic":false,"session_id":901,"uid":"s_901"},
     {"day":"Tuesday 4/28","time":"1:35 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"Sponsor","Title":"Premier Sponsor Presentation: IntelliU","Abstract":null,"Affiliation":"IntelliU","SessionLength":"20m","isMedtronic":false,"session_id":902,"uid":"s_902"},
     {"day":"Tuesday 4/28","time":"1:55 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"Sponsor","Title":"Premier Sponsor Presentation: PTC","Abstract":null,"Affiliation":"PTC","SessionLength":"20m","isMedtronic":false,"session_id":903,"uid":"s_903"},
-    {"day":"Tuesday 4/28","time":"2:15 PM","room":"Grand Foyer","type":"break","Title":"Break"},
+    {"day":"Tuesday 4/28","time":"2:15 PM","room":"Grand Foyer","type":"break","Title":"Break","SessionLength":"30m"},
     {"day":"Tuesday 4/28","time":"2:45 PM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"Enabling Systems Thinking in Fast-Moving, AI-Enabled Software Teams","Authors":"Erez Kaminski","Abstract":"","Affiliation":"Ketryx","SessionLength":"60m","isMedtronic":false,"session_id":58,"uid":"s_58"},
     {"day":"Tuesday 4/28","time":"2:45 PM","room":"Salon A","type":"session","Track":"Cybersecurity","Title":"Designing cybersecurity controls into medical device systems: Key Considerations and Strategies","Authors":"Michelle Jump","Abstract":"This panel focuses on the role of system engineers in designing cybersecurity controls into medical device systems. Panelists will discuss key considerations for integrating security early in the system lifecycle, including system architecture, risk management, interface design, and cross-functional collaboration. Drawing on real-world experience, the discussion will highlight practical strategies system engineers can use to balance cybersecurity, safety, usability, and regulatory expectations while building resilient medical device systems.","Affiliation":"MedSec","SessionLength":"60m","isMedtronic":false,"session_id":49,"uid":"s_49"},
     {"day":"Tuesday 4/28","time":"2:45 PM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"A Process to Manage Stakeholder Needs","Authors":"Mike Celentano","Abstract":"- A process that was used and refined over the past decade will be presented that helps manage stakeholder needs from start to finish.\n- MedTech companies with many internal and/or external stakeholders will benefit from applying a structured approach to the complexity involved in managing all the diverse expectations in an objective way.\n- Proactively managing needs will greatly reduce the unexpected vetoes that can completely derail a project late in its lifecycle.\n- This process includes 6 iterative phases: Planning, Elicitation, Analysis, Synthesis, Review, and Maintenance.\n- Examples and example templates will be offered.\n- Of course, this process provides traceable inputs to the product requirements process.\n- However, there will always be stakeholder needs that do not trace to product requirements.\n- These needs are often forgotten.\n- They also must be managed proactively to protect the project from being torpedoed.","Affiliation":"S.O.S. LLC","SessionLength":"60m","isMedtronic":false,"session_id":18,"uid":"s_18"},
     {"day":"Tuesday 4/28","time":"2:45 PM","room":"Salon C","type":"session","Track":"Healthcare Delivery","Title":"Systems Engineering, Artificial Intelligence, and Healthcare","Authors":"Alan Ravitz and Sharon Hartzel","Abstract":"- Healthcare delivery environments are complex, multi-stakeholder ecosystems characterized by fragmented information flows, heterogeneous systems, evolving regulatory constraints, and growing demands for transparency, quality, and sustainability.\n- This paper presents a model-based systems engineering (MBSE) approach, grounded in the Unified Architecture Framework (UAF), to structure and analyze the healthcare enterprise as an integrated, traceable digital architecture.\n- The work introduces a reference healthcare ecosystem architecture capturing key elements including stakeholders, operational activities, clinical and enterprise capabilities, enabling services and systems, data exchanges, and regulatory drivers.\n- Stakeholder needs are translated into architectural viewpoints spanning strategic, operational, services, resources, and standards domains.\n- The resulting UAF model enables end-to-end traceability from stakeholder needs to capabilities, operational processes, services, systems, and compliance requirements.\n- Using this integrated architecture, the presentation shows how UAF supports digital-thread visibility across clinical and administrative workflows, enables impact and dependency analysis for capability gaps and modernization decisions, and facilitates evaluation of risks and trade-offs.\n- This work demonstrates how MBSE and UAF improve decision-making and alignment across healthcare stakeholders.","Affiliation":"Johns Hopkins University Applied Physics Laboratory & NSI Advisory Services","SessionLength":"60m","isMedtronic":false,"session_id":67,"uid":"s_67"},
     {"day":"Tuesday 4/28","time":"2:45 PM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Two-Tiered Vertical Slicing: A Systems Engineering Approach to Decomposing Complex Software Systems","Authors":"Shreya Sridhar","Abstract":"- Modern software-intensive systems, particularly AI-enabled medical devices, are increasingly complex, making it difficult for teams to translate product strategy into implementable work while maintaining alignment with functional requirements and dependencies.\n- This work introduces a two-level vertical slicing approach as a systems engineering technique for decomposing complex products.\n- At the product level, vertical slicing divides the pipeline of features into sequenced releases that deliver end-to-end value functionality.\n- The slices are then prioritized based on the value add for the overall product vision and roadmap.\n- At the feature level, individual features are further broken down into implementable slices of functionality ensuring full end-to-end workflows are delivered incrementally.\n- By implementing this breakdown, this approach helps teams identify functional areas, prioritize work, surface dependencies, and manage development more effectively.\n- A case study from AI-enabled medical device development highlights learnings from applying the method in practice.","Affiliation":"Medtronic Inc.","SessionLength":"30m","isMedtronic":true,"session_id":23,"uid":"s_23"},
     {"day":"Tuesday 4/28","time":"3:15 PM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Improving Traceability Through Structured Requirements Management","Authors":"Terence Carmichael Jr and Patrick Maxwell","Abstract":"This presentation shares practical lessons learned from implementing a structured requirements management approach to address technical debt and traceability challenges within a healthcare systems engineering environment. It examines common failure modes in requirements traceability as systems scale, the downstream impact on verification, validation, and compliance activities, and how improved structure and governance increased visibility and control. Attendees will gain actionable insights for strengthening traceability practices while reducing long-term technical debt in complex systems.","Affiliation":"THINK Surgical & Cognition Corp","SessionLength":"30m","isMedtronic":false,"session_id":41,"uid":"s_41"},
-    {"day":"Tuesday 4/28","time":"3:45 PM","room":"Grand Foyer","type":"break","Title":"Break"},
+    {"day":"Tuesday 4/28","time":"3:45 PM","room":"Grand Foyer","type":"break","Title":"Break","SessionLength":"15m"},
     {"day":"Tuesday 4/28","time":"4:00 PM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"Scaling Requirements and Verification Analysis with AI in Medical Device System Design","Authors":"Xiaofan Mai","Abstract":"Medical device development requires consistent reasoning across interconnected engineering artifacts—including system and subsystem requirements, risk controls, and verification strategies—spanning hardware, firmware, and software domains. As systems evolve, maintaining alignment between design intent, hazard mitigations (e.g., ISO 14971), and verification evidence becomes increasingly difficult, particularly across large-scale, multi-component, and multi-level requirement sets.\n\nExperienced systems engineers address this complexity by reasoning across multiple abstraction layers: decomposing system-level intent into implementable requirements, identifying implicit risk controls embedded within design decisions, and ensuring verification activities adequately cover both nominal and boundary conditions. This reasoning process is largely tacit, developed through experience, and difficult to standardize or scale.\n\nThis session presents an approach to AI-assisted engineering analysis based on structured, multi-dimensional knowledge representations of design artifacts. Rather than treating requirements as unstructured text, engineering data is modeled across interconnected dimensions—such as system hierarchy, functional behavior, hazard linkage, and verification intent—enabling cross-artifact reasoning at scale.\n\nUsing representative medical device use cases, we demonstrate how this approach can:\n\nCreate design artifacts at various levels based on industry best practices Identify and correct conflicts and inconsistencies across system and subsystem requirements Surface implicit or missing risk controls relative to hazard definitions Evaluate coverage of verification scenarios against intended system behavior Highlight gaps in design coverage across requirement, risk, and test artifacts The session will illustrate how graph-structured and context-aware AI reasoning can augment traditional systems engineering workflows—providing engineers with explainable insights into requirement consistency, risk coverage, and verification completeness.\n\nAttendees will gain practical perspectives on applying AI to “reason across engineering artifacts—not just generate content” and how this capability can help scale expert-level systems thinking in complex, regulated medical device environments.","Affiliation":"IntelliU LLC","SessionLength":"60m","isMedtronic":false,"session_id":32,"uid":"s_32"},
     {"day":"Tuesday 4/28","time":"4:00 PM","room":"Salon A","type":"session","Track":"Digital SE","Title":"An MBSE Integrated Formal Test Approach to Improve Reliability and Security in Medical Devices","Authors":"Pourash Patel","Abstract":"Connected medical devices increasingly rely on complex embedded software and networked interoperability to deliver safe, effective, and timely care. As connectivity expands the attack surface and system complexity, ensuring reliability, cybersecurity, and regulatory compliance requires early, rigorous verification integrated with systems engineering. This session presents a Model Based Systems Engineering (MBSE) and formal methods workflow for devices that transforms textual requirements into executable models, augments software assurance with static code analysis for C/C++ and provides objective evidence of robustness.\n\nIn this talk, we will provide a live demonstration of capturing requirements and establishing end‑to‑end traceability, followed by model‑in‑the‑loop simulation to evaluate key what‑if scenarios. We will also show how formal‑methods‑based static analysis provides mathematically sound proofs to identify defects and security vulnerabilities that traditional testing may miss. In addition, we will demonstrate executing unit tests on target hardware and using formal analysis results to justify code‑coverage gaps in cases where specific logic paths are proven to be mathematically unreachable.","Affiliation":"INCOSE HealthCare Conference","SessionLength":30,"isMedtronic":false,"session_id":3,"uid":"s_3"},
-    {"day":"Tuesday 4/28","time":"4:00 PM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"Lessons Learned Over the Years Managing the Engineering Collective Consciousness","Authors":"Jason Sherey","Abstract":"This presentation shares my evolving journey coordinating decoupled engineering teams, each with unique styles, timelines, and quality systems. At first, I adopted a top-down strategy inspired by Copernicus’s solar system model—where one central vision guided all teams, orbiting around a common documentation process. This approach emphasized unified oversight and consistency but struggled to accommodate the diverse realities of each team.\n\nTransitioning to a more decentralized framework, I drew from Ptolemy’s model: instead of one central vision, each team was allowed its own unique viewpoint—much like individual observers interpreting the night sky. Coordination became limited, allowing teams to operate as they saw fit, contributing to the collective vision only as needed. This shift fostered greater autonomy and adaptability, but it revealed that success now relied heavily on each team's diligence and responsibility.\n\nTo ensure alignment, I am now invoking the trust-but-verify principle and Star Trek’s Borg collective concept—recognizing that, while teams can act independently, updating and maintaining the collective consciousness requires both trust in their contributions and mechanisms for verification. The presentation distills practical lessons in balancing autonomy with unity, inviting systems engineers to reconsider how classic models of coordination can shape modern engineering development processes.","Affiliation":"Eli Lilly and Company","SessionLength":"30m","isMedtronic":false,"session_id":62,"uid":"s_62"},
+    {"day":"Tuesday 4/28","time":"4:00 PM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"Lessons Learned Over the Years Managing the Engineering Collective Consciousness","Authors":"Jason Sherey","Abstract":"This presentation shares my evolving journey coordinating decoupled engineering teams, each with unique styles, timelines, and quality systems. At first, I adopted a top-down strategy inspired by Copernicus’s solar system model—where one central vision guided all teams, orbiting around a common documentation process. This approach emphasized unified oversight and consistency but struggled to accommodate the diverse realities of each team.\n\nTransitioning to a more decentralized framework, I drew from Ptolemy’s model: instead of one central vision, each team was allowed its own unique viewpoint—much like individual observers interpreting the night sky. Coordination became limited, allowing teams to operate as they saw fit, contributing to the collective vision only as needed. This shift fostered greater autonomy and adaptability, but it revealed that success now relied heavily on each team's diligence and responsibility.\n\nTo ensure alignment, I am now invoking the trust-but-verify principle and Star Trek’s Borg collective concept—recognizing that, while teams can act independently, updating and maintaining the collective consciousness requires both trust in their contributions and mechanisms for verification. The presentation distills practical lessons in balancing autonomy with unity, inviting systems engineers to reconsider how classic models of coordination can shape modern engineering development processes.","Affiliation":"Eli Lilly and Company","SessionLength":"60m","isMedtronic":false,"session_id":62,"uid":"s_62"},
     {"day":"Tuesday 4/28","time":"4:00 PM","room":"Salon C","type":"session","Track":"Healthcare Delivery","Title":"Using Systems Engineering to Model and Implement Behavioral Health Integration into Primary Care","Authors":"Inas Khayal","Abstract":"- Currently available clinical models of care for behavioral health have been developed at a very high level of abstraction, using the evidence base for individual diagnoses, with varying degrees of success in translating these models into routine practice.\n- In reality, individuals present to the healthcare system with co-occurring diagnoses.\n- An additive approach to individual evidence-bases becomes too complex and unwieldy to implement, especially when these clinical models lack detailed level descriptions.\n- Integrating and translating such a model across multiple evidence bases is the challenge and innovation of this work.\n- Much of the literature using systems engineering in healthcare delivery has mainly focused on mathematical analytical methods (e.g., discrete-event modeling) to evaluate and optimize patient flow through the system.\n- Engineering design methodologies and tools are used innovatively to accelerate progress in conceptualizing and developing integrated, translatable clinical models.\n- They are used for both the design (synthesis) and the evaluation (analysis) of the system model.\n\nSpecifically, engineering design methodology and system architecture provide rigorous design methods for developing the clinical model, while Model-Based Systems Engineering tools enable the development of a visual, multi-level, multi-detail clinical model.","Affiliation":"Wayne State University and Dartmouth College","SessionLength":"30m","isMedtronic":false,"session_id":38,"uid":"s_38"},
     {"day":"Tuesday 4/28","time":"4:00 PM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Usability & Human Factors in Medical Device Design & Development","Authors":"Mark Swanson","Abstract":"This session will provide the foundation needed to understand human factors (usability) in the application to medical device design and development.","Affiliation":"QRx Partners","SessionLength":"60m","isMedtronic":false,"session_id":51,"uid":"s_51"},
     {"day":"Tuesday 4/28","time":"4:30 PM","room":"Salon A","type":"session","Track":"Digital SE","Title":"Integration of Medical Cyber-Physical Systems to achieve interoperability in healthcare environments","Authors":"Esteban Solorzano Zeledon and Steve Simske","Abstract":"Medical Cyber-Physical Systems (MCPS) rely on complex integration to connect heterogeneous devices, yet teams frequently discover interoperability defects late in the lifecycle. Worse, they struggle to translate technical integration artifacts into the \"regulator-ready\" evidence required for submission. This research develops and evaluates a Minimal Methods Bundle, comprising Model-Based Systems Engineering (MBSE), structured safety cases, and a digital thread, to streamline this translation.\n\nWe present a regulator-informed \"evidence pipeline\" that maps common integration outputs, such as interface specifications and logs, directly to regulatory expectations including ISO 14971 and ISO 13485. Using a representative MCPS testbed, we compare this mapped pipeline against a traditional document-centric baseline. Our methodology includes blinded reviewer trials to quantify findability and ambiguity, followed by an A/B evaluation to measure the impact on rework and submission assembly effort.\n\nThe research delivers three key contributions:\n- (1) a validated \"inclusion list\" for regulatory packages; (2) reusable templates that transform technical contracts into defensible safety arguments; and (3) empirical data on how evidence mapping affects reviewer efficiency.\n- This research provides MCPS systems engineers with actionable guidance to reduce late-stage integration surprises and accelerate the creation of robust regulatory submissions.","Affiliation":"Boston Scientific & Colorado State University","SessionLength":"30m","isMedtronic":false,"session_id":20,"uid":"s_20"},
-    {"day":"Tuesday 4/28","time":"4:30 PM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"Lessons Learned Over the Years (Part 2)","Authors":"Jason Sherey","Abstract":"Continuation of the Lessons Learned session.","Affiliation":"Eli Lilly and Company","SessionLength":"30m","isMedtronic":false,"session_id":33,"uid":"s_33"},
     {"day":"Tuesday 4/28","time":"5:00 PM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"The Ralph Wiggum Loop: Why Persistence Can Outperform Intelligence","Authors":"Stephen Zielinski","Abstract":"- Hospital operating rooms (ORs) are complex healthcare systems where inefficiencies result from interactions between personnel and processes.\n- This systematic review evaluates the impact of LEAN project management interventions on OR efficiency by focusing on performance metrics of on-time case starts and turnover times.\n- We searched PubMed/MEDLINE, Embase, and Scopus for studies reporting quantitative OR efficiency outcomes pre/post-LEAN intervention.\n- The included studies showed that application of LEAN tools such as kaizen, stakeholder engagement, value stream mapping, and process maps resulted in improved OR efficiency through increased on-time case starts and reduced turnover times.\n- These findings indicate that there is quantitative evidence that demonstrates LEAN method’s potential to eliminate waste and optimize current processes of the hospital OR system.","Affiliation":"Clairio","SessionLength":"30m","isMedtronic":false,"session_id":91,"uid":"s_91"},
     {"day":"Tuesday 4/28","time":"5:00 PM","room":"Salon A","type":"session","Track":"Digital SE","Title":"How to Wrestle the Data Monster?","Authors":"Bernard Bechara and Jenna George","Abstract":"Data is pervasive within systems and grows at an accelerating pace. It is created within the system, imported from external systems, exported and transformed for analysis. As it evolves, data changes form and establishes relationships and dependencies. In this sense, data behaves less like a static asset and more like a living organism—sometimes even a monster—difficult to fully comprehend and control.\n\nData modeling and management techniques used to wrestle with this monster are focused on software aspects of data. This abstract presents a System Engineering perspective on designing and managing data as an integral part of the system. The goal of which is to ensure data can be consumed and translated into customer insights. Data should be treated as a system element, subject to the modeling rigor and discipline of Model Based Systems Engineering (MBSE) techniques.\n\n- The presentation will show how Block Definition Diagrams (bdd) can be used to model data, its attributes, and its relationships.\n- Data transformations—such as extract, transform, load (ETL) and create, read, update, delete (CRUD) operations—can be represented through Activity Diagrams.\n- Finally, data flows can be captured using Internal Block Diagrams (ibd).\n- By applying MBSE techniques, data models can be integrated with the system model, enabling a more holistic design.\n- In conclusion, System Engineers can apply their MBSE methodologies and effectively tame this data monster.","Affiliation":"Medtronic","SessionLength":"30m","isMedtronic":true,"session_id":33,"uid":"s_33b"},
     {"day":"Tuesday 4/28","time":"5:00 PM","room":"Salon C","type":"session","Track":"Healthcare Delivery","Title":"LEAN Methodology in Hospital Operating Rooms: A Systematic Review","Authors":"Donrey Acharon, Dylan Bagley, Andrew Barnish and Nicholas Vaccaro","Abstract":"- Hospital operating rooms (ORs) are complex healthcare systems where inefficiencies result from interactions between personnel and processes.\n- This systematic review evaluates the impact of LEAN project management interventions on OR efficiency by focusing on performance metrics of on-time case starts and turnover times.\n- We searched PubMed/MEDLINE, Embase, and Scopus for studies reporting quantitative OR efficiency outcomes pre/post-LEAN intervention.\n- The included studies showed that application of LEAN tools such as kaizen, stakeholder engagement, value stream mapping, and process maps resulted in improved OR efficiency through increased on-time case starts and reduced turnover times.\n- These findings indicate that there is quantitative evidence that demonstrates LEAN method’s potential to eliminate waste and optimize current processes of the hospital OR system.","Affiliation":"Rowan-Virtua School of Osteopathic Medicine","SessionLength":"30m","isMedtronic":false,"session_id":16,"uid":"s_16"},
-    {"day":"Tuesday 4/28","time":"5:00 PM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Hardware-in-the-Loop Testbed for Physiologic Closed-Loop Controlled Fluid Resuscitation Systems","Authors":"Ahmed Ramadan, Varun Kanal, Ramin Bighamian and Christopher Scully","Abstract":"Physiologic closed-loop controlled (PCLC) devices represent a complex system of integrated medical devices that can automate aspects of patient care. Non-clinical computational modeling and/or hardware-in-the-loop (HIL) testing of PCLC devices can accelerate medical device development.\n\n- We present and characterize a novel HIL testbed for PCLC fluid resuscitation systems.\n- An example PCLC fluid system includes a patient monitor, control algorithm that adjusts infusion rate based on pressure measurements, infusion pump, and data communication.\n- The HIL testbed simulates virtual patients using a mathematical model of the cardiovascular system that outputs pulse rate (PR) and mean arterial pressure (MAP) for blood pressure waveform generation with a pressure pulse generator to which a pressure sensor and patient monitor can be connected.\n- A scale is used to measure infusion rate (IR) as an input to the model.\n- Relevant disturbances and physiologic variability are incorporated.\n\nTo characterize the testbed, a command trajectory of steps and ramps spanned the range of IR, PR, and MAP. Differences between each command and its measured value determined errors, reported as root mean squared (RMS) and 95% confidence intervals (CI). Step IR had RMSE <5 mL/min (CI width ≤2 mL/min). The steepest ramp IR had the worst error (RMSE <10 and CI width <15 mL/min). PR errors were dominated by quantization (RMSE 4.3, CI: -3.8, 5.6 bpm). MAP had RMSE of 1.7 mmHg (CI: -1.2, 1.8 mmHg).","Affiliation":"FDA & The University of Texas at Arlington","SessionLength":"30m","isMedtronic":false,"session_id":36,"uid":"s_36"},
+    {"day":"Tuesday 4/28","time":"5:00 PM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Hardware-in-the-Loop Testbed for Physiologic Closed-Loop Controlled Fluid Resuscitation Systems","Authors":"Ahmed Ramadan, Varun Kanal, Ramin Bighamian and Christopher Scully","Abstract":"Physiologic closed-loop controlled (PCLC) devices represent a complex system of integrated medical devices that can automate aspects of patient care. Non-clinical computational modeling and/or hardware-in-the-loop (HIL) testing of PCLC devices can accelerate medical device development.\n\n- We present and characterize a novel HIL testbed for PCLC fluid resuscitation systems.\n- An example PCLC fluid system includes a patient monitor, control algorithm that adjusts infusion rate based on pressure measurements, infusion pump, and data communication.\n- The HIL testbed simulates virtual patients using a mathematical model of the cardiovascular system that outputs pulse rate (PR) and mean arterial pressure (MAP) for blood pressure waveform generation with a pressure pulse generator to which a pressure sensor and patient monitor can be connected.\n- A scale is used to measure infusion rate (IR) as an input to the model.\n- Relevant disturbances and physiologic variability are incorporated.\n\nTo characterize the testbed, a command trajectory of steps and ramps spanned the range of IR, PR, and MAP. Differences between each command and its measured value determined errors, reported as root mean squared (RMS) and 95% confidence intervals (CI). Step IR had RMSE <5 mL/min (CI width ≤2 mL/min). The steepest ramp IR had the worst error (RMSE <10 and CI width <15 mL/min). PR errors were dominated by quantization (RMSE 4.3, CI: -3.8, 5.6 bpm). MAP had RMSE of 1.7 mmHg (CI: -1.2, 1.8 mmHg).","Affiliation":"FDA & The University of Texas at Arlington","SessionLength":"30m","isMedtronic":false  ,"session_id":36,"uid":"s_36"},
     {"day":"Tuesday 4/28","time":"5:30 PM","room":"Grand Foyer","type":"session","Track":"General","Title":"INCOSE Northstar Chapter Reception / Happy Hour","session_id":704,"uid":"s_704"}
   ],
   "Wednesday 4/29": [
-    {"day":"Wednesday 4/29","time":"7:00 AM","room":"Grand Foyer","type":"event","Title":"Breakfast"},
+    {"day":"Wednesday 4/29","time":"7:00 AM","room":"Grand Foyer","type":"event","Title":"Breakfast","SessionLength":"60m"},
     {"day":"Wednesday 4/29","time":"8:00 AM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"General","Title":"Conference Kickoff & Introductions Day 2","session_id":701,"uid":"s_701"},
-    {"day":"Wednesday 4/29","time":"8:30 AM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"General","Title":"Keynote: AI and the Future of Systems Engineering - it's a Revolution","session_id":702,"uid":"s_702"},
+    {"day":"Wednesday 4/29","time":"8:30 AM","room":"Grand Ballroom - Salons A-D","type":"Keynote","Track":"General","Title":"AI and the Future of Systems Engineering - it's a Revolution","Authors":"Langdon Morris","Abstract":"Marc Andreessen famously declared that software is eating the world. Nowhere is that transformation more disruptive — or more promising — than in the traditionally hardware-dominated disciplines of mechanical and electrical engineering. Generative AI, combined with the explosive growth of Python-based engineering libraries, is quietly eroding the boundary between software and physical design.\n\nThis talk explores how LLMs paired with tools like SKiDL, KiCad scripting, CadQuery, and FreeCAD's Python API are enabling engineers to generate ASIC layouts, board-level schematics, and 3D mechanical geometries from high-level natural language specifications and parametric code. What once required deep specialist expertise and weeks of manual iteration can increasingly be scaffolded, drafted, and explored in hours — with AI acting as a knowledgeable co-designer that understands both the intent and the constraints.","Affiliation":"InnovationLabs","session_id":702,"uid":"s_702"},
     {"day":"Wednesday 4/29","time":"10:30 AM","room":"Oxford","type":"training","Track":"Training","Title":"QMSR 2026: Key Changes for Managing Risk Across the Product Lifecycle","Authors":"Sally Carter and Patrick Maxwell","Affiliation":"Cognition Corporation","SessionLength":"3h 30m","isMedtronic":false,"session_id":802,"uid":"s_802"},
     {"day":"Wednesday 4/29","time":"10:30 AM","room":"Bristol","type":"training","Track":"Training","Title":"SysML v2 Tutorial","Authors":"Chris Armstrong","Affiliation":"INCOSE","SessionLength":"3h 30m","isMedtronic":false,"session_id":803,"uid":"s_803"},
-    {"day":"Wednesday 4/29","time":"10:00 AM","room":"Grand Foyer","type":"break","Title":"Break"},
+    {"day":"Wednesday 4/29","time":"10:00 AM","room":"Grand Foyer","type":"break","Title":"Break","SessionLength":"30m"},
     {"day":"Wednesday 4/29","time":"10:30 AM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"The Year the Future Arrived: What Your Team Must Do - Now","Authors":"Stephen Zielinski","Abstract":"This presentation shares practical lessons learned from implementing a structured requirements management approach to address technical debt and traceability challenges within a healthcare systems engineering environment. It examines common failure modes in requirements traceability as systems scale, the downstream impact on verification, validation, and compliance activities, and how improved structure and governance increased visibility and control. Attendees will gain actionable insights for strengthening traceability practices while reducing long-term technical debt in complex systems.","Affiliation":"Clairio","SessionLength":"30m","isMedtronic":false,"session_id":54,"uid":"s_54"},
     {"day":"Wednesday 4/29","time":"10:30 AM","room":"Salon A","type":"session","Track":"Cybersecurity","Title":"Securing the System: Understanding How to Apply the FDA Cybersecurity Guidance","Authors":"Matthew Hazelett","Abstract":"Historically, submissions were focused on just the subject device seeking FDA authorization. The FDA Cybersecurity Guidance recommendations apply to the end-to-end \"medical device system.\" Evaluating cybersecurity across the system is important for surfacing relevant risks and identifying appropriate controls to incorporate in response. This session will discuss applying the FDA Cybersecurity Guidance across different types of systems to better prepare Systems Engineers for the considerations needed and documentation needed for submissions.","Affiliation":"MedSec","SessionLength":"60m","isMedtronic":false,"session_id":47,"uid":"s_47"},
     {"day":"Wednesday 4/29","time":"10:30 AM","room":"Salon B","type":"session","Track":"Combination Products","Title":"Entering the combination products space: What are they, how are they regulated, dos and don'ts for developers and supplier?","Authors":"John Weiner","Abstract":"- Integrating systems engineering into value-based and population health models offers a structured approach to managing complexity, improving outcomes, and controlling costs in healthcare delivery.\n- By applying principles such as systems thinking, process design, and performance optimization, risk-bearing entities can better coordinate care and manage ongoing, long-term patient needs.\n- This approach enables the intentional design of chronic disease care pathways, reduces unwarranted variation in clinical outcomes and spending, and strengthens population health workflows including attribution, stratification, and care gap management.\n- Additionally, well-defined system architectures and feedback loops support continuous quality improvement, data-driven decision-making, and scalable operations aligned with evolving reimbursement and accountability frameworks.\n- Ultimately, this integration enhances value-based care performance by improving quality metrics, lowering total cost of care, and supporting more predictable financial and clinical outcomes.","Affiliation":"Barr Consulting LLC","SessionLength":"60m","isMedtronic":false,"session_id":70,"uid":"s_70"},
@@ -948,25 +1008,25 @@ const data = {
     {"day":"Wednesday 4/29","time":"11:30 AM","room":"Salon B","type":"session","Track":"Combination Products","Title":"Product Quality Risk In Combination Product Development","Authors":"David Cronin","Abstract":"To minimize patient risk with a combination product, we must manage the intersection of drug and device risk during product development. This presentation provides an introduction to an overall Product Quality Risk Framework that incorporates risk from the device, the drug product, and the manufacturing of the drug product. As the combination product market grows, pressure grows on teams to manage the interaction of 14971 and Q9.","Affiliation":"Cognition Corporation","SessionLength":"30m","isMedtronic":false,"session_id":60,"uid":"s_60"},
     {"day":"Wednesday 4/29","time":"11:30 AM","room":"Salon C","type":"session","Track":"Digital SE","Title":"Choosing your own MBSE Adventure: SysML v1 and v2, and what they mean for you","Authors":"Jeff Seufer and Marissa Meyer","Abstract":"SysML V2 is a new language to implement Model Based Systems Engineering (MBSE). SysML v1.0 was introduced in 2007 and iterated up to the latest release of v1.7 in 2024. Throughout the constant development of the language, gaps were identified and limitations existed which did not align with the rapidly evolving Digital Engineering ecosystems across many industries.\n\nAttendees will be introduced to the fundamentals implemented in SysML v1 and the changes which are essential to SysML v2. This presentation will discuss the broadening of the language into textual plus graphical notations and how this will impact systems design of the future. After that, we will discuss the latest released specification and the implications of not only a standardized language, but also standard transformation from v1 to v2 and a standard API for enhanced tool integrations. Lastly, a brief demo will show the interface of CATIA Magic to demonstrate how both textual and graphical modeling are necessary when building in SysML v2.","Affiliation":"Dassault Systemes","SessionLength":"30m","isMedtronic":false,"session_id":11,"uid":"s_11"},
     {"day":"Wednesday 4/29","time":"11:30 AM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Shift-Left Success: Building It Right the First Time","Authors":"Kristen Swope and Vandhana Narayanan","Abstract":"With the increasing complexity of healthcare and medical device systems, the traditional practices of treating Design Validation as a late-stage activity may be costly and inefficient. Issues can arise such as delays in product launches, defects and complaints found from the field, and costly rework. This session dives into evolving this conventional mentality and introduces the concept of a Design Validation Driven V-model.\n\nThis presentation will showcase how early Design Validation planning and practices can lead to building the right product for the customer the first time. Real world examples and tools will be explored including early validation planning concepts such as a User Needs best practices framework, a Validation Planning Matrix, and early execution of dry run testing and labs with end users. Overall, attendees will gain actionable strategies to “shift left” and embed Design Validation earlier in the product development lifecycle.","Affiliation":"Stryker","SessionLength":"30m","isMedtronic":false,"session_id":52,"uid":"s_52"},
-    {"day":"Wednesday 4/29","time":"12:00 PM","room":"Grand Ballroom","type":"event","Title":"Lunch"},
+    {"day":"Wednesday 4/29","time":"12:00 PM","room":"Grand Ballroom","type":"event","Title":"Lunch","SessionLength":"60m"},
     {"day":"Wednesday 4/29","time":"1:00 PM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"De-mystifying the Hype: Distinguishing GenAI Opportunities from Process Automation in FDA Design Controls","Authors":"Sri Harsha Maramraju","Abstract":"As medical device manufacturers adopt Artificial Intelligence, confusion may emerge regarding the distinct roles of Generative AI (GenAI) and Process Automation. In the context of FDA Design Controls, misapplying these technologies creates compliance challenges. Using a Large Language Model to \"guess\" traceability links introduces probabilistic errors, whereas relying on rigid automation for requirements remediation misses the semantic capabilities of modern tools.\n\nThis presentation provides a strategic framework for Systems Engineering leaders to categorize modernization efforts. It distinguishes between \"Probabilistic\" tasks suitable for GenAI—focusing on semantic analysis and content classification—versus \"Deterministic\" tasks requiring automation to ensure the structural integrity and traceability of the Design History File (DHF).\n\nReal-world scenarios involving complex standard hierarchies, such as the IEC 60601 family, illustrate how a hybrid approach functions. The session offers a decision matrix for tool selection, helping teams architect a digital ecosystem that leverages the creativity of GenAI for classification and authoring while enforcing the integrity of Automation for the audit trail. This approach balances innovation with the rigor required for regulatory submissions, ensuring that efficiency does not compromise the objective evidence needed for clearance.","Affiliation":"Dexcom","SessionLength":"60m","isMedtronic":false,"session_id":10,"uid":"s_10"},
     {"day":"Wednesday 4/29","time":"1:00 PM","room":"Salon A","type":"session","Track":"Cybersecurity","Title":"Closing the Loop: Traceability Across Medical Device Cybersecurity Documentation","Authors":"Jacob Miller and Bo Lanham","Abstract":"Steve Zielinski, Justin Grammens, and TBD take questions.","Affiliation":"Bayer Radiology & MedSec","SessionLength":"60m","isMedtronic":false,"session_id":15,"uid":"s_15"},
     {"day":"Wednesday 4/29","time":"1:00 PM","room":"Salon B","type":"session","Track":"Combination Products","Title":"Breaking Free from Groundhog Day: Leveraging Platform Asset Libraries for Molecule-Agnostic Combination Product Design","Authors":"Joseph Rayes","Abstract":"Same test. Different molecule. Repeat. If your combination product development feels like Groundhog Day—proving the same device performance, reliving the same review meetings, having leverage conversations that never stick—you're not alone.\n\nAs portfolios scale, the program-by-program approach becomes a trap: redundant work, inconsistent rationale, and no coherent baseline. The challenge isn't efficiency; it's the absence of a systematic way to determine what can be leveraged versus what requires novel development. Without deliberate architecture, February 3rd never comes.\n\nThis session addresses both dimensions. Technically, the presenter shares early experiences building platform asset libraries spanning design inputs and outputs, establishing design spaces that allow programs to configure rather than recreate. Central is a decision framework: a structured method for answering \"can we leverage this?\" with explicit criteria rather than case-by-case judgment.\n\nOrganizationally, the session confronts the harder truth: technical architecture is the easy part. The real work is changing mental models, governance processes, and organizational habits—combating resistance, gaining alignment in committee-driven environments, and evolving governance to focus on what's truly different.\n\nThis work is maturing, and the session invites dialogue. Attendees will leave with questions to challenge their own Groundhog Day and a vision for February 3rd.","Affiliation":"INCOSE","SessionLength":"30m","isMedtronic":false,"session_id":43,"uid":"s_43"},
     {"day":"Wednesday 4/29","time":"1:00 PM","room":"Salon C","type":"session","Track":"Healthcare Delivery","Title":"First, Help the Human: How Fundamental Human Needs can be systematically integrated into healthcare","Authors":"Jennifer Russell and Sharon Hartzel","Abstract":"- The purpose of healthcare is to improve the lives of patients.\n- With the wide array of tasks, supporting tools, and technology that create a healthcare environment, it is easy to lose track of the human on the receiving end of the care.\n- The H9 Framework is a new process to specifically consider fundamental human needs.\n- Based on the nine Fundamental Human Needs defined in the 1990s, the H9 Framework provides a systematic way to evaluate how the needs are fulfilled within the scope of a project or service.\n- Based on current best practice for social planning, human needs integration, and systems engineering, the Framework provides a tangible way to integrate human-centered approaches into planning and daily activities.","Affiliation":"NSI Advisory Services and INCOSE Smart Cities and Great Plains Chapter","SessionLength":"60m","isMedtronic":false,"session_id":64,"uid":"s_64"},
     {"day":"Wednesday 4/29","time":"1:00 PM","room":"Salon D","type":"session","Track":"Digital SE","Title":"Same Taste, Fewer Calories - Tailoring Your MBSE Effort","Authors":"Casey Medina","Abstract":"Model‑Based Systems Engineering (MBSE) can greatly improve clarity, traceability, and risk management in medical device development, but many teams struggle to determine how much modeling is truly necessary. This presentation offers a practical approach for planning a right‑sized MBSE effort that aligns with regulatory expectations and organizational capabilities.\n\nAttendees will gain actionable guidance for deploying MBSE in medical device environments, including how to tailor SysML usage, avoid over‑modeling, and build a sustainable modeling practice that supports quality and development speed.","SessionLength":"60m","isMedtronic":false,"session_id":1,"uid":"s_1"},
     {"day":"Wednesday 4/29","time":"1:30 PM","room":"Salon B","type":"session","Track":"Combination Products","Title":"From Spreadsheets to Systems Models: Evaluating MBSE for Process Parameter Criticality Assessment in Allogeneic CAR-T Cell Therapy Development","Authors":"Kristina Carroll","Abstract":"ICH Q8(R2) defines a critical process parameter (CPP) as one whose variability impacts a critical quality attribute (CQA) and should be controlled to ensure product quality. ICH Q11 requires that criticality assessments be supported by risk assessments and experimental investigation. For allogeneic CAR-T cell therapies, each process parameter must be evaluated against multiple CQAs, assigned an impact rating, and linked to specific experimental results justifying that classification.\n\nCurrent industry practice relies on spreadsheet-based tools, creating significant vulnerabilities: fragile traceability between ratings and experimental data, poor version control, and rationale disconnected from assessments—making regulatory submissions difficult to defend.\n\nThis presentation evaluates applying Model-Based Systems Engineering using SysML to process parameter impact assessment. We examine whether MBSE tools can represent process parameters, CQAs, impact ratings, and linkages to experimental evidence while maintaining ICH-required traceability. The evaluation identifies where native SysML functionality suffices and where methodology development, profile extensions, or custom tooling may be necessary. Practical guidance will be provided for organizations seeking improved documentation rigor consistent with ICH Q8, Q9, and Q11.","Affiliation":"Studio SE. Ltd","SessionLength":"30m","isMedtronic":false,"session_id":31,"uid":"s_31"},
-    {"day":"Wednesday 4/29","time":"2:00 PM","room":"Grand Foyer","type":"break","Title":"Break"},
+    {"day":"Wednesday 4/29","time":"2:00 PM","room":"Grand Foyer","type":"break","Title":"Break","SessionLength":"30m"},
     {"day":"Wednesday 4/29","time":"2:30 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"Sponsor","Title":"Premier Sponsor Presentation: Jama","Abstract":null,"Affiliation":"Jama Software","SessionLength":"20m","isMedtronic":false,"session_id":904,"uid":"s_904"},
     {"day":"Wednesday 4/29","time":"2:50 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"Sponsor","Title":"Premier Sponsor Presentation: Cognition","Abstract":null,"Affiliation":"Cognition Corporation","SessionLength":"20m","isMedtronic":false,"session_id":905,"uid":"s_905"},
     {"day":"Wednesday 4/29","time":"3:10 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"Sponsor","Title":"Premier Sponsor Presentation: Ketryx","Abstract":null,"Affiliation":"Ketryx","SessionLength":"20m","isMedtronic":false,"session_id":906,"uid":"s_906"},
-    {"day":"Wednesday 4/29","time":"3:30 PM","room":"Grand Foyer","type":"break","Title":"Mini-Break"},
-    {"day":"Wednesday 4/29","time":"3:30 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"General","Title":"Unconference","SessionLength":"1h 45m","session_id":703,"uid":"s_703"},
+    {"day":"Wednesday 4/29","time":"3:30 PM","room":"Grand Foyer","type":"break","Title":"Mini-Break","SessionLength":"15m"},
+    {"day":"Wednesday 4/29","time":"3:45 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"General","Title":"Unconference","SessionLength":"1h 30m","session_id":703,"uid":"s_703"},
     {"day":"Wednesday 4/29","time":"4:00 PM","room":"Junior Ballroom","type":"session","Track":"Combination Products","Title":"Roundtable: Device-Drug Interactions: What Can Go Wrong","Authors":"David Cronin, Joseph Rayes, John Weiner and Thomas Bradley","Abstract":"- Currently available clinical models of care for behavioral health have been developed at a very high level of abstraction, using the evidence base for individual diagnoses, with varying degrees of success in translating these models into routine practice.\n- In reality, individuals present to the healthcare system with co-occurring diagnoses.\n- An additive approach to individual evidence-bases becomes too complex and unwieldy to implement, especially when these clinical models lack detailed level descriptions.\n- Integrating and translating such a model across multiple evidence bases is the challenge and innovation of this work.\n- Much of the literature using systems engineering in healthcare delivery has mainly focused on mathematical analytical methods (e.g., discrete-event modeling) to evaluate and optimize patient flow through the system.\n- Engineering design methodologies and tools are used innovatively to accelerate progress in conceptualizing and developing integrated, translatable clinical models.\n- They are used for both the design (synthesis) and the evaluation (analysis) of the system model.\n- Specifically, engineering design methodology and system architecture provide rigorous design methods for developing the clinical model, while Model-Based Systems Engineering tools enable the development of a visual, multi-level, multi-detail clinical model.","Affiliation":"Cognition Corporation, Eli Lilly and Company, and Barr Consulting","SessionLength":"60m","isMedtronic":false,"session_id":88,"uid":"s_88"},
     {"day":"Wednesday 4/29","time":"5:30 PM","room":"Grand Foyer","type":"session","Track":"General","Title":"JAMA Reception / Happy Hour","session_id":705,"uid":"s_705"},
     {"day":"Wednesday 4/29","time":"7:00 PM","room":"Junior Ballroom","type":"event","Title":"Banquet"}
   ],
   "Thursday 4/30": [
-    {"day":"Thursday 4/30","time":"7:00 AM","room":"Grand Foyer","type":"event","Title":"Breakfast"},
+    {"day":"Thursday 4/30","time":"7:00 AM","room":"Grand Foyer","type":"event","Title":"Breakfast","SessionLength":"60m"},
     {"day":"Thursday 4/30","time":"8:00 AM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"How AI is Helping Software to Eat the Worlds of Mechanical and Electrical Engineering","Authors":"Stephen Zielinski","Abstract":"- This roundtable explores how systems engineering principles—including systems thinking, process integration, human-centered design, and performance optimization—can be applied to bridge gaps between clinicians, technologists, and operational leaders.\n- By leveraging tools such as workflow mapping, system modeling, predictive analytics, and feedback loops, healthcare teams can identify failure points, reduce variation, and improve coordination across settings including primary care, specialty care, behavioral health, and population health programs.\n- Emphasis is placed on translating complex care pathways into integrated, scalable models that support real-time decision-making, interoperability, and longitudinal patient management.\n- This discussion highlights how integrated system design can reduce fragmentation, enhance patient and provider experience, and lower avoidable utilization and costs.\n- Participants—including systems engineers, nurses, physicians, IT professionals, and healthcare leaders—will examine real-world challenges in cross-functional collaboration and co-develop practical strategies to align governance, data infrastructure, and care processes within value-based and population health environments.","Affiliation":"Clairio","SessionLength":"30m","isMedtronic":false,"session_id":93,"uid":"s_93"},
     {"day":"Thursday 4/30","time":"8:00 AM","room":"Salon A","type":"session","Track":"Cybersecurity","Title":"Why Threat Modeling Fails in Medical Devices and How Systems Engineers Can Fix It","Authors":"Vince Nguyen","Abstract":"Medical Device Manufacturers are doing more threat modeling than ever before, yet the result of this activity often still fails to identify meaningful design weaknesses and provide actionable guidance to engineering teams on how to build security into their medical devices. In this talk, the presenter will use his years of first-hand experience as a professional medical device threat modeler, both as an engineer at a medical device manufacturer and as a consultant, to highlight the reasons why threat modeling fails. Some areas of failure that will be explored include limited visibility into off-the-shelf components purchased from suppliers, not performing the analysis at a deep enough level, lack of cross-functional communication and collaboration, and arbitrarily marking areas as out-of-scope. After discussing each of these issues, the presenter will provide actionable guidance to attendees on how they can avoid these mistakes and maximize the value of threat modeling in their organization.","Affiliation":"MedSec","SessionLength":"60m","isMedtronic":false,"session_id":14,"uid":"s_14"},
     {"day":"Thursday 4/30","time":"8:00 AM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"From Mission to Medical: Applying Defense Digital Strategies to Medical Ecosystems","Authors":"Eli Wilson and Suresh Narayanan","Abstract":"Healthcare systems have hit a complexity ceiling where paper-based engineering no longer ensures market access. Transitioning to digital is risky; Defense spent a decade learning that maturity requires more than hype—it demands synchronized methods, integrated tools, and cultural change.\n\nThis session provides a roadmap to skip these mistakes. We equip attendees with architectural patterns and inquiries to lead a digital transformation, focusing on these strategies:\n\n- Automate Regulatory Evidence: Structure the design history file (DHF) as a natural engineering byproduct rather than a manual burden.\n- Maintain Technical Flexibility: Apply modular design principles to ensure long-term interoperability and avoid total system redesigns.\n- Enrich Multidisciplinary Models: Integrate safety, cybersecurity, and reliability analyses directly into the system model to serve all data consumers.\n- Optimize the Care Continuum: Apply a system-of-systems lens for enterprise trade studies evaluating device impact on patient and hospital operations.\n- Learn the hallmarks of a simulation-ready organization and discover how to navigate the shift toward a mature, patient-centric digital future.","Affiliation":"STC, an Arcfield Company & SEaMSer Consulting, LLC","SessionLength":"60m","isMedtronic":false,"session_id":5,"uid":"s_5"},
@@ -978,7 +1038,7 @@ const data = {
     {"day":"Thursday 4/30","time":"9:00 AM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"Executable by Design: Computational Thinking for Speed and Scale in Systems Engineering","Authors":"Joshua Zehoski and Joseph Green","Abstract":"Systems engineering has long valued rigor in thinking, yet much of that rigor remains locked in static documents and manual processes punctuated by disjointed tools. Computational thinking - decomposing problems, formalizing intent, and structuring information for execution - creates a bridge from data and hypotheses to insight and action.\n\nApplying a computational thinking mindset coupled with the growing capabilities of Generative AI, MBSE, and Continuous Integration enables systems engineers to rapidly move from intent to SE task execution across the system development lifecycle.\n\nThis presentation will explore: how Generative AI acts as a force multiplier for turning computational thinking into executable code that shifts effort from document production to insight generation; the virtuous cycle of Model-Based Systems Engineering acting as both a driver and beneficiary of better structuring data for computation; and the skills and capabilities individuals and systems engineering organizations need to take advantage of this shift.\n\nThe result is systems engineering that is executable by design—faster, more scalable, and better aligned with the complexity of modern healthcare systems.","Affiliation":"Medtronic","SessionLength":"30m","isMedtronic":true,"session_id":42,"uid":"s_42"},
     {"day":"Thursday 4/30","time":"9:00 AM","room":"Salon C","type":"session","Track":"Healthcare Delivery","Title":"Integrating Systems Engineering into Value-Based Care and Population Health Payment and Healthcare Delivery Models","Authors":"Sharon Hartzel","Abstract":"- Integrating systems engineering into value-based and population health models offers a structured approach to managing complexity, improving outcomes, and controlling costs in healthcare delivery.\n- By applying principles such as systems thinking, process design, and performance optimization, risk-bearing entities can better coordinate care and manage ongoing, long-term patient needs.\n- This approach enables the intentional design of chronic disease care pathways, reduces unwarranted variation in clinical outcomes and spending, and strengthens population health workflows including attribution, stratification, and care gap management.\n- Additionally, well-defined system architectures and feedback loops support continuous quality improvement, data-driven decision-making, and scalable operations aligned with evolving reimbursement and accountability frameworks.\n- Ultimately, this integration enhances value-based care performance by improving quality metrics, lowering total cost of care, and supporting more predictable financial and clinical outcomes.","Affiliation":"NSI Advisory Services","SessionLength":"90m","isMedtronic":false,"session_id":66,"uid":"s_66"},
     {"day":"Thursday 4/30","time":"9:00 AM","room":"Salon D","type":"session","Track":"Reqs, Test & Risk","Title":"Rethinking Accuracy Evaluation in Surgical Robotics: A Systems-Engineering Framework for Verification Without Post-Operative Image Dependence","Authors":"Casey McBride","Abstract":"- Postoperative CT imaging is commonly used to evaluate accuracy in image dependent orthopedic robotic systems, but it carries significant drawbacks, including high cost, long processing times, metal artifacts, and limited ability to identify the sources of accuracy errors.\n- These constraints hinder requirements decomposition, complicate verification planning, and reduce traceability across tracking, registration, and execution subsystems.\n- Here we present a model based requirements and test architecture that separates accuracy into independent registration and execution domains, each verified through targeted test methods.\n- Representative requirement categories—such as registration transformation error, point to surface accuracy, implant placement tolerances, and tool tracking limits—illustrate how structured requirements and matching test strategies improve testability and fault isolation while reducing reliance on postoperative imaging.\n- The test architecture leverages benchtop methods and algorithm level verification to decouple subsystem evaluations, increasing diagnostic power and minimizing variability from anatomy or imaging artifacts.\n- This approach enhances traceability, enables earlier defect detection, and strengthens alignment between requirement intent and verification evidence.\n- The resulting framework shows how disciplined requirements decomposition and focused test strategies can improve system assurance in orthopedic robotics while reducing development burden.","Affiliation":"Smith & Nephew","SessionLength":"30m","isMedtronic":false,"session_id":35,"uid":"s_35"},
-    {"day":"Thursday 4/30","time":"9:30 AM","room":"Grand Foyer","type":"break","Title":"Break"},
+    {"day":"Thursday 4/30","time":"9:30 AM","room":"Grand Foyer","type":"break","Title":"Break","SessionLength":"30m"},
     {"day":"Thursday 4/30","time":"10:00 AM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"The Systems Engineering Agentic Cookbook","Authors":"Justin Grammens","Abstract":"AI-assisted development has accelerated how software is built, but many teams are finding that speed without structure leads to fragile systems, unclear intent, and loss of architectural discipline. Ad hoc “vibe coding” may work for isolated tasks, but it breaks down when applied to systems that require traceability, verification, and long-term evolution.\n\nThis session presents a practical, systems-first approach to AI-assisted engineering that integrates three complementary practices: specification-first development, product-minded engineering, and disciplined use of AI tools.\n\nDuring this session, attendees will see how a formalized framework, such as SpecKit, establishes clear system intent and constraints, enabling AI tools to operate within well-defined boundaries. The session demonstrates how product-minded engineering connects requirements to outcomes and how AI-assisted engineering accelerates implementation and iteration without compromising system rigor.\n\nRather than replacing systems engineering practices, this approach reinforces them. AI becomes a force multiplier when embedded in structured workflows that preserve architectural integrity, support traceability, and align with the full system lifecycle.\n\nThis talk is intended for systems engineers, technical managers, and architects seeking a repeatable model for integrating AI into modern systems engineering while maintaining control, clarity, and confidence in the systems they deliver.","Affiliation":"Lab651","SessionLength":"60m","isMedtronic":false,"session_id":50,"uid":"s_50"},
     {"day":"Thursday 4/30","time":"10:00 AM","room":"Salon A","type":"session","Track":"Cybersecurity","Title":"Cybersecurity Post-Market Analysis Monitoring System","Authors":"Gerald Rigdon","Abstract":"The Cybersecurity Post-Market Analysis Monitoring System (CPAMS) represents a composite approach to cybersecurity vulnerability monitoring and research, combining artificial intelligence and multi-source data integration to deliver threat intelligence. This paper presents a detailed analysis of the system’s architecture, methodology, and capabilities, with particular emphasis on its application to medical device cybersecurity post-market surveillance. CPAMS integrates data from the National Vulnerability Database (NVD) and Tavily web-based search, generates an Azure index, and utilizes both Embedding Models and Large Language Models (LLMs) for vulnerability discovery and identificati","Affiliation":"Boston Scientific","SessionLength":"30m","isMedtronic":false,"session_id":21,"uid":"s_21"},
     {"day":"Thursday 4/30","time":"10:00 AM","room":"Salon B","type":"session","Track":"Beyond the System","Title":"SE Lite for Concept Stage","Authors":"John Vantuno and Jason Sherey","Abstract":"Systems Engineering is commonly avoided in the concept stage of product development because it is considered to be a burdensome activity that will slow down the innovation effort. As a result, the scope of work is ill-defined, leading to a “finished” product passed off to the development team to commercialize, even though it doesn’t fulfil the real need of the stakeholders. The ideal situation would be to strike a balance between enough systems engineering to provide guidance, but not so much that the systems engineering work gets in the way. This presentation proposes a “Systems Engineering Lite” process that is the bare minimum necessary to fully define the problem space and design space, without slowing down the innovation effort.\n\nThis process was successfully piloted on a small project. This presentation steps through how the process was applied, the benefits of its use, and the lessons learned regarding how it could have been applied better. It then lists the things to do and, just as importantly, the things not to do in the concept phase. It finishes with suggestions for scalability and relationships to the Agile process.","Affiliation":"Crossroads Chapter","SessionLength":"30m","isMedtronic":false,"session_id":29,"uid":"s_29"},
@@ -988,11 +1048,12 @@ const data = {
     {"day":"Thursday 4/30","time":"10:30 AM","room":"Salon C","type":"session","Track":"Healthcare Delivery","Title":"PANEL: From Silos to Systems - Engineering Integrated Care Delivery","Authors":"Sharon Hartzel","Abstract":"- This roundtable explores how systems engineering principles—including systems thinking, process integration, human-centered design, and performance optimization—can be applied to bridge gaps between clinicians, technologists, and operational leaders.\n- By leveraging tools such as workflow mapping, system modeling, predictive analytics, and feedback loops, healthcare teams can identify failure points, reduce variation, and improve coordination across settings including primary care, specialty care, behavioral health, and population health programs.\n- Emphasis is placed on translating complex care pathways into integrated, scalable models that support real-time decision-making, interoperability, and longitudinal patient management.\n- This discussion highlights how integrated system design can reduce fragmentation, enhance patient and provider experience, and lower avoidable utilization and costs.\n- Participants—including systems engineers, nurses, physicians, IT professionals, and healthcare leaders—will examine real-world challenges in cross-functional collaboration and co-develop practical strategies to align governance, data infrastructure, and care processes within value-based and population health environments.","SessionLength":"60m","isMedtronic":false,"session_id":65,"uid":"s_65"},
     {"day":"Thursday 4/30","time":"10:30 AM","room":"Salon D","type":"session","Track":"Other","Title":"ASK AN EXPERT: Answering your toughest questions","Authors":"Christopher Unger, Mike Celentano, John Vantuno and Joseph Green","Abstract":"This session will provide the foundation needed to understand human factors (usability) in the application to medical device design and development.","Affiliation":"Practical SE, LLC and GE Healthcare & INCOSE & Eli Lilly & Medtronic","SessionLength":"60m","isMedtronic":true,"session_id":53,"uid":"s_53"},
     {"day":"Thursday 4/30","time":"11:00 AM","room":"Junior Ballroom","type":"session","Track":"AI/ML","Title":"AI Panel Discussion","Authors":"Stephen Zielinski and Justin Grammens","Abstract":null,"Affiliation":"Clairio","SessionLength":"30m","isMedtronic":false,"session_id":68,"uid":"s_68"},
-    {"day":"Thursday 4/30","time":"11:30 AM","room":"Grand Ballroom","type":"event","Title":"Lunch"}
+    {"day":"Thursday 4/30","time":"11:30 AM","room":"Grand Ballroom","type":"event","Title":"Lunch","SessionLength":"60m"}
   ]
 };
 
 const trackColors = {
+    "general": "#b7bec8",
     "sponsor": "#42c5f5",
     "training": "#f542e3",
     "ai/ml": "#FF2A54",
@@ -1005,6 +1066,8 @@ const trackColors = {
     "combination products": "#00C853",
     "digital se": "#00BFA5"
 };
+
+const KEYNOTE_COLOR = '#5C8DFF';
 
 // ─── ROOM ORDER (consistent columns) ───
 const ROOM_ORDER = [
@@ -1045,6 +1108,15 @@ function getTrackColor(trackName) {
         if (trackName.toLowerCase().includes(k)) return trackColors[k];
     }
     return '#9AA0A6';
+}
+
+function isKeynoteSession(session) {
+    return (session?.type || '').toLowerCase() === 'keynote';
+}
+
+function getSessionAccentColor(session, fallbackTrackName = '') {
+    if (isKeynoteSession(session)) return KEYNOTE_COLOR;
+    return getTrackColor(fallbackTrackName || session?.Track || session?.type || '');
 }
 
 function getRoomsForDay(day) {
@@ -1097,15 +1169,23 @@ function getDefaultDurationMinutes(dayTimes, session) {
     return Math.max(SLOT_MINUTES, parseClockMinutes(nextTime) - startMinutes);
 }
 
+function getExplicitDurationMinutes(session) {
+    return (
+        parseDurationMinutes(session.DurationMinutes) ||
+        parseDurationMinutes(session.Duration) ||
+        parseDurationMinutes(session.SessionLength)
+    );
+}
+
 function getSessionDurationMinutes(dayTimes, session) {
-    return parseDurationMinutes(session.SessionLength) || getDefaultDurationMinutes(dayTimes, session);
+    return getExplicitDurationMinutes(session) || getDefaultDurationMinutes(dayTimes, session);
 }
 
 function getBreakDisplayTitle(session) {
     const baseTitle = String(session.Title || 'Break').trim() || 'Break';
     const daySessions = data[session.day] || [];
     const dayTimes = daySessions.map(s => s.time);
-    const durationMinutes = getSessionDurationMinutes(dayTimes.length ? dayTimes : [session.time], session);
+    const durationMinutes = getExplicitDurationMinutes(session) || getSessionDurationMinutes(dayTimes.length ? dayTimes : [session.time], session);
     return `${durationMinutes}-minute ${baseTitle}`;
 }
 
@@ -1114,9 +1194,15 @@ function isBreakStyleEvent(session) {
     return session.type === 'break' || /\bbreakfast\b|\blunch\b|\bbreak\b/.test(title);
 }
 
+function isMealStyleEvent(session) {
+    const title = (session.Title || '').toLowerCase();
+    return /\bbreakfast\b|\blunch\b/.test(title);
+}
+
 function isSessionStyleEvent(session) {
     const title = (session.Title || '').toLowerCase();
-    return session.type === 'event' && (/\bconference kickoff\b/.test(title) || /\bkeynote\b/.test(title));
+    const typeLower = (session.type || '').toLowerCase();
+    return typeLower === 'keynote' || (typeLower === 'event' && /\bconference kickoff\b/.test(title));
 }
 
 function isGlobalOverlayEvent(session) {
@@ -1183,8 +1269,20 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function formatTransferStatement(rawText) {
+    let formatted = escapeHtml(rawText || '');
+    formatted = formatted.replace(
+        /\bAt\s+([0-9]{1,2}:[0-9]{2}\s*[ap](?:m)?)\b/gi,
+        (match, timeText) => `<strong>At ${timeText}</strong>`
+    );
+    formatted = formatted.replace(/\bimmediately\b/gi, '<strong>$&</strong>');
+    formatted = formatted.replace(/\bto\s+([^<]+)$/i, 'to <strong>$1</strong>');
+    return formatted;
+}
+
 function buildDetailsHtml(session) {
-    const trackColor = getTrackColor(session.Track);
+    const trackColor = getSessionAccentColor(session, session.Track);
+    const trackLabel = isKeynoteSession(session) ? 'Keynote' : (session.Track || session.type || 'Session');
     const meta = [];
     const abstractText = String(session.Abstract || '').trim();
     const hasAbstract = abstractText && abstractText.toLowerCase() !== 'nan';
@@ -1196,7 +1294,7 @@ function buildDetailsHtml(session) {
 
     return `
         <button class="details-close" type="button" aria-label="Close details">×</button>
-        <div class="details-track" style="color: ${trackColor};">${escapeHtml(session.Track || session.type || 'Session')}</div>
+        <div class="details-track" style="color: ${trackColor};">${escapeHtml(trackLabel)}</div>
         <div class="details-title">${escapeHtml(session.Title || 'Session details')}</div>
         <div class="details-scroll-wrap">
             <div class="details-scroll">
@@ -1570,7 +1668,7 @@ function renderDesktopDayGrid(day, container) {
             card.dataset.title = (session.Title || '').toLowerCase();
             const lineEl = document.createElement('div');
             lineEl.className = 'break-col-line';
-            lineEl.textContent = getBreakDisplayTitle(session);
+            lineEl.textContent = isMealStyleEvent(session) ? (session.Title || '') : getBreakDisplayTitle(session);
             card.appendChild(lineEl);
             wrap.appendChild(card);
             grid.appendChild(wrap);
@@ -1644,7 +1742,7 @@ function renderStarredView(container) {
 
         const indicator = document.createElement('div');
         indicator.className = 'transfer-indicator';
-        indicator.textContent = transferInfo.text;
+        indicator.innerHTML = formatTransferStatement(transferInfo.text);
 
         row.appendChild(indicator);
         return row;
@@ -1708,7 +1806,7 @@ function renderStarredView(container) {
             if (!hasGap) {
                 if (isOverlap) {
                     // Overlapping talks — show the time to leave
-                    transferText = `Transfer mid-session to ${next.room || 'next room'} at ${formatTime(next.time)}`;
+                    transferText = `At ${formatTime(next.time)}, transfer mid-session to ${next.room || 'next room'}`;
                 } else {
                     // Back-to-back talks (next starts when current ends)
                     transferText = `Transfer to ${next.room || 'next room'}`;
@@ -1735,7 +1833,9 @@ function renderStarredView(container) {
                     const t = (betweenMeal.Title || '').toLowerCase();
                     breakLabel = t.includes('lunch') ? 'Lunch' : 'Breakfast';
                 }
-                if (breakLabel === 'break') {
+                if (!roomChanged && betweenBreaks.length === 0) {
+                    transferText = `After ${gapLabel} gap, return to ${next.room || 'same room'}`;
+                } else if (breakLabel === 'break') {
                     transferText = isImmediateAfterBreak
                         ? `Transfer immediately after break to ${next.room || 'next room'}`
                         : `Transfer after ${gapLabel} gap to ${next.room || 'next room'}`;
@@ -1866,16 +1966,20 @@ function createSessionCard(s, showRoom) {
     card.dataset.track = (s.Track || '').toLowerCase();
     card.dataset.title = (s.Title || '').toLowerCase();
     card.dataset.authors = (s.Authors || '').toLowerCase();
+    if (isKeynoteSession(s)) card.dataset.special = 'keynote';
     
-    const trackLabel = s.Track || (isSessionStyleEvent(s) ? 'General' : '');
-    const tColor = getTrackColor(trackLabel);
+    const trackLabel = isKeynoteSession(s) ? 'Keynote' : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
+    const tColor = getSessionAccentColor(s, trackLabel);
     const isStarred = starredSessions.includes(s.uid);
+    const isDesktopInlineKeynote = isKeynoteSession(s) && !showRoom && currentView !== 'starred';
     const hasDetails = Boolean(s.Abstract || s.Authors || s.Affiliation || s.room);
     const isWideTitle = s.room === 'Grand Ballroom - Salons A-D' || trackLabel.toLowerCase().includes('sponsor');
     const authorsText = (s.Authors && s.Authors !== 'nan') ? s.Authors : '';
+    const abstractText = (s.Abstract && String(s.Abstract).toLowerCase() !== 'nan') ? String(s.Abstract).trim() : '';
     const durationText = (s.SessionLength && s.SessionLength !== 'nan') ? String(s.SessionLength) : '';
     if (hasDetails) card.classList.add('has-details');
     if (isWideTitle) card.classList.add('wide-title-card');
+    if (isDesktopInlineKeynote && abstractText) card.classList.add('has-inline-keynote-abstract');
     
     // Track stripe
     const stripe = document.createElement('div');
@@ -1915,6 +2019,13 @@ function createSessionCard(s, showRoom) {
     title.dataset.fullTitle = s.Title || '';
     title.textContent = s.Title;
     card.appendChild(title);
+
+    if (isDesktopInlineKeynote && abstractText) {
+        const abstract = document.createElement('div');
+        abstract.className = 'keynote-abstract';
+        abstract.textContent = abstractText;
+        card.appendChild(abstract);
+    }
     
     if (authorsText || durationText) {
         const bottom = document.createElement('div');
@@ -1945,12 +2056,15 @@ function createSessionCard(s, showRoom) {
 // ─── FILTERS ───
 function applyFilters() {
     searchQuery = document.getElementById('searchBar').value.toLowerCase().trim();
+    const isDesktopTimeline = currentView !== 'starred' && window.innerWidth > MOBILE_BREAKPOINT;
+    const shouldFadeTrackMismatches = isDesktopTimeline && activeTrackFilters.size > 0;
     
     document.querySelectorAll('.session-card, .event-card').forEach(card => {
         const track = card.dataset.track || '';
+        const isKeynoteSpecial = card.dataset.special === 'keynote';
         const text = (card.dataset.title || '') + ' ' + (card.dataset.authors || '') + ' ' + track;
         
-        const trackOk = activeTrackFilters.size === 0 || activeTrackFilters.has(
+        const trackOk = isKeynoteSpecial || activeTrackFilters.size === 0 || activeTrackFilters.has(
             [...activeTrackFilters].find(f => f.toLowerCase() === track) || ''
         ) || activeTrackFilters.has(
             [...Object.keys(trackColors)].find(k => track.includes(k))
@@ -1962,7 +2076,23 @@ function applyFilters() {
 
         const visibleDisplay = getVisibleDisplay(card);
         const target = card.closest('.schedule-item, .mobile-card-wrap') || card;
-        target.style.display = (trackOk && searchOk) ? visibleDisplay : 'none';
+
+        if (!searchOk) {
+            target.style.display = 'none';
+            target.classList.remove('track-faded');
+            return;
+        }
+
+        target.style.display = visibleDisplay;
+
+        if (shouldFadeTrackMismatches) {
+            target.classList.toggle('track-faded', !trackOk);
+        } else {
+            target.classList.remove('track-faded');
+            if (!trackOk) {
+                target.style.display = 'none';
+            }
+        }
     });
 
     document.querySelectorAll('.mobile-time-group, .time-row').forEach(row => {
