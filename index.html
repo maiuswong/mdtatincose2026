@@ -1650,13 +1650,6 @@ function updateAdaptiveTopbarMode() {
     const bodyEl = document.body;
     if (!bodyEl) return false;
 
-    // Let the dedicated mobile CSS own the top bar on small screens.
-    if (getEffectiveViewportWidth() <= MOBILE_BREAKPOINT) {
-        const changed = bodyEl.classList.contains('topbar-compact');
-        bodyEl.classList.remove('topbar-compact');
-        return changed;
-    }
-
     const headerEl = document.querySelector('header');
     const titleEl = headerEl?.querySelector('h1');
     const headerRightEl = headerEl?.querySelector('.header-right');
