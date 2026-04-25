@@ -3455,7 +3455,7 @@ function switchDay(viewId, btn) {
     renderSchedule();
 }
 
-function applyMobileLayout(skipTopbarModeCheck = false) {
+function applyMobileLayout(skipTopbarModeCheck = false, skipViewportModeRerender = false) {
     const viewportMode = getViewportMode();
     const isMobile = viewportMode === 'mobile';
 
@@ -3521,7 +3521,7 @@ function applyMobileLayout(skipTopbarModeCheck = false) {
         closeSessionDetails();
     }
 
-    if (viewportMode !== lastViewportMode) {
+    if (!skipViewportModeRerender && viewportMode !== lastViewportMode) {
         lastViewportMode = viewportMode;
         renderSchedule();
         return;
@@ -3531,7 +3531,7 @@ function applyMobileLayout(skipTopbarModeCheck = false) {
 }
 
 function applyScrollLayout() {
-    applyMobileLayout(true);
+    applyMobileLayout(true, true);
 }
 
 let viewportRefreshQueued = false;
