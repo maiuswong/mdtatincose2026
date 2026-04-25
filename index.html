@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>INCOSE HWGC 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -213,7 +213,12 @@
 
         /* ─── GRID WRAPPER ─── */
         .grid-outer {
-            padding: calc(var(--filters-height) + clamp(6px, 1.2vw, 12px)) 0 0;
+            padding: var(--filters-height) 0 0;
+            transition: padding-top 0.16s ease;
+        }
+
+        .grid-outer.scroll-indicator-active {
+            padding-top: calc(var(--filters-height) + 28px);
         }
 
         .schedule-shell {
@@ -1251,12 +1256,203 @@
             border-radius: 50%;
             background: var(--medtronic-blue);
         }
+
+        .scroll-indicator-row {
+            position: sticky;
+            top: 0;
+            z-index: 195;
+            isolation: isolate;
+            height: 0;
+            overflow: visible;
+            padding: 0;
+            pointer-events: none;
+            background: transparent;
+            opacity: 0;
+            transition: opacity 0.16s ease;
+        }
+
+        .scroll-indicator-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scroll-indicator-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 36px;
+            background: transparent;
+            z-index: 1;
+        }
+
+        .scroll-indicator-row.is-starred::before {
+            /* My Schedule: right side is empty so full width is fine */
+            width: 100%;
+            background: var(--bg);
+            height: 36px;
+        }
+
+        .scroll-date-time-indicator {
+            position: relative;
+            z-index: 2;
+        }
+
+        .scroll-indicator-row.active {
+            background: transparent;
+            opacity: 1;
+        }
+
+        .scroll-indicator-row.starred-floating {
+            position: fixed;
+            left: 0;
+            right: 0;
+            height: auto;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 210;
+            opacity: 1;
+        }
+
+        .scroll-indicator-day-label {
+            display: none;
+            position: relative;
+            z-index: 2;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Google Sans', sans-serif;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .scroll-indicator-row.active .scroll-indicator-day-label.show {
+            display: inline;
+        }
+
+        .scroll-date-time-indicator {
+            display: inline-block;
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+            width: var(--time-col-width);
+            max-width: var(--time-col-width);
+            padding: 4px 8px 4px 0;
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-align: right;
+            transform: translateY(-4px);
+        }
+
+        .scroll-date-time-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-date-time-indicator.starred-floating-pill {
+            width: 208px;
+            max-width: 208px;
+            padding: 8px 12px;
+            margin-top: 2px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(31, 37, 48, 0.96), rgba(16, 20, 28, 0.94));
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 8px 20px rgba(9, 12, 18, 0.34), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+            backdrop-filter: blur(6px);
+            color: #ffffff;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.015em;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+        }
+
+        .scroll-date-time-indicator.starred-floating-pill.show {
+            transform: none;
+        }
+
+        .scroll-date-time-indicator.starred-floating-pill .scroll-indicator-time-wrap {
+            height: 16px;
+            line-height: 16px;
+        }
+
+        .scroll-indicator-time-wrap {
+            position: relative;
+            display: block;
+            height: 14px;
+            line-height: 14px;
+            overflow: hidden;
+        }
+
+        .scroll-date-time-indicator.two-line .scroll-indicator-time-wrap {
+            height: auto;
+            line-height: 1.15;
+            overflow: visible;
+        }
+
+        .scroll-date-time-indicator.two-line {
+            width: var(--time-col-width);
+            max-width: var(--time-col-width);
+            padding: 4px 8px 4px 0;
+            font-family: 'Google Sans', sans-serif;
+            letter-spacing: 0.03em;
+        }
+
+        .scroll-date-time-indicator.two-line .scroll-indicator-time {
+            white-space: pre-line;
+            display: block;
+            width: 100%;
+            text-align: right;
+            line-height: 1.1;
+        }
+
+        .scroll-indicator-time {
+            display: block;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .scroll-indicator-time.current {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .scroll-indicator-time.next {
+            position: absolute;
+            inset: 0;
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        .scroll-date-time-indicator.time-push .scroll-indicator-time.current {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .scroll-date-time-indicator.time-push .scroll-indicator-time.next {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>INCOSE Healthcare 2026</h1>
+    <h1>INCOSE SE in Healthcare 2026</h1>
     <div class="header-right">
         <div class="tabs" id="dayTabs"></div>
         <input type="text" id="searchBar" placeholder="Search sessions..." oninput="applyFilters()">
@@ -1264,6 +1460,16 @@
 </header>
 
 <div class="track-filters" id="trackFilters"></div>
+<div class="scroll-indicator-row" id="scrollIndicatorRow" aria-hidden="true">
+    <div class="scroll-indicator-inner" id="scrollIndicatorInner">
+        <div class="scroll-date-time-indicator" id="scrollDateTimeIndicator">
+            <span class="scroll-indicator-time-wrap">
+                <span class="scroll-indicator-time current"></span>
+            </span>
+        </div>
+        <span class="scroll-indicator-day-label" id="scrollIndicatorDayLabel"></span>
+    </div>
+</div>
 
 <div class="grid-outer" id="gridOuter">
     <div id="scheduleContainer"></div>
@@ -1414,6 +1620,14 @@ let lastViewportMode = getViewportMode();
 
 const detailsBackdrop = document.getElementById('detailsBackdrop');
 const detailsPanel = document.getElementById('detailsPanel');
+const scrollIndicatorRow = document.getElementById('scrollIndicatorRow');
+const scrollDateTimeIndicator = document.getElementById('scrollDateTimeIndicator');
+const scrollIndicatorDayLabel = document.getElementById('scrollIndicatorDayLabel');
+let scrollIndicatorRafPending = false;
+let scrollIndicatorCurrentLabel = '';
+let scrollIndicatorTimeAnimating = false;
+let scrollIndicatorPendingTime = null;
+let scrollIndicatorAnimationToken = 0;
 
 function getViewportMode() {
     const width = getEffectiveViewportWidth();
@@ -1803,7 +2017,12 @@ function renderTrackFilters() {
     const container = document.getElementById('trackFilters');
     container.innerHTML = '';
     
-    if (currentView === 'starred') return;
+    if (currentView === 'starred') {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = '';
 
     const isSearchActive = ((document.getElementById('searchBar')?.value || '').trim() !== '');
 
@@ -1814,7 +2033,10 @@ function renderTrackFilters() {
     const uniqueTracks = [...new Set(tracks)]
         .filter(track => String(track).trim().toLowerCase() !== 'general')
         .sort();
-    if (uniqueTracks.length === 0) return;
+    if (uniqueTracks.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
 
     const label = document.createElement('span');
     label.className = 'filter-label';
@@ -1889,6 +2111,7 @@ function renderSchedule() {
         renderStarredView(container);
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
+        requestAnimationFrame(updateScrollDateTimeIndicator);
         return;
     }
 
@@ -1903,6 +2126,7 @@ function renderSchedule() {
         }
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
+        requestAnimationFrame(updateScrollDateTimeIndicator);
         return;
     }
 
@@ -1919,6 +2143,7 @@ function renderSchedule() {
     }
     applyMobileLayout();
     requestAnimationFrame(updateSessionTitleLayout);
+    requestAnimationFrame(updateScrollDateTimeIndicator);
 }
 
 function renderDesktopDayGrid(day, container) {
@@ -2318,6 +2543,8 @@ function renderMobileDayList(day, container) {
     sortedTimes.forEach(time => {
         const group = document.createElement('div');
         group.className = 'mobile-time-group';
+        group.dataset.day = day;
+        group.dataset.time = time;
 
         const label = document.createElement('div');
         label.className = 'time-col'; 
@@ -2375,6 +2602,7 @@ function renderGlobalSearchResults(container) {
 
         const heading = document.createElement('div');
         heading.className = 'day-heading';
+        heading.dataset.day = day;
         heading.textContent = day;
         container.appendChild(heading);
 
@@ -2393,6 +2621,8 @@ function renderGlobalSearchResults(container) {
             if (isMobile) {
                 const group = document.createElement('div');
                 group.className = 'mobile-time-group';
+                group.dataset.day = day;
+                group.dataset.time = time;
 
                 const label = document.createElement('div');
                 label.className = 'time-col';
@@ -2422,6 +2652,8 @@ function renderGlobalSearchResults(container) {
             row.className = 'time-row';
             row.style.gridTemplateColumns = '64px 1fr';
             row.style.width = '100%';
+            row.dataset.day = day;
+            row.dataset.time = time;
 
             const tCol = document.createElement('div');
             tCol.className = 'time-col';
@@ -2582,6 +2814,7 @@ function renderStarredView(container) {
         
         const heading = document.createElement('div');
         heading.className = 'day-heading';
+        heading.dataset.day = day;
         heading.textContent = day;
         container.appendChild(heading);
         
@@ -2594,6 +2827,8 @@ function renderStarredView(container) {
             if (isMobile) {
                 const group = document.createElement('div');
                 group.className = 'mobile-time-group';
+                group.dataset.day = day;
+                group.dataset.time = time;
 
                 const label = document.createElement('div');
                 label.className = 'time-col';
@@ -2626,6 +2861,8 @@ function renderStarredView(container) {
             const row = document.createElement('div');
             row.className = 'time-row';
             row.style.gridTemplateColumns = `64px 1fr`;
+            row.dataset.day = day;
+            row.dataset.time = time;
 
             const tCol = document.createElement('div');
             tCol.className = 'time-col';
@@ -2885,6 +3122,268 @@ function applyFilters() {
         });
         el.style.opacity = hasVisible || !searchQuery ? '1' : '0.28';
     });
+
+    updateScrollDateTimeIndicator();
+}
+
+function updateScrollDateTimeIndicator() {
+    if (!scrollDateTimeIndicator || !scrollIndicatorRow) return;
+    const gridOuter = document.getElementById('gridOuter');
+
+    const hideDayLabel = () => {
+        if (scrollIndicatorDayLabel) scrollIndicatorDayLabel.classList.remove('show');
+    };
+
+    const resetScrollIndicatorAnimationState = () => {
+        scrollIndicatorAnimationToken += 1;
+        scrollDateTimeIndicator.classList.remove('time-push');
+        const wrap = scrollDateTimeIndicator.querySelector('.scroll-indicator-time-wrap');
+        if (wrap) {
+            wrap.querySelectorAll('.scroll-indicator-time.next').forEach(el => el.remove());
+        }
+        scrollIndicatorTimeAnimating = false;
+        scrollIndicatorPendingTime = null;
+    };
+
+    const enabled = isMobileLayoutViewport() || currentView === 'starred';
+    if (!enabled) {
+        scrollDateTimeIndicator.classList.remove('show');
+        scrollIndicatorRow.classList.remove('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        hideDayLabel();
+        resetScrollIndicatorAnimationState();
+        scrollIndicatorRow.style.top = '';
+        return;
+    }
+
+    const pageScrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    if (pageScrollTop <= 4) {
+        scrollDateTimeIndicator.classList.remove('show');
+        scrollIndicatorRow.classList.remove('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        hideDayLabel();
+        resetScrollIndicatorAnimationState();
+        return;
+    }
+
+    const headerRect = document.querySelector('header')?.getBoundingClientRect();
+    const filtersEl = document.getElementById('trackFilters');
+    const filtersRect = filtersEl?.getBoundingClientRect();
+    const filtersVisible = !!(filtersEl && filtersEl.childElementCount > 0 && filtersRect && filtersRect.height > 0);
+    const stickyTop = Math.max(
+        0,
+        filtersVisible
+            ? Math.round(filtersRect.bottom)
+            : (headerRect ? Math.max(0, Math.round(headerRect.height) - 1) : 8)
+    );
+    const isStarredView = currentView === 'starred';
+    scrollIndicatorRow.classList.remove('starred-floating');
+    scrollDateTimeIndicator.classList.remove('starred-floating-pill');
+    scrollIndicatorRow.classList.toggle('is-starred', isStarredView);
+    scrollIndicatorRow.style.top = `${stickyTop}px`;
+    // topAnchor: switch when a time row's top crosses the sticky zone boundary.
+    // Using stickyTop directly is the most accurate — it's where the header/filter
+    // ends and the sticky overlay begins, regardless of pill or indicator height.
+    const topAnchor = stickyTop;
+    const dayAnchor = stickyTop;
+
+    const container = document.getElementById('scheduleContainer');
+    if (!container) {
+        scrollDateTimeIndicator.classList.remove('show');
+        scrollIndicatorRow.classList.remove('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        hideDayLabel();
+        resetScrollIndicatorAnimationState();
+        return;
+    }
+
+    const dayHeadings = [...container.querySelectorAll('.day-heading[data-day]')]
+        .filter(el => el.style.display !== 'none');
+    let activeDay = '';
+    if (dayHeadings.length > 0) {
+        const dayHeadingTextOffset = isStarredView
+            ? Math.round(parseFloat(window.getComputedStyle(dayHeadings[0]).paddingTop || '0'))
+            : 0;
+        const passedHeading = dayHeadings
+            .filter(el => (el.getBoundingClientRect().top + dayHeadingTextOffset) <= dayAnchor)
+            .pop();
+        if (!passedHeading) {
+            scrollDateTimeIndicator.classList.remove('show');
+            scrollIndicatorRow.classList.remove('active');
+            gridOuter?.classList.remove('scroll-indicator-active');
+            hideDayLabel();
+            resetScrollIndicatorAnimationState();
+            return;
+        }
+        activeDay = (passedHeading.dataset.day || passedHeading.textContent || '').trim();
+    }
+
+    const candidates = [...container.querySelectorAll('.mobile-time-group[data-day][data-time], .time-row[data-day][data-time]')]
+        .filter(el => el.style.display !== 'none')
+        .filter(el => !activeDay || (el.dataset.day || '').trim() === activeDay);
+    if (candidates.length === 0) {
+        scrollDateTimeIndicator.classList.remove('show');
+        scrollIndicatorRow.classList.remove('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        hideDayLabel();
+        resetScrollIndicatorAnimationState();
+        return;
+    }
+
+    // Switch only when a row has actually crossed the anchor line.
+    // This avoids preemptive switching caused by score-based lookahead.
+    const passedCandidate = candidates
+        .filter(el => el.getBoundingClientRect().top <= topAnchor)
+        .pop();
+    const selected = passedCandidate || candidates[0];
+
+    // On single-day schedules, keep the indicator hidden only while the list is still at the top.
+    // Use the first visible row as the reference to avoid mid-scroll flicker when selection jumps.
+    if (currentView !== 'starred' && !isGlobalSearchMode) {
+        const firstVisibleTop = candidates[0].getBoundingClientRect().top;
+        if (firstVisibleTop >= (dayAnchor - 1)) {
+            scrollDateTimeIndicator.classList.remove('show');
+            scrollIndicatorRow.classList.remove('active');
+            gridOuter?.classList.remove('scroll-indicator-active');
+            hideDayLabel();
+            resetScrollIndicatorAnimationState();
+            return;
+        }
+    }
+
+    // Align the indicator horizontally to match the actual time-col position in the DOM.
+    const scrollIndicatorInner = document.getElementById('scrollIndicatorInner');
+    const timeColEl = selected.querySelector('.time-col');
+    if (timeColEl && scrollIndicatorInner) {
+        const colRect = timeColEl.getBoundingClientRect();
+        scrollIndicatorInner.style.paddingLeft = Math.round(colRect.left) + 'px';
+        scrollDateTimeIndicator.style.width = Math.round(colRect.width) + 'px';
+        scrollDateTimeIndicator.style.maxWidth = Math.round(colRect.width) + 'px';
+    } else if (scrollIndicatorInner) {
+        scrollIndicatorInner.style.paddingLeft = '';
+        scrollDateTimeIndicator.style.width = '';
+        scrollDateTimeIndicator.style.maxWidth = '';
+    }
+
+    const dayLabel = (selected.dataset.day || '').trim();
+    const timeLabel = formatTime((selected.dataset.time || '').trim());
+    const showCompactDay = isGlobalSearchMode;
+    const compactDay = showCompactDay ? formatCompactDayLabel(dayLabel) : '';
+    const twoLineMode = false;
+    const labelText = timeLabel || [compactDay, timeLabel].filter(Boolean).join(' | ');
+
+    if (isStarredView && scrollIndicatorDayLabel) {
+        scrollIndicatorDayLabel.textContent = dayLabel;
+        scrollIndicatorDayLabel.classList.add('show');
+    } else {
+        hideDayLabel();
+    }
+
+    scrollDateTimeIndicator.classList.toggle('two-line', twoLineMode);
+
+    if (!labelText) {
+        scrollDateTimeIndicator.classList.remove('show');
+        scrollIndicatorRow.classList.remove('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        hideDayLabel();
+        resetScrollIndicatorAnimationState();
+        return;
+    }
+
+    const timeWrap = scrollDateTimeIndicator.querySelector('.scroll-indicator-time-wrap');
+    let timeCurrent = scrollDateTimeIndicator.querySelector('.scroll-indicator-time.current');
+
+    // First render should be a direct paint (no push animation), otherwise
+    // rapid startup updates can briefly show two sticky times.
+    if (!scrollIndicatorCurrentLabel && timeCurrent) {
+        if (timeWrap) {
+            timeWrap.querySelectorAll('.scroll-indicator-time.next').forEach(el => el.remove());
+        }
+        timeCurrent.textContent = labelText;
+        scrollDateTimeIndicator.classList.remove('time-push');
+        scrollIndicatorCurrentLabel = labelText;
+        scrollIndicatorPendingTime = null;
+        scrollIndicatorTimeAnimating = false;
+    } else
+    if (twoLineMode) {
+        if (timeWrap) {
+            timeWrap.querySelectorAll('.scroll-indicator-time.next').forEach(el => el.remove());
+        }
+        if (timeCurrent) {
+            timeCurrent.textContent = labelText;
+        }
+        scrollDateTimeIndicator.classList.remove('time-push');
+        scrollIndicatorCurrentLabel = labelText;
+        scrollIndicatorPendingTime = null;
+        scrollIndicatorTimeAnimating = false;
+    } else if (labelText !== scrollIndicatorCurrentLabel) {
+        if (scrollIndicatorTimeAnimating) {
+            scrollIndicatorPendingTime = labelText;
+        } else if (timeWrap && timeCurrent) {
+            timeWrap.querySelectorAll('.scroll-indicator-time.next').forEach(el => el.remove());
+            const animationToken = ++scrollIndicatorAnimationToken;
+            const next = document.createElement('span');
+            next.className = 'scroll-indicator-time next';
+            next.textContent = labelText;
+            timeWrap.appendChild(next);
+            scrollIndicatorTimeAnimating = true;
+            requestAnimationFrame(() => {
+                if (animationToken !== scrollIndicatorAnimationToken) return;
+                scrollDateTimeIndicator.classList.add('time-push');
+            });
+            window.setTimeout(() => {
+                if (animationToken !== scrollIndicatorAnimationToken) return;
+                if (timeCurrent && timeCurrent.parentElement) timeCurrent.remove();
+                next.classList.remove('next');
+                next.classList.add('current');
+                scrollDateTimeIndicator.classList.remove('time-push');
+                scrollIndicatorCurrentLabel = labelText;
+                scrollIndicatorTimeAnimating = false;
+                timeCurrent = next;
+
+                if (scrollIndicatorPendingTime && scrollIndicatorPendingTime !== scrollIndicatorCurrentLabel) {
+                    const pending = scrollIndicatorPendingTime;
+                    scrollIndicatorPendingTime = null;
+                    const pendingToken = ++scrollIndicatorAnimationToken;
+                    const pendingNext = document.createElement('span');
+                    pendingNext.className = 'scroll-indicator-time next';
+                    pendingNext.textContent = pending;
+                    timeWrap.appendChild(pendingNext);
+                    scrollIndicatorTimeAnimating = true;
+                    requestAnimationFrame(() => {
+                        if (pendingToken !== scrollIndicatorAnimationToken) return;
+                        scrollDateTimeIndicator.classList.add('time-push');
+                    });
+                    window.setTimeout(() => {
+                        if (pendingToken !== scrollIndicatorAnimationToken) return;
+                        if (timeCurrent && timeCurrent.parentElement) timeCurrent.remove();
+                        pendingNext.classList.remove('next');
+                        pendingNext.classList.add('current');
+                        scrollDateTimeIndicator.classList.remove('time-push');
+                        scrollIndicatorCurrentLabel = pending;
+                        scrollIndicatorTimeAnimating = false;
+                    }, 210);
+                }
+            }, 210);
+        }
+    }
+
+    scrollIndicatorRow.classList.add('active');
+    scrollDateTimeIndicator.classList.add('show');
+    if (isStarredView) {
+        gridOuter?.classList.remove('scroll-indicator-active');
+    } else {
+        gridOuter?.classList.add('scroll-indicator-active');
+    }
+}
+
+function scheduleScrollDateTimeIndicatorUpdate() {
+    if (scrollIndicatorRafPending) return;
+    scrollIndicatorRafPending = true;
+    requestAnimationFrame(() => {
+        scrollIndicatorRafPending = false;
+        updateScrollDateTimeIndicator();
+    });
 }
 
 function checkTrackMatch(cardTrack) {
@@ -2904,6 +3403,41 @@ function checkTrackMatch(cardTrack) {
 function formatTime(t) {
     // Shorten for display: "8:00 AM" → "8:00"
     return t.replace(' AM', 'a').replace(' PM', 'p');
+}
+
+function formatCompactDayLabel(dayLabel) {
+    const trimmed = String(dayLabel || '').trim();
+    if (!trimmed) return '';
+    const [dayName, datePart = ''] = trimmed.split(/\s+/, 2);
+    const shortDay = dayName ? dayName.slice(0, 3).toUpperCase() : '';
+    return [shortDay, datePart].filter(Boolean).join(' ');
+}
+
+function formatStackedDayLabel(dayLabel) {
+    const trimmed = String(dayLabel || '').trim();
+    if (!trimmed) return { dayShort: '', datePart: '' };
+    const [dayName = '', datePart = ''] = trimmed.split(/\s+/, 2);
+    const shortUpper = dayName ? dayName.slice(0, 3).toUpperCase() : '';
+    const dayShort = shortUpper ? (shortUpper[0] + shortUpper.slice(1).toLowerCase()) : '';
+    return { dayShort, datePart };
+}
+
+function formatUltraCompactDayLabel(dayLabel) {
+    const trimmed = String(dayLabel || '').trim();
+    if (!trimmed) return '';
+    const [dayNameRaw, datePart = ''] = trimmed.split(/\s+/, 2);
+    const dayName = (dayNameRaw || '').toLowerCase();
+    const dayMap = {
+        monday: 'MO',
+        tuesday: 'TU',
+        wednesday: 'WE',
+        thursday: 'TH',
+        friday: 'FR',
+        saturday: 'SA',
+        sunday: 'SU'
+    };
+    const shortDay = dayMap[dayName] || (dayNameRaw ? dayNameRaw.slice(0, 2).toUpperCase() : '');
+    return [shortDay, datePart].filter(Boolean).join(' ');
 }
 
 function toggleStar(uid, starEl) {
@@ -3003,6 +3537,8 @@ function applyMobileLayout() {
         renderSchedule();
         return;
     }
+
+    updateScrollDateTimeIndicator();
 }
 
 let viewportRefreshQueued = false;
@@ -3068,12 +3604,14 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', queueViewportRefresh);
 }
 window.addEventListener('scroll', applyMobileLayout, { passive: true });
+window.addEventListener('scroll', scheduleScrollDateTimeIndicatorUpdate, { passive: true });
 
 init();
 // Delay to let DOM render first
 requestAnimationFrame(() => requestAnimationFrame(() => {
     applyMobileLayout();
     updateSessionTitleLayout();
+    updateScrollDateTimeIndicator();
 }));
 </script>
 </body>
