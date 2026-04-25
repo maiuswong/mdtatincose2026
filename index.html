@@ -18,6 +18,7 @@
             --star-color: #f59e0b;
             --header-height: 56px;
             --controls-height: 56px;
+            --filters-height: 44px;
             --room-header-height: 44px;
             --time-col-width: 64px;
             --desktop-col-width: 236px;
@@ -36,6 +37,11 @@
             color: var(--text-main);
             font-size: 13px;
             min-height: 100vh;
+        }
+
+        html,
+        body {
+            overscroll-behavior: none;
         }
 
         /* ─── HEADER ─── */
@@ -91,8 +97,10 @@
 
         /* ─── TRACK FILTER ─── */
         .track-filters {
-            position: sticky;
+            position: fixed;
             top: var(--header-height);
+            left: 0;
+            right: 0;
             z-index: 190;
             background: #e9ecf0;
             padding: 8px 1rem;
@@ -122,7 +130,7 @@
 
         /* ─── GRID WRAPPER ─── */
         .grid-outer {
-            padding: clamp(6px, 1.2vw, 12px) 0 0;
+            padding: calc(var(--filters-height) + clamp(6px, 1.2vw, 12px)) 0 0;
         }
 
         .schedule-shell {
@@ -165,7 +173,7 @@
             z-index: 230;
             background: var(--bg);
             padding-top: 0;
-            padding-bottom: 6px;
+            padding-bottom: 2px;
             gap: 0 8px;
             box-shadow: none;
             visibility: hidden;
@@ -693,7 +701,7 @@
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            overscroll-behavior: contain;
+            overscroll-behavior: none;
             -webkit-overflow-scrolling: touch;
             padding-right: 6px;
             margin-right: -6px;
@@ -1174,6 +1182,7 @@ const FULLWIDTH_ROOMS = new Set([
 
 const SLOT_MINUTES = 5;
 const MOBILE_BREAKPOINT = 700;
+const COMPACT_BREAKPOINT = 800;
 
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
 let currentView = Object.keys(data)[0];
@@ -1183,10 +1192,17 @@ let isGlobalSearchMode = false;
 let suppressSearchRerender = false;
 let activeDetailsUid = null;
 let activeDetailsAnchor = null;
-let lastIsMobileLayout = window.innerWidth <= MOBILE_BREAKPOINT;
+let lastViewportMode = getViewportMode();
 
 const detailsBackdrop = document.getElementById('detailsBackdrop');
 const detailsPanel = document.getElementById('detailsPanel');
+
+function getViewportMode() {
+    const width = window.innerWidth;
+    if (width <= MOBILE_BREAKPOINT) return 'mobile';
+    if (width <= COMPACT_BREAKPOINT) return 'compact';
+    return 'desktop';
+}
 
 function getTrackColor(trackName) {
     if (!trackName) return '#9AA0A6';
@@ -2401,14 +2417,18 @@ function switchDay(viewId, btn) {
 }
 
 function applyMobileLayout() {
-    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    const viewportMode = getViewportMode();
+    const isMobile = viewportMode === 'mobile';
     
     const headerH = document.querySelector('header').offsetHeight;
     const trackFiltersEl = document.getElementById('trackFilters');
-    trackFiltersEl.style.top = headerH + 'px';
+    // Overlap by 1px to avoid subpixel seams that can reveal scrolled content.
+    const filtersTop = Math.max(0, headerH - 1);
+    trackFiltersEl.style.top = filtersTop + 'px';
 
     const filtersH = trackFiltersEl.offsetHeight;
-    const desktopRoomStickyTop = headerH + filtersH;
+    document.documentElement.style.setProperty('--filters-height', `${filtersH}px`);
+    const desktopRoomStickyTop = filtersTop + filtersH;
     document.documentElement.style.setProperty('--desktop-room-sticky-top', `${desktopRoomStickyTop}px`);
 
     // Keep first timeline row clear of the sticky room bar on desktop.
@@ -2428,18 +2448,17 @@ function applyMobileLayout() {
             return;
         }
 
-        grid.style.paddingTop = `${roomHeader.offsetHeight + 4}px`;
+        grid.style.paddingTop = `${roomHeader.offsetHeight + 1}px`;
 
         const shellRect = shell.getBoundingClientRect();
-        const floatingTop = Math.max(desktopRoomStickyTop, Math.round(shellRect.top));
-        const visibleInViewport = shellRect.bottom > (floatingTop + roomHeader.offsetHeight + 4) && shellRect.top < window.innerHeight;
+        const visibleInViewport = shellRect.bottom > (desktopRoomStickyTop + roomHeader.offsetHeight + 4) && shellRect.top < window.innerHeight;
         if (!visibleInViewport) {
             roomHeader.style.visibility = 'hidden';
             return;
         }
 
         roomHeader.style.visibility = 'visible';
-        roomHeader.style.top = `${floatingTop}px`;
+        roomHeader.style.top = `${desktopRoomStickyTop}px`;
         const canvasRect = canvas.getBoundingClientRect();
         roomHeader.style.left = `${Math.round(canvasRect.left)}px`;
         roomHeader.style.width = `${Math.round(canvas.scrollWidth)}px`;
@@ -2453,20 +2472,33 @@ function applyMobileLayout() {
         closeSessionDetails();
     }
 
-    if (isMobile !== lastIsMobileLayout && currentView !== 'starred') {
-        lastIsMobileLayout = isMobile;
+    if (viewportMode !== lastViewportMode) {
+        lastViewportMode = viewportMode;
         renderSchedule();
+        return;
     }
+}
+
+let viewportRefreshQueued = false;
+function queueViewportRefresh() {
+    if (viewportRefreshQueued) return;
+    viewportRefreshQueued = true;
+    requestAnimationFrame(() => {
+        viewportRefreshQueued = false;
+        applyMobileLayout();
+        requestAnimationFrame(updateSessionTitleLayout);
+    });
 }
 
 detailsBackdrop.addEventListener('click', closeSessionDetails);
 window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeSessionDetails();
 });
-window.addEventListener('resize', () => {
-    applyMobileLayout();
-    requestAnimationFrame(updateSessionTitleLayout);
-});
+window.addEventListener('resize', queueViewportRefresh);
+window.addEventListener('orientationchange', queueViewportRefresh);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', queueViewportRefresh);
+}
 window.addEventListener('scroll', applyMobileLayout, { passive: true });
 
 init();
