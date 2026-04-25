@@ -920,216 +920,73 @@
             }
         }
 
-        /* ─── NARROW TIMETABLE (550-800px: timetable visible but top bar wraps) ─── */
-        @media (max-width: 800px) and (min-width: 550px) {
+        /* ─── COMPACT TIMETABLE HEADER (Fold inner screen range) ─── */
+        @media (min-width: 701px) and (max-width: 800px) {
             header {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                padding: 4px 0.6rem !important;
-                gap: 4px !important;
-                height: auto !important;
+                flex-wrap: nowrap;
+                align-items: center;
+                padding: 6px 0.7rem;
+                gap: 6px;
+                height: auto;
             }
             header h1 {
-                font-size: 0.95rem !important;
-                line-height: 1.1 !important;
-                width: auto !important;
-                flex: 0 0 auto !important;
-                white-space: nowrap !important;
+                width: auto;
+                font-size: 0.96rem;
+                line-height: 1.15;
+                white-space: nowrap;
+                flex: 0 0 auto;
             }
             .header-right {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                width: auto !important;
-                flex: 1 !important;
-                gap: 4px !important;
-                justify-content: flex-end !important;
+                width: auto;
+                min-width: 0;
+                flex: 1;
+                gap: 6px;
+                flex-wrap: nowrap;
+                justify-content: flex-end;
             }
             #searchBar {
-                flex: 0 0 140px !important;
-                min-width: 140px !important;
-                width: 140px !important;
-                font-size: 11px !important;
-                padding: 4px 10px !important;
+                width: 140px;
+                min-width: 140px;
+                font-size: 11px;
+                padding: 5px 10px;
             }
             .tabs {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                gap: 2px !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                scrollbar-width: none !important;
-                -ms-overflow-style: none !important;
-                padding: 0 !important;
-                background: transparent !important;
-                width: auto !important;
-                flex: 0 0 auto !important;
+                flex-wrap: nowrap;
+                gap: 4px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                width: auto;
             }
             .tabs::-webkit-scrollbar {
-                display: none !important;
+                display: none;
             }
             .tabs .tab-btn {
-                flex: 0 0 auto !important;
-                white-space: nowrap !important;
-                font-size: 10px !important;
-                padding: 4px 10px !important;
-                border-radius: 18px !important;
-            }
-            .tabs .tab-btn.starred-tab {
-                margin-left: auto !important;
+                flex: 0 0 auto;
+                white-space: nowrap;
+                font-size: 10px;
+                padding: 4px 10px;
+                border-radius: 16px;
             }
             .track-filters {
-                display: flex !important;
-                flex-wrap: nowrap !important;
-                gap: 4px !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                scrollbar-width: none !important;
-                -ms-overflow-style: none !important;
-                padding: 6px 0.6rem !important;
-                white-space: nowrap !important;
+                flex-wrap: nowrap;
+                gap: 6px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                white-space: nowrap;
+                padding: 6px 0.7rem;
             }
             .track-filters::-webkit-scrollbar {
-                display: none !important;
+                display: none;
             }
-            .filter-label {
-                font-size: 11px !important;
-                flex: 0 0 auto !important;
-            }
+            .filter-label,
             .track-chip {
-                flex: 0 0 auto !important;
-                white-space: nowrap !important;
-                font-size: 11px !important;
-                padding: 4px 10px !important;
+                flex: 0 0 auto;
+                white-space: nowrap;
             }
-        }
-
-        /* ─── FOLDABLE DEVICES (e.g., Z Fold 7 folded ~360-480px) ─── */
-        @media (max-width: 480px) {
-            header {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                padding: 2px 0.4rem !important;
-                gap: 2px !important;
-                height: auto !important;
-            }
-            header h1 {
-                font-size: 0.75rem !important;
-                line-height: 1 !important;
-                width: auto !important;
-                flex: 0 0 auto !important;
-                min-width: 70px !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-            }
-            .header-right {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                width: auto !important;
-                flex: 1 !important;
-                min-width: 0 !important;
-                gap: 1px !important;
-                grid-template-columns: none !important;
-                justify-content: flex-start !important;
-            }
-            #searchBar {
-                flex: 0 0 70px !important;
-                min-width: 70px !important;
-                max-width: 70px !important;
-                width: 70px !important;
-                font-size: 9px !important;
-                padding: 2px 4px !important;
-                height: 20px !important;
-            }
-            .tabs {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                justify-content: flex-start !important;
-                flex: 0 0 auto !important;
-                width: auto !important;
-                gap: 0px !important;
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
-                -webkit-overflow-scrolling: touch !important;
-                scrollbar-width: none !important;
-                -ms-overflow-style: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: transparent !important;
-            }
-            .tabs::-webkit-scrollbar {
-                display: none !important;
-                height: 0 !important;
-            }
-            .tabs .tab-btn {
-                flex: 0 0 auto !important;
-                white-space: nowrap !important;
-                font-size: 7px !important;
-                padding: 1px 3px !important;
-                border-radius: 6px !important;
-                margin: 0 !important;
-                min-width: auto !important;
-            }
-            .tabs .tab-btn.starred-tab {
-                margin-left: 1px !important;
-            }
-            .track-filters {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                justify-content: flex-start !important;
-                padding: 2px 0.4rem !important;
-                gap: 0px !important;
-                top: calc(var(--header-height) + 2px) !important;
-                position: sticky !important;
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
-                -webkit-overflow-scrolling: touch !important;
-                scrollbar-width: none !important;
-                -ms-overflow-style: none !important;
-                white-space: nowrap !important;
-                background: #e9ecf0 !important;
-                z-index: 190 !important;
-            }
-            .track-filters::-webkit-scrollbar {
-                display: none !important;
-                height: 0 !important;
-            }
-            .filter-label {
-                font-size: 7px !important;
-                font-weight: 700 !important;
-                margin-right: 2px !important;
-                flex: 0 0 auto !important;
-                white-space: nowrap !important;
-            }
-            .track-chip {
-                flex: 0 0 auto !important;
-                padding: 1px 3px !important;
-                gap: 1px !important;
-                font-size: 7px !important;
-                border-radius: 6px !important;
-                white-space: nowrap !important;
-                margin: 0 !important;
-            }
-            .track-chip .chip-dot {
-                width: 3px !important;
-                height: 3px !important;
-                flex-shrink: 0 !important;
-            }
-            .medtronic-legend { display: none !important; }
         }
 
         /* ─── STARRED VIEW ─── */
@@ -1655,7 +1512,9 @@ function renderTrackFilters() {
     
     if (currentView === 'starred') return;
 
-    const tracks = currentView === 'starred' 
+    const isSearchActive = ((document.getElementById('searchBar')?.value || '').trim() !== '');
+
+    const tracks = isSearchActive
         ? Object.values(data).flat().map(s => s.Track).filter(Boolean)
         : getAllTracksForDay(currentView);
     
@@ -1707,6 +1566,9 @@ function toggleTrackFilter(track) {
 function renderSchedule() {
     searchQuery = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
     isGlobalSearchMode = currentView !== 'starred' && searchQuery !== '';
+
+    // Keep talk-track chips aligned with current mode (day-only vs all-days search).
+    renderTrackFilters();
 
     const container = document.getElementById('scheduleContainer');
     container.innerHTML = '';
