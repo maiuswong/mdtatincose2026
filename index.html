@@ -1281,6 +1281,10 @@ function getEffectiveViewportWidth() {
     return Math.min(...widths);
 }
 
+function isMobileLayoutViewport() {
+    return getEffectiveViewportWidth() <= MOBILE_BREAKPOINT;
+}
+
 function updateAdaptiveTopbarMode() {
     const bodyEl = document.body;
     if (!bodyEl) return false;
@@ -1558,7 +1562,7 @@ function closeSessionDetails() {
 }
 
 function positionDetailsPanel(anchorEl) {
-    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    const isMobile = isMobileLayoutViewport();
     const maxPanelHeight = isMobile
         ? Math.min(560, Math.floor(window.innerHeight * 0.76))
         : Math.min(640, Math.floor(window.innerHeight * 0.72));
@@ -1726,7 +1730,7 @@ function renderSchedule() {
         return;
     }
 
-    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    if (isMobileLayoutViewport()) {
         renderMobileDayList(currentView, container);
     } else {
         renderDesktopDayGrid(currentView, container);
@@ -1975,7 +1979,7 @@ function renderMobileDayList(day, container) {
 }
 
 function renderGlobalSearchResults(container) {
-    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    const isMobile = isMobileLayoutViewport();
     let hasAny = false;
 
     Object.keys(data).forEach(day => {
@@ -2089,7 +2093,7 @@ function renderGlobalSearchResults(container) {
 
 function renderStarredView(container) {
     document.getElementById('trackFilters').innerHTML = '';
-    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    const isMobile = isMobileLayoutViewport();
 
     const createTransferIndicator = (transferInfo) => {
         const row = document.createElement('div');
@@ -2417,7 +2421,7 @@ function applyFilters() {
         return;
     }
 
-    const isDesktopTimeline = currentView !== 'starred' && window.innerWidth > MOBILE_BREAKPOINT;
+    const isDesktopTimeline = currentView !== 'starred' && !isMobileLayoutViewport();
     const shouldFadeTrackMismatches = isDesktopTimeline && activeTrackFilters.size > 0;
     
     document.querySelectorAll('.session-card, .event-card').forEach(card => {
