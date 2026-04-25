@@ -1650,6 +1650,13 @@ function updateAdaptiveTopbarMode() {
     const bodyEl = document.body;
     if (!bodyEl) return false;
 
+    // On true mobile widths, let the mobile CSS own the header wrapping behavior.
+    if (getEffectiveViewportWidth() <= MOBILE_BREAKPOINT) {
+        const changed = bodyEl.classList.contains('topbar-compact');
+        bodyEl.classList.remove('topbar-compact');
+        return changed;
+    }
+
     const headerEl = document.querySelector('header');
     const titleEl = headerEl?.querySelector('h1');
     const headerRightEl = headerEl?.querySelector('.header-right');
