@@ -1661,6 +1661,7 @@ const FULLWIDTH_ROOMS = new Set([
 const SLOT_MINUTES = 5;
 const MOBILE_BREAKPOINT = 700;
 const COMPACT_BREAKPOINT = 800;
+const VIEWPORT_MODE_HYSTERESIS = 12;
 
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
 let currentView = Object.keys(data)[0];
@@ -1670,7 +1671,9 @@ let isGlobalSearchMode = false;
 let suppressSearchRerender = false;
 let activeDetailsUid = null;
 let activeDetailsAnchor = null;
+let stableViewportMode = null;
 let lastViewportMode = getViewportMode();
+let lastViewportRefreshWidth = Math.round(getEffectiveViewportWidth());
 
 const detailsBackdrop = document.getElementById('detailsBackdrop');
 const detailsPanel = document.getElementById('detailsPanel');
@@ -1685,9 +1688,39 @@ let scrollIndicatorAnimationToken = 0;
 
 function getViewportMode() {
     const width = getEffectiveViewportWidth();
-    if (width <= MOBILE_BREAKPOINT) return 'mobile';
-    if (width <= COMPACT_BREAKPOINT) return 'compact';
-    return 'desktop';
+    const rawMode = width <= MOBILE_BREAKPOINT
+        ? 'mobile'
+        : (width <= COMPACT_BREAKPOINT ? 'compact' : 'desktop');
+
+    if (!stableViewportMode) {
+        stableViewportMode = rawMode;
+        return stableViewportMode;
+    }
+
+    if (stableViewportMode === 'mobile') {
+        // Stay mobile until width clearly exits the mobile threshold.
+        if (width > (MOBILE_BREAKPOINT + VIEWPORT_MODE_HYSTERESIS)) {
+            stableViewportMode = rawMode;
+        }
+        return stableViewportMode;
+    }
+
+    if (stableViewportMode === 'desktop') {
+        // Stay desktop until width clearly re-enters compact/mobile range.
+        if (width < (COMPACT_BREAKPOINT - VIEWPORT_MODE_HYSTERESIS)) {
+            stableViewportMode = rawMode;
+        }
+        return stableViewportMode;
+    }
+
+    // compact mode: require clear crossing of either boundary before switching.
+    if (width <= (MOBILE_BREAKPOINT - VIEWPORT_MODE_HYSTERESIS)) {
+        stableViewportMode = 'mobile';
+    } else if (width >= (COMPACT_BREAKPOINT + VIEWPORT_MODE_HYSTERESIS)) {
+        stableViewportMode = 'desktop';
+    }
+
+    return stableViewportMode;
 }
 
 function getEffectiveViewportWidth() {
@@ -3670,10 +3703,17 @@ function queueViewportRefresh() {
     viewportRefreshQueued = true;
     requestAnimationFrame(() => {
         viewportRefreshQueued = false;
+        lastViewportRefreshWidth = Math.round(getEffectiveViewportWidth());
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
         startViewportSettlingChecks();
     });
+}
+
+function queueViewportRefreshIfWidthChanged() {
+    const widthNow = Math.round(getEffectiveViewportWidth());
+    if (Math.abs(widthNow - lastViewportRefreshWidth) <= 1) return;
+    queueViewportRefresh();
 }
 
 detailsBackdrop.addEventListener('click', closeSessionDetails);
@@ -3687,7 +3727,7 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) queueViewportRefresh();
 });
 if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', queueViewportRefresh);
+    window.visualViewport.addEventListener('resize', queueViewportRefreshIfWidthChanged);
 }
 window.addEventListener('scroll', applyScrollLayout, { passive: true });
 window.addEventListener('scroll', scheduleScrollDateTimeIndicatorUpdate, { passive: true });
