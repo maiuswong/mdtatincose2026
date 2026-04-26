@@ -320,6 +320,26 @@
             transform: translateY(calc(-50% + 7px));
         }
 
+        .timeline-slot-note {
+            justify-self: end;
+            align-self: start;
+            margin-top: 8px;
+            margin-right: 8px;
+            width: calc(var(--time-col-width) - 14px);
+            font-size: 8.5px;
+            line-height: 1.05;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #6b778d;
+            text-transform: uppercase;
+            text-align: right;
+            white-space: normal;
+            background: var(--bg);
+            padding: 1px 3px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
         .timeline-divider {
             grid-column: 2 / -1;
             height: 1px;
@@ -2193,6 +2213,12 @@ function renderDesktopDayGrid(day, container) {
             return { start, end, coverage };
         });
 
+    const sessionRanges = sessions.map(session => {
+        const start = parseClockMinutes(session.time);
+        const end = start + getSessionDurationMinutes(dayTimes, session);
+        return { session, start, end };
+    });
+
     const lowDensityRuns = [];
     let runStart = null;
     for (let minute = dayBounds.start; minute < dayBounds.end; minute += SLOT_MINUTES) {
@@ -2217,11 +2243,42 @@ function renderDesktopDayGrid(day, container) {
         lowDensityRuns.push({ start: runStart, end: dayBounds.end });
     }
 
+    // Never compress across explicit event boundaries. This preserves a readable
+    // timeline line at key transitions (for example, Happy Hour ending at 7:00 PM).
+    const transitionBoundaries = [...new Set(
+        sessionRanges.flatMap(range => [range.start, range.end])
+    )]
+        .filter(minute => Number.isFinite(minute))
+        .sort((a, b) => a - b);
+
+    const splittableLowDensityRuns = [];
+    lowDensityRuns.forEach(run => {
+        const splitPoints = [
+            run.start,
+            ...transitionBoundaries.filter(minute => minute > run.start && minute < run.end),
+            run.end
+        ];
+
+        for (let i = 0; i < splitPoints.length - 1; i += 1) {
+            const start = splitPoints[i];
+            const end = splitPoints[i + 1];
+            if ((end - start) >= SLOT_MINUTES) {
+                splittableLowDensityRuns.push({ start, end });
+            }
+        }
+    });
+
     const compressedGaps = [];
     let cumulativeRemoved = 0;
-    for (const run of lowDensityRuns) {
+    for (const run of splittableLowDensityRuns) {
         const runDuration = run.end - run.start;
         if (runDuration < TIMETABLE_BREAK_MIN_GAP) continue;
+
+        // Only compress (and therefore zigzag) gaps that can be read directly
+        // from timeline labels at both boundaries.
+        const hasTimelineReadableBounds = (run.start % 30 === 0) && (run.end % 30 === 0);
+        if (!hasTimelineReadableBounds) continue;
+
         const visibleDuration = Math.min(TIMETABLE_BREAK_VISIBLE_MINUTES, runDuration);
         const removed = runDuration - visibleDuration;
         compressedGaps.push({
@@ -2351,11 +2408,13 @@ function renderDesktopDayGrid(day, container) {
 
         const label = document.createElement('div');
         label.className = 'timeline-break-label';
+        const gapStartText = formatTime(minuteToLabel(gap.start));
+        const gapEndText = formatTime(minuteToLabel(gap.end));
         const startLine = document.createElement('span');
-        startLine.textContent = formatTime(minuteToLabel(gap.start));
+        startLine.textContent = gapStartText;
         const endLine = document.createElement('span');
         endLine.className = 'to-line';
-        endLine.textContent = `to ${formatTime(minuteToLabel(gap.end))}`;
+        endLine.textContent = `to ${gapEndText}`;
         label.appendChild(startLine);
         label.appendChild(endLine);
 
