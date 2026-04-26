@@ -25,8 +25,9 @@
             --mobile-col-width: 168px;
             --slot-height: 28px;
             --mobile-slot-height: 8px;
+            --starred-day-sticky-height: 30px;
             --popover-width: 360px;
-            --desktop-room-sticky-top: 0px;
+            --desktop-room-sticky-top: 100px;
             --scroll-indicator-reserve: 28px;
         }
 
@@ -53,10 +54,15 @@
         }
 
         /* ─── HEADER ─── */
-        header {
+        #headerStickyStack {
             position: sticky;
             top: 0;
             z-index: 200;
+            background: var(--bg);
+        }
+
+        header {
+            position: relative;
             background: #e9ecf0;
             border-bottom: none;
             box-shadow: none;
@@ -177,11 +183,8 @@
 
         /* ─── TRACK FILTER ─── */
         .track-filters {
-            position: fixed;
-            top: var(--header-height);
-            left: 0;
-            right: 0;
-            z-index: 190;
+            position: relative;
+            z-index: 1;
             background: #e9ecf0;
             padding: 8px 1rem;
             display: flex;
@@ -215,12 +218,11 @@
 
         /* ─── GRID WRAPPER ─── */
         .grid-outer {
-            padding: var(--filters-height) 0 0;
-            transition: padding-top 0.16s ease;
+            padding: 0;
         }
 
         .grid-outer.scroll-indicator-active {
-            padding-top: calc(var(--filters-height) + var(--scroll-indicator-reserve));
+            padding-top: var(--scroll-indicator-reserve);
         }
 
         .schedule-shell {
@@ -265,7 +267,7 @@
             padding-top: 0;
             padding-bottom: 2px;
             gap: 0 8px;
-            box-shadow: none;
+            box-shadow: 0 -1px 0 var(--bg);
             visibility: hidden;
         }
         .room-header-cell {
@@ -1118,11 +1120,39 @@
                 padding: 12px 8px 4px;
             }
 
+            /* Mobile My Schedule: sticky day row that gets pushed by the next day. */
+            #scheduleContainer.starred-view .day-heading {
+                position: sticky;
+                top: var(--mobile-time-sticky-top, 0px);
+                z-index: 60;
+                background: var(--bg);
+                box-shadow: 0 -1px 0 var(--bg);
+                min-height: var(--starred-day-sticky-height);
+                padding-top: 8px;
+                padding-bottom: 8px;
+                margin-bottom: 2px;
+            }
+
             .mobile-time-group {
                 display: grid;
                 grid-template-columns: var(--time-col-width) 1fr;
                 gap: 8px;
                 align-items: start;
+            }
+
+            /* Mobile: use native sticky time labels so each time is pushed out by the next one. */
+            .mobile-time-group .time-col {
+                position: sticky;
+                top: var(--mobile-time-sticky-top, 0px);
+                z-index: 14;
+                align-self: start;
+                background: var(--bg);
+                padding-top: 0;
+                padding-bottom: 2px;
+            }
+
+            #scheduleContainer.starred-view .mobile-time-group .time-col {
+                top: calc(var(--mobile-time-sticky-top, 0px) + var(--starred-day-sticky-height));
             }
 
             .mobile-time-stack {
@@ -1281,6 +1311,54 @@
             letter-spacing: 0.03em;
             text-transform: uppercase;
         }
+
+        #scheduleContainer.starred-view .starred-day-section {
+            position: relative;
+            isolation: isolate;
+            background: var(--bg);
+        }
+
+        #scheduleContainer.starred-view .day-heading::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            width: 100vw;
+            height: 100%;
+            background: var(--bg);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @media (min-width: 701px) {
+            /* Desktop My Schedule: keep day label pinned at top. */
+            #scheduleContainer.starred-view .day-heading {
+                position: sticky;
+                top: var(--desktop-room-sticky-top);
+                z-index: 60;
+                background: var(--bg);
+                box-shadow: 0 -1px 0 var(--bg);
+                min-height: var(--starred-day-sticky-height);
+                padding-top: 8px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-bottom: 8px;
+                margin-bottom: 2px;
+            }
+
+            /* Desktop My Schedule: native sticky time labels that push each other out. */
+            #scheduleContainer.starred-view .time-row .time-col {
+                position: sticky;
+                top: calc(var(--desktop-room-sticky-top) + var(--starred-day-sticky-height));
+                z-index: 14;
+                align-self: start;
+                background: var(--bg);
+                padding-top: 0;
+                padding-bottom: 2px;
+            }
+        }
+
         .no-results {
             padding: 3rem;
             text-align: center;
@@ -1506,6 +1584,7 @@
 </head>
 <body>
 
+<div id="headerStickyStack">
 <header>
     <h1>INCOSE SE in Healthcare 2026</h1>
     <div class="header-right">
@@ -1515,6 +1594,7 @@
 </header>
 
 <div class="track-filters" id="trackFilters"></div>
+</div>
 <div class="scroll-indicator-row" id="scrollIndicatorRow" aria-hidden="true">
     <div class="scroll-indicator-inner" id="scrollIndicatorInner">
         <div class="scroll-date-time-indicator" id="scrollDateTimeIndicator">
@@ -2822,6 +2902,9 @@ function renderStarredView(container) {
         if (sessions.length === 0) return;
         hasAny = true;
 
+        const daySection = document.createElement('section');
+        daySection.className = 'starred-day-section';
+
         const daySessions = data[day] || [];
         const dayTimes = daySessions.map(s => s.time);
         const sortedStarred = [...sessions].sort((left, right) => parseClockMinutes(left.time) - parseClockMinutes(right.time));
@@ -2920,7 +3003,7 @@ function renderStarredView(container) {
         heading.className = 'day-heading';
         heading.dataset.day = day;
         heading.textContent = day;
-        container.appendChild(heading);
+        daySection.appendChild(heading);
         
         const sortedTimes = sortTimes(Object.keys(timeGroups));
         
@@ -2996,7 +3079,8 @@ function renderStarredView(container) {
             timeRowsEl.appendChild(row);
         });
         
-        container.appendChild(timeRowsEl);
+        daySection.appendChild(timeRowsEl);
+        container.appendChild(daySection);
     });
     
     if (!hasAny) {
@@ -3249,10 +3333,13 @@ function updateScrollDateTimeIndicator() {
         scrollIndicatorPendingTime = null;
     };
 
-    const enabled = isMobileLayoutViewport() || currentView === 'starred';
-    if (!enabled) {
+    // Use native sticky rows for My Schedule (day headings and time labels),
+    // so each new date naturally pushes the previous one.
+    const isStarredDesktop = (currentView === 'starred') && !isMobileLayoutViewport();
+    if (isStarredDesktop) {
         scrollDateTimeIndicator.classList.remove('show');
         scrollIndicatorRow.classList.remove('active');
+        scrollIndicatorRow.classList.remove('is-starred');
         gridOuter?.classList.remove('scroll-indicator-active');
         hideDayLabel();
         resetScrollIndicatorAnimationState();
@@ -3260,13 +3347,16 @@ function updateScrollDateTimeIndicator() {
         return;
     }
 
-    const pageScrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-    if (pageScrollTop <= 4) {
+    // On mobile we use native sticky time labels (.mobile-time-group .time-col)
+    // instead of the overlay indicator, so rows push each other naturally.
+    const enabled = false;
+    if (!enabled) {
         scrollDateTimeIndicator.classList.remove('show');
         scrollIndicatorRow.classList.remove('active');
         gridOuter?.classList.remove('scroll-indicator-active');
         hideDayLabel();
         resetScrollIndicatorAnimationState();
+        scrollIndicatorRow.style.top = '';
         return;
     }
 
@@ -3305,13 +3395,11 @@ function updateScrollDateTimeIndicator() {
         .filter(el => el.style.display !== 'none');
     let activeDay = '';
     if (dayHeadings.length > 0) {
-        const dayHeadingTextOffset = isStarredView
-            ? Math.round(parseFloat(window.getComputedStyle(dayHeadings[0]).paddingTop || '0'))
-            : 0;
         const passedHeading = dayHeadings
-            .filter(el => (el.getBoundingClientRect().top + dayHeadingTextOffset) <= dayAnchor)
+            .filter(el => el.getBoundingClientRect().top <= dayAnchor)
             .pop();
-        if (!passedHeading) {
+        const effectiveHeading = passedHeading || (isStarredView ? dayHeadings[0] : null);
+        if (!effectiveHeading) {
             scrollDateTimeIndicator.classList.remove('show');
             scrollIndicatorRow.classList.remove('active');
             gridOuter?.classList.remove('scroll-indicator-active');
@@ -3319,7 +3407,24 @@ function updateScrollDateTimeIndicator() {
             resetScrollIndicatorAnimationState();
             return;
         }
-        activeDay = (passedHeading.dataset.day || passedHeading.textContent || '').trim();
+        activeDay = (effectiveHeading.dataset.day || effectiveHeading.textContent || '').trim();
+    }
+
+    // Desktop My Schedule: day at top comes from day headings, independent of time-row matching.
+    if (isStarredView && !isMobileLayoutViewport()) {
+        if (scrollIndicatorDayLabel) {
+            scrollIndicatorDayLabel.textContent = activeDay;
+            scrollIndicatorDayLabel.classList.toggle('show', !!activeDay);
+        }
+        const scrollIndicatorInner = document.getElementById('scrollIndicatorInner');
+        if (scrollIndicatorInner) scrollIndicatorInner.style.paddingLeft = '';
+        scrollDateTimeIndicator.style.width = '';
+        scrollDateTimeIndicator.style.maxWidth = '';
+        scrollDateTimeIndicator.classList.remove('show');
+        resetScrollIndicatorAnimationState();
+        scrollIndicatorRow.classList.add('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        return;
     }
 
     const candidates = [...container.querySelectorAll('.mobile-time-group[data-day][data-time], .time-row[data-day][data-time]')]
@@ -3381,6 +3486,15 @@ function updateScrollDateTimeIndicator() {
         scrollIndicatorDayLabel.classList.add('show');
     } else {
         hideDayLabel();
+    }
+
+    // Desktop My Schedule uses native sticky time labels in-row; keep only day at top.
+    if (isStarredView && !isMobileLayoutViewport()) {
+        scrollDateTimeIndicator.classList.remove('show');
+        resetScrollIndicatorAnimationState();
+        scrollIndicatorRow.classList.add('active');
+        gridOuter?.classList.remove('scroll-indicator-active');
+        return;
     }
 
     scrollDateTimeIndicator.classList.toggle('two-line', twoLineMode);
@@ -3584,16 +3698,10 @@ function applyMobileLayout(skipTopbarModeCheck = false, skipViewportModeRerender
         return;
     }
     
-    const headerH = document.querySelector('header').offsetHeight;
-    const trackFiltersEl = document.getElementById('trackFilters');
-    // Overlap by 1px to avoid subpixel seams that can reveal scrolled content.
-    const filtersTop = Math.max(0, headerH - 1);
-    trackFiltersEl.style.top = filtersTop + 'px';
-
-    const filtersH = trackFiltersEl.offsetHeight;
-    document.documentElement.style.setProperty('--filters-height', `${filtersH}px`);
-    const desktopRoomStickyTop = filtersTop + filtersH;
+    const stackEl = document.getElementById('headerStickyStack');
+    const desktopRoomStickyTop = stackEl ? stackEl.offsetHeight : 0;
     document.documentElement.style.setProperty('--desktop-room-sticky-top', `${desktopRoomStickyTop}px`);
+    document.documentElement.style.setProperty('--mobile-time-sticky-top', `${desktopRoomStickyTop}px`);
 
     // Keep first timeline row clear of the sticky room bar on desktop.
     document.querySelectorAll('.schedule-canvas').forEach(canvas => {
