@@ -67,7 +67,7 @@
             gap: 1rem;
         }
         header h1 { font-size: 1.05rem; font-weight: 700; white-space: nowrap; }
-        .header-right { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; flex-wrap: wrap; }
+        .header-right { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; min-width: 0; }
 
         /* Adaptive compact top bar for widths where controls begin to wrap */
         body.topbar-compact header {
@@ -137,7 +137,8 @@
         }
 
         /* ─── TABS ─── */
-        .tabs { display: flex; gap: 4px; }
+        .tabs { display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; min-width: 0; }
+        .tabs::-webkit-scrollbar { display: none; }
         .tab-btn {
             padding: 5px 14px;
             border: none;
@@ -1661,7 +1662,9 @@ const FULLWIDTH_ROOMS = new Set([
 const SLOT_MINUTES = 5;
 const MOBILE_BREAKPOINT = 700;
 const COMPACT_BREAKPOINT = 800;
-const VIEWPORT_MODE_HYSTERESIS = 12;
+const VIEWPORT_MODE_HYSTERESIS = 24;
+const TOPBAR_COMPACT_ENTER_WIDTH = 1180;
+const TOPBAR_COMPACT_EXIT_WIDTH = 1240;
 
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
 let currentView = Object.keys(data)[0];
@@ -1672,6 +1675,7 @@ let suppressSearchRerender = false;
 let activeDetailsUid = null;
 let activeDetailsAnchor = null;
 let stableViewportMode = null;
+let stableTopbarCompact = null;
 let lastViewportMode = getViewportMode();
 let lastViewportRefreshWidth = Math.round(getEffectiveViewportWidth());
 
@@ -1730,43 +1734,28 @@ function getEffectiveViewportWidth() {
 }
 
 function isMobileLayoutViewport() {
-    return getEffectiveViewportWidth() <= MOBILE_BREAKPOINT;
+    return getViewportMode() === 'mobile';
 }
 
-function updateAdaptiveTopbarMode() {
+function updateTopbarMode() {
     const bodyEl = document.body;
     if (!bodyEl) return false;
-
-    const headerEl = document.querySelector('header');
-    const titleEl = headerEl?.querySelector('h1');
-    const headerRightEl = headerEl?.querySelector('.header-right');
-    if (!headerEl || !titleEl || !headerRightEl) return false;
-
     const previousMode = bodyEl.classList.contains('topbar-compact');
-    bodyEl.classList.remove('topbar-compact');
+    const width = getEffectiveViewportWidth();
+    const isMobileMode = getViewportMode() === 'mobile';
 
-    // Compute required width from intrinsic child widths (not flex container scrollWidth),
-    // otherwise the header can appear "always compact" on desktop.
-    const headerStyle = window.getComputedStyle(headerEl);
-    const paddingX = parseFloat(headerStyle.paddingLeft || '0') + parseFloat(headerStyle.paddingRight || '0');
-    const gapX = parseFloat(headerStyle.columnGap || headerStyle.gap || '0');
-    const rightStyle = window.getComputedStyle(headerRightEl);
-    const rightGap = parseFloat(rightStyle.columnGap || rightStyle.gap || '0');
-    const controls = Array.from(headerRightEl.children).filter(el => el instanceof HTMLElement && window.getComputedStyle(el).display !== 'none');
-    const controlsWidth = controls.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
-    const controlsGapsWidth = Math.max(0, controls.length - 1) * rightGap;
-    const titleWidth = titleEl.getBoundingClientRect().width;
-    const requiredWidth = titleWidth + controlsWidth + controlsGapsWidth + paddingX + gapX;
-    const availableWidth = headerEl.clientWidth;
+    if (stableTopbarCompact === null) {
+        stableTopbarCompact = isMobileMode || width <= TOPBAR_COMPACT_ENTER_WIDTH;
+    } else if (stableTopbarCompact) {
+        if (!isMobileMode && width >= TOPBAR_COMPACT_EXIT_WIDTH) {
+            stableTopbarCompact = false;
+        }
+    } else if (isMobileMode || width <= TOPBAR_COMPACT_ENTER_WIDTH) {
+        stableTopbarCompact = true;
+    }
 
-    // Also detect actual line break by comparing top positions.
-    const titleTop = Math.round(titleEl.getBoundingClientRect().top);
-    const controlsTop = Math.round(headerRightEl.getBoundingClientRect().top);
-    const hasWrapped = controlsTop > titleTop + 2;
-    const shouldCompact = hasWrapped || requiredWidth > (availableWidth - 8);
-
-    bodyEl.classList.toggle('topbar-compact', shouldCompact);
-    return previousMode !== shouldCompact;
+    bodyEl.classList.toggle('topbar-compact', stableTopbarCompact);
+    return previousMode !== stableTopbarCompact;
 }
 
 function getTrackColor(trackName) {
@@ -3582,10 +3571,10 @@ function switchDay(viewId, btn) {
 }
 
 function applyMobileLayout(skipTopbarModeCheck = false, skipViewportModeRerender = false) {
-    const viewportMode = getViewportMode();
+    const viewportMode = skipViewportModeRerender ? lastViewportMode : getViewportMode();
     const isMobile = viewportMode === 'mobile';
 
-    const topbarModeChanged = skipTopbarModeCheck ? false : updateAdaptiveTopbarMode();
+    const topbarModeChanged = skipTopbarModeCheck ? false : updateTopbarMode();
     if (topbarModeChanged) {
         // Re-measure on next frame after class/style changes settle.
         requestAnimationFrame(() => {
@@ -3712,7 +3701,7 @@ function queueViewportRefresh() {
 
 function queueViewportRefreshIfWidthChanged() {
     const widthNow = Math.round(getEffectiveViewportWidth());
-    if (Math.abs(widthNow - lastViewportRefreshWidth) <= 1) return;
+    if (Math.abs(widthNow - lastViewportRefreshWidth) <= 24) return;
     queueViewportRefresh();
 }
 
