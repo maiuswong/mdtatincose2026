@@ -26,6 +26,7 @@
             --slot-height: 28px;
             --mobile-slot-height: 8px;
             --starred-day-sticky-height: 30px;
+            --starred-toolbar-height: 40px;
             --popover-width: 360px;
             --desktop-room-sticky-top: 100px;
             --scroll-indicator-reserve: 28px;
@@ -703,6 +704,124 @@
         .star-btn:active { transform: scale(0.85); filter: brightness(0.8); transition: transform 0.08s, filter 0.08s; }
         .star-btn.active { color: var(--star-color); }
 
+        /* My Schedule edit-mode toolbar — overlays at the same y as the sticky day heading. */
+        .starred-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 0;
+            min-height: var(--starred-day-sticky-height);
+            box-sizing: border-box;
+            font-family: 'Google Sans', sans-serif;
+            position: sticky;
+            top: var(--desktop-room-sticky-top, 0px);
+            z-index: 70;
+            background: transparent;
+            margin-bottom: calc(-1 * var(--starred-day-sticky-height));
+            pointer-events: none;
+        }
+        .starred-toolbar > * {
+            pointer-events: auto;
+        }
+        .starred-edit-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .starred-edit-actions {
+            display: inline-flex;
+            gap: 6px;
+        }
+        .starred-edit-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 14px;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Google Sans', sans-serif;
+            background: #f0f2f5;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+            line-height: 1.3;
+        }
+        .starred-edit-btn:hover { background: #e8eaed; color: var(--primary); }
+        .starred-edit-btn:active {
+            background: #d5dbe5;
+            transform: scale(0.95);
+            transition: transform 0.08s, background 0.08s;
+        }
+        .starred-edit-btn.starred-edit-remove {
+            background: #fdecea;
+            color: #c0392b;
+        }
+        .starred-edit-btn.starred-edit-remove:hover {
+            background: #f9d6d2;
+            color: #a4291c;
+        }
+        .starred-edit-btn.starred-edit-remove:active {
+            background: #f0bdb6;
+            transform: scale(0.95);
+        }
+        .starred-edit-btn.starred-edit-remove:disabled {
+            background: #f0f2f5;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Edit entry point: quiet text link, no chip styling. */
+        .starred-edit-link {
+            background: none;
+            border: none;
+            padding: 4px 2px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'Google Sans', sans-serif;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.12s, transform 0.08s;
+            line-height: 1.3;
+        }
+        .starred-edit-link:hover {
+            color: var(--primary);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .starred-edit-link:active {
+            transform: scale(0.95);
+        }
+
+        /* In My Schedule, star is just a visual indicator (no interaction).
+           Edit mode lets the whole card be tapped for selection. */
+        #scheduleContainer.starred-view .star-btn {
+            cursor: default;
+            pointer-events: none;
+        }
+        #scheduleContainer.starred-view.edit-mode .session-card,
+        #scheduleContainer.starred-view.edit-mode .event-card.plenary {
+            cursor: pointer;
+        }
+        #scheduleContainer.starred-view.edit-mode .star-btn {
+            color: var(--text-secondary);
+        }
+        #scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal .session-card,
+        #scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal .event-card {
+            outline: 2px solid #c0392b;
+            outline-offset: -2px;
+        }
+        #scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal {
+            opacity: 0.55;
+        }
+        #scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal .star-btn {
+            color: #c0392b;
+        }
+
         .session-title {
             font-weight: 700;
             font-size: 13px;
@@ -1219,7 +1338,7 @@
             }
 
             #scheduleContainer.starred-view {
-                padding: 0 8px 44px;
+                padding: 0 10px 44px;
             }
 
             /* Avoid double-padding: container already insets 8px, so inner list should not add more. */
@@ -1240,9 +1359,8 @@
                 background: var(--bg);
                 min-height: var(--starred-day-sticky-height);
                 padding-top: 8px;
-                /* Container has 8px left/right; add 4px so heading text sits at 12px (matches mobile title 0.75rem). */
-                padding-left: 4px;
-                padding-right: 4px;
+                padding-left: 0;
+                padding-right: 0;
                 padding-bottom: 8px;
                 margin-bottom: 2px;
             }
@@ -1472,9 +1590,8 @@
                 background: var(--bg);
                 min-height: var(--starred-day-sticky-height);
                 padding-top: 8px;
-                /* Container has 10px left/right; add 6px so heading text sits at 16px (matches header title 1rem). */
-                padding-left: 6px;
-                padding-right: 6px;
+                padding-left: 0;
+                padding-right: 0;
                 padding-bottom: 8px;
                 margin-bottom: 2px;
             }
@@ -1879,6 +1996,8 @@ const TOPBAR_COMPACT_ENTER_WIDTH = 1180;
 const TOPBAR_COMPACT_EXIT_WIDTH = 1240;
 
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
+let isStarredEditMode = false;
+let pendingRemovals = new Set();
 let currentView = Object.keys(data)[0];
 let activeTrackFilters = new Set(); // empty = show all
 let searchQuery = '';
@@ -2408,6 +2527,7 @@ function renderSchedule() {
 
     if (currentView === 'starred') {
         container.classList.add('starred-view');
+        container.classList.toggle('edit-mode', isStarredEditMode);
         renderStarredView(container);
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
@@ -3036,6 +3156,12 @@ function renderStarredView(container) {
     document.getElementById('trackFilters').innerHTML = '';
     const isMobile = isMobileLayoutViewport();
 
+    // Edit toolbar — always present at top of My Schedule, controls bulk removal.
+    const toolbar = document.createElement('div');
+    toolbar.className = 'starred-toolbar';
+    toolbar.id = 'starredToolbar';
+    container.appendChild(toolbar);
+
     const createTransferIndicator = (transferInfo) => {
         const row = document.createElement('div');
         row.className = 'transfer-row';
@@ -3312,6 +3438,93 @@ function renderStarredView(container) {
         msg.textContent = 'Star sessions to build your schedule';
         container.appendChild(msg);
     }
+
+    // Sync any pending-removal markings (in case re-render preserved state).
+    pendingRemovals.forEach(uid => {
+        document.querySelectorAll(`.session-card[data-uid="${uid}"]`).forEach(c => {
+            const wrapEl = c.closest('.mobile-card-wrap') || c;
+            wrapEl.classList.add('marked-for-removal');
+        });
+    });
+    updateStarredEditToolbar();
+}
+
+function toggleStarredRemoval(uid, cardEl) {
+    const wrapEl = cardEl.closest('.mobile-card-wrap') || cardEl;
+    if (pendingRemovals.has(uid)) {
+        pendingRemovals.delete(uid);
+        wrapEl.classList.remove('marked-for-removal');
+    } else {
+        pendingRemovals.add(uid);
+        wrapEl.classList.add('marked-for-removal');
+    }
+    updateStarredEditToolbar();
+}
+
+function updateStarredEditToolbar() {
+    const toolbar = document.getElementById('starredToolbar');
+    if (!toolbar) return;
+    const hasAny = starredSessions.length > 0;
+    toolbar.innerHTML = '';
+    if (!hasAny) {
+        toolbar.style.display = 'none';
+        return;
+    }
+    toolbar.style.display = '';
+
+    if (!isStarredEditMode) {
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'starred-edit-btn';
+        editBtn.textContent = 'Edit';
+        editBtn.setAttribute('aria-label', 'Edit my schedule');
+        editBtn.onclick = () => {
+            isStarredEditMode = true;
+            pendingRemovals.clear();
+            renderSchedule();
+        };
+        toolbar.appendChild(editBtn);
+        return;
+    }
+
+    const count = pendingRemovals.size;
+    if (count > 0) {
+        const status = document.createElement('span');
+        status.className = 'starred-edit-status';
+        status.textContent = `${count} selected`;
+        toolbar.appendChild(status);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'starred-edit-actions';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'starred-edit-btn starred-edit-cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = () => {
+        isStarredEditMode = false;
+        pendingRemovals.clear();
+        renderSchedule();
+    };
+    actions.appendChild(cancelBtn);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'starred-edit-btn starred-edit-remove';
+    removeBtn.textContent = count === 0 ? 'Remove' : `Remove (${count})`;
+    removeBtn.disabled = count === 0;
+    removeBtn.onclick = () => {
+        if (pendingRemovals.size === 0) return;
+        starredSessions = starredSessions.filter(uid => !pendingRemovals.has(uid));
+        localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
+        pendingRemovals.clear();
+        isStarredEditMode = false;
+        renderSchedule();
+    };
+    actions.appendChild(removeBtn);
+
+    toolbar.appendChild(actions);
 }
 
 // ─── CARD BUILDERS ───
@@ -3342,7 +3555,10 @@ function createFullWidthCard(s) {
     if (s.room && !isBreak) card.title = s.room;
     if (s.Abstract || s.Authors || s.Affiliation) {
         card.style.cursor = 'pointer';
-        card.onclick = () => openSessionDetails(s, card);
+        card.onclick = () => {
+            if (currentView === 'starred' && isStarredEditMode) return;
+            openSessionDetails(s, card);
+        };
     }
     return card;
 }
@@ -3398,7 +3614,15 @@ function createSessionCard(s, showRoom) {
     starBtn.className = 'star-btn' + (isStarred ? ' active' : '');
     starBtn.innerHTML = isStarred ? '★' : '☆';
     starBtn.title = isStarred ? 'Remove from schedule' : 'Add to schedule';
-    starBtn.onclick = (e) => { e.stopPropagation(); toggleStar(s.uid, starBtn); };
+    starBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (currentView === 'starred') {
+            // In My Schedule, the star is a non-interactive indicator.
+            // Selection happens via the card itself in edit mode.
+            return;
+        }
+        toggleStar(s.uid, starBtn);
+    };
     topRow.appendChild(starBtn);
     card.appendChild(topRow);
     
@@ -3436,7 +3660,13 @@ function createSessionCard(s, showRoom) {
     }
 
     if (hasDetails) {
-        card.onclick = () => openSessionDetails(s, card);
+        card.onclick = () => {
+            if (currentView === 'starred' && isStarredEditMode) {
+                toggleStarredRemoval(s.uid, card);
+                return;
+            }
+            openSessionDetails(s, card);
+        };
     }
     
     return card;
@@ -3899,6 +4129,10 @@ function toggleStar(uid, starEl) {
 }
 
 function switchDay(viewId, btn) {
+    if (currentView === 'starred' && viewId !== 'starred') {
+        isStarredEditMode = false;
+        pendingRemovals.clear();
+    }
     currentView = viewId;
     activeTrackFilters.clear();
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
