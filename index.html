@@ -27,6 +27,7 @@
             --mobile-slot-height: 8px;
             --popover-width: 360px;
             --desktop-room-sticky-top: 0px;
+            --scroll-indicator-reserve: 28px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -218,7 +219,7 @@
         }
 
         .grid-outer.scroll-indicator-active {
-            padding-top: calc(var(--filters-height) + 28px);
+            padding-top: calc(var(--filters-height) + var(--scroll-indicator-reserve));
         }
 
         .schedule-shell {
@@ -1323,8 +1324,9 @@
 
         .scroll-indicator-inner {
             display: inline-flex;
-            align-items: center;
+            align-items: flex-end;
             gap: 8px;
+            min-height: var(--scroll-indicator-reserve);
         }
 
         .scroll-indicator-row::before {
@@ -1394,7 +1396,7 @@
             transition: opacity 0.16s ease, transform 0.16s ease;
             width: var(--time-col-width);
             max-width: var(--time-col-width);
-            padding: 4px 8px 4px 0;
+            padding: 0 8px 0 0;
             border-radius: 6px;
             background: var(--bg);
             color: var(--text-secondary);
@@ -1443,7 +1445,9 @@
 
         .scroll-indicator-time-wrap {
             position: relative;
-            display: block;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
             height: 14px;
             line-height: 14px;
             overflow: hidden;
@@ -1458,7 +1462,7 @@
         .scroll-date-time-indicator.two-line {
             width: var(--time-col-width);
             max-width: var(--time-col-width);
-            padding: 4px 8px 4px 0;
+            padding: 0 8px 0 0;
             font-family: 'Google Sans', sans-serif;
             letter-spacing: 0.03em;
         }
