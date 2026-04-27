@@ -3319,6 +3319,7 @@ function renderStarredView(container) {
             const roomChanged = (current.room || '') !== (next.room || '');
 
             let transferAnchor = currentItem;
+            let anchorEnd = currentEnd;
             let betweenBreaks = [];
 
             if (hasGap) {
@@ -3335,9 +3336,22 @@ function renderStarredView(container) {
                     if (seenBreakKeys.has(breakKey)) return;
                     seenBreakKeys.add(breakKey);
 
+                    const breakStart = parseClockMinutes(breakSession.time);
+                    const preGap = breakStart - anchorEnd;
+                    if (preGap > 0) {
+                        const fromLabel = formatClockMinutes(anchorEnd);
+                        const toLabel = formatTime(breakSession.time);
+                        transferAnchor.freeTimeInfo = {
+                            amount: `${preGap} min free`,
+                            window: `${fromLabel}–${toLabel}`,
+                            aria: `${preGap} minutes free from ${fromLabel} to ${toLabel}`
+                        };
+                    }
+
                     const breakItem = { kind: 'break', session: breakSession };
                     addToTimeGroup(breakSession.time, breakItem);
                     transferAnchor = breakItem;
+                    anchorEnd = breakStart + getSessionDurationMinutes(dayTimes, breakSession);
                 });
             }
 
