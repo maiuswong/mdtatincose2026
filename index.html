@@ -704,6 +704,16 @@
             filter: brightness(0.93);
             transition: transform 0.08s, box-shadow 0.08s, filter 0.08s;
         }
+        /* When the star button is being pressed/hovered, don't apply the parent card's
+           :active scale/filter — otherwise the card shrinks under the cursor on mousedown
+           and the mouseup lands outside the star, making the click target the card. */
+        .session-card:has(.star-btn:active),
+        .session-card:has(.star-btn:hover),
+        .session-card.medtronic-highlight:has(.star-btn:active),
+        .session-card.medtronic-highlight:has(.star-btn:hover) {
+            transform: none !important;
+            filter: none !important;
+        }
         .session-card.medtronic-highlight {
             box-shadow:
                 0 0 0 2.5px rgba(0, 123, 255, 0.72),
@@ -768,14 +778,19 @@
             transition: color 0.15s, transform 0.15s;
             line-height: 1;
             flex-shrink: 0;
-            padding: 0;
+            padding: 6px;
             background: none;
             border: none;
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 6px;
+            right: 6px;
             margin-right: 0;
             z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            min-height: 28px;
         }
         .star-btn:hover { transform: scale(1.2); }
         .star-btn:active { transform: scale(0.85); filter: brightness(0.8); transition: transform 0.08s, filter 0.08s; }
@@ -4044,8 +4059,14 @@ function createSessionCard(s, showRoom) {
     starBtn.className = 'star-btn' + (isStarred ? ' active' : '');
     starBtn.innerHTML = isStarred ? '★' : '☆';
     starBtn.title = isStarred ? 'Remove from schedule' : 'Add to schedule';
+    // Prevent the parent card's press/active animation from firing when the star is tapped.
+    const stopBubble = (e) => e.stopPropagation();
+    starBtn.addEventListener('mousedown', stopBubble);
+    starBtn.addEventListener('pointerdown', stopBubble);
+    starBtn.addEventListener('touchstart', stopBubble, { passive: true });
     starBtn.onclick = (e) => {
         e.stopPropagation();
+        e.preventDefault();
         if (currentView === 'starred') {
             // In My Schedule, the star is a non-interactive indicator.
             // Selection happens via the card itself in edit mode.
