@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>INCOSE HWGC 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #1a73e8;
@@ -849,6 +850,114 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .starred-edit-btn.starred-edit-share {
+            background: #eef4ff;
+            color: var(--primary);
+        }
+        .starred-edit-btn.starred-edit-share:hover {
+            background: #dbe7ff;
+            color: #1a4fb8;
+        }
+        .starred-edit-btn.starred-edit-share:active {
+            background: #c7d8fc;
+            transform: scale(0.95);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: max(24px, env(safe-area-inset-bottom));
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(20, 24, 32, 0.94);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Google Sans', sans-serif;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 300;
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            max-width: calc(100vw - 32px);
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Share modal */
+        .share-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.32);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 260;
+            padding: 16px;
+        }
+        .share-modal.show { display: flex; }
+        .share-modal-box {
+            background: #fff;
+            border-radius: 18px;
+            padding: 22px 22px 18px;
+            width: min(380px, 100%);
+            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.24);
+            font-family: 'Google Sans', sans-serif;
+            text-align: center;
+        }
+        .share-modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+        .share-modal-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            margin-bottom: 16px;
+        }
+        .share-modal-qr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            margin: 0 auto 14px;
+            width: 252px;
+            height: 252px;
+            box-sizing: border-box;
+        }
+        .share-modal-qr svg, .share-modal-qr img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            shape-rendering: crispEdges;
+        }
+        .share-modal-qr.qr-loading {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        .share-modal-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+        .share-modal-count strong { color: var(--text-main); font-weight: 600; }
+        .share-modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         /* Edit entry point: quiet text link, no chip styling. */
@@ -1955,6 +2064,21 @@
 <div class="details-backdrop" id="detailsBackdrop"></div>
 <aside class="details-panel" id="detailsPanel" aria-hidden="true"></aside>
 
+<div class="share-modal" id="shareModal" aria-hidden="true">
+    <div class="share-modal-box" role="dialog" aria-labelledby="shareModalTitle">
+        <div class="share-modal-title" id="shareModalTitle">Scan to import</div>
+        <div class="share-modal-desc">Open your phone's camera and point it at this code. Importing will <strong>replace</strong> your starred sessions on that device with these.</div>
+        <div class="share-modal-qr" id="shareModalQr"></div>
+        <div class="share-modal-count" id="shareModalCount"></div>
+        <div class="share-modal-actions">
+            <button type="button" class="starred-edit-btn" id="shareModalClose">Close</button>
+            <button type="button" class="starred-edit-btn starred-edit-share" id="shareModalCopy">Copy link</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="appToast" role="status" aria-live="polite"></div>
+
 <script>
 const data = {
   "Tuesday 4/28": [
@@ -2536,6 +2660,171 @@ function init() {
 
     renderTrackFilters();
     renderSchedule();
+    setupShareModal();
+    handleStarsImportFromHash();
+}
+
+// ─── SHARE / IMPORT MY SCHEDULE ───
+function encodeStarsForShare(uids) {
+    // Compact, URL-safe: comma-separated UIDs (already short like s_91, s_33b).
+    return encodeURIComponent(uids.join(','));
+}
+function decodeStarsFromShare(raw) {
+    if (!raw) return [];
+    try {
+        return decodeURIComponent(raw).split(',').map(s => s.trim()).filter(Boolean);
+    } catch (e) {
+        return [];
+    }
+}
+function buildShareUrl(uids) {
+    const base = location.origin && location.origin !== 'null'
+        ? `${location.origin}${location.pathname}`
+        : location.href.split('#')[0].split('?')[0];
+    return `${base}#share=${encodeStarsForShare(uids)}`;
+}
+function showToast(message, durationMs = 2400) {
+    const el = document.getElementById('appToast');
+    if (!el) return;
+    el.textContent = message;
+    el.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => el.classList.remove('show'), durationMs);
+}
+let _currentShareUrl = '';
+function setupShareModal() {
+    const modal = document.getElementById('shareModal');
+    const closeBtn = document.getElementById('shareModalClose');
+    const copyBtn = document.getElementById('shareModalCopy');
+    if (!modal || !closeBtn || !copyBtn) return;
+    const close = () => modal.classList.remove('show');
+    closeBtn.onclick = close;
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('show')) close();
+    });
+    copyBtn.onclick = async () => {
+        if (!_currentShareUrl) return;
+        try {
+            await navigator.clipboard.writeText(_currentShareUrl);
+            showToast('Link copied to clipboard');
+        } catch (e) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = _currentShareUrl;
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Link copied');
+            } catch (err) {
+                showToast('Copy failed');
+            }
+        }
+    };
+}
+function renderQrInto(container, text) {
+    container.innerHTML = '';
+    container.classList.remove('qr-loading');
+    if (typeof qrcode !== 'function') {
+        container.classList.add('qr-loading');
+        container.textContent = 'QR library failed to load. Use Copy link instead.';
+        return;
+    }
+    // Pick the smallest type-version that fits, with error correction L for capacity.
+    let qr = null;
+    for (let typeNumber = 4; typeNumber <= 40; typeNumber++) {
+        try {
+            const candidate = qrcode(typeNumber, 'L');
+            candidate.addData(text);
+            candidate.make();
+            qr = candidate;
+            break;
+        } catch (e) { /* too small; try next */ }
+    }
+    if (!qr) {
+        container.classList.add('qr-loading');
+        container.textContent = 'Link too long for QR. Use Copy link.';
+        return;
+    }
+    // Render as inline SVG for crisp scaling.
+    const moduleCount = qr.getModuleCount();
+    const cellSize = 4;
+    const margin = 4;
+    const size = moduleCount * cellSize + margin * 2;
+    let path = '';
+    for (let r = 0; r < moduleCount; r++) {
+        for (let c = 0; c < moduleCount; c++) {
+            if (qr.isDark(r, c)) {
+                const x = margin + c * cellSize;
+                const y = margin + r * cellSize;
+                path += `M${x},${y}h${cellSize}v${cellSize}h-${cellSize}z`;
+            }
+        }
+    }
+    container.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" preserveAspectRatio="xMidYMid meet"><rect width="${size}" height="${size}" fill="#fff"/><path d="${path}" fill="#111827"/></svg>`;
+}
+function shareStarredSchedule() {
+    if (!starredSessions || starredSessions.length === 0) {
+        showToast('No starred sessions to share');
+        return;
+    }
+    const url = buildShareUrl(starredSessions);
+    _currentShareUrl = url;
+    const modal = document.getElementById('shareModal');
+    const qrEl = document.getElementById('shareModalQr');
+    const countEl = document.getElementById('shareModalCount');
+    if (!modal || !qrEl) return;
+    if (countEl) {
+        const n = starredSessions.length;
+        countEl.innerHTML = `Sharing <strong>${n}</strong> starred session${n === 1 ? '' : 's'}`;
+    }
+    renderQrInto(qrEl, url);
+    modal.classList.add('show');
+}
+function handleStarsImportFromHash() {
+    const hash = location.hash || '';
+    const m = hash.match(/(?:^#|[#&])share=([^&]+)/);
+    if (!m) return;
+    const incoming = decodeStarsFromShare(m[1]);
+    // Restrict to UIDs that actually exist in the data.
+    const knownUids = new Set();
+    Object.keys(data).forEach(day => (data[day] || []).forEach(s => { if (s.uid) knownUids.add(s.uid); }));
+    const valid = incoming.filter(uid => knownUids.has(uid));
+    // Clear the hash so it doesn't re-prompt on reload.
+    history.replaceState(null, '', location.pathname + location.search);
+    if (valid.length === 0) {
+        showToast('Shared link had no matching sessions');
+        return;
+    }
+    const current = new Set(starredSessions);
+    const incomingSet = new Set(valid);
+    const removed = [...current].filter(uid => !incomingSet.has(uid)).length;
+    const added = valid.filter(uid => !current.has(uid)).length;
+
+    let promptMsg;
+    if (current.size === 0) {
+        promptMsg = `Import ${valid.length} starred session${valid.length === 1 ? '' : 's'} from shared link?`;
+    } else if (removed === 0 && added === 0) {
+        promptMsg = `Your schedule already matches this shared schedule. Nothing to change.`;
+        window.alert(promptMsg);
+        return;
+    } else {
+        const parts = [];
+        if (added) parts.push(`add ${added}`);
+        if (removed) parts.push(`remove ${removed}`);
+        promptMsg = `Replace your starred schedule with the shared one? This will ${parts.join(' and ')} session${(added + removed) === 1 ? '' : 's'}.`;
+    }
+    const accept = window.confirm(promptMsg);
+    if (!accept) return;
+    starredSessions = [...valid];
+    localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
+    showToast(`Imported ${valid.length} session${valid.length === 1 ? '' : 's'}`);
+    // Switch to My Schedule view to show the imported result.
+    const starTab = document.querySelector('.tab-btn.starred-tab');
+    if (starTab) switchDay('starred', starTab);
+    else renderSchedule();
 }
 
 function renderTrackFilters() {
@@ -3598,6 +3887,14 @@ function updateStarredEditToolbar() {
     toolbar.style.display = '';
 
     if (!isStarredEditMode) {
+        const shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
+        shareBtn.className = 'starred-edit-btn starred-edit-share';
+        shareBtn.textContent = 'Share';
+        shareBtn.setAttribute('aria-label', 'Share my schedule');
+        shareBtn.onclick = () => shareStarredSchedule();
+        toolbar.appendChild(shareBtn);
+
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'starred-edit-btn';
