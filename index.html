@@ -3903,7 +3903,7 @@ function renderStarredView(container) {
             const allSameStart = cluster.sessions.every(s => s.time === cluster.anchorTime);
             labelEl.textContent = allSameStart
                 ? `${cluster.sessions.length} selected options at this time`
-                : `${cluster.sessions.length} overlapping options`;
+                : `${cluster.sessions.length} concurrent options`;
             header.appendChild(labelEl);
             overlapEl.appendChild(header);
             const innerItems = document.createElement('div');
