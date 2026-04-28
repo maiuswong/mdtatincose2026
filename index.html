@@ -842,18 +842,23 @@
            reconsider which session to be in. */
         .cluster-boundary-chip {
             display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 4px 10px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
             font-family: 'Google Sans', sans-serif;
             font-size: 11px;
             color: #6b7280;
-            padding: 2px 4px;
             line-height: 1.35;
+            padding: 2px 0;
         }
-        .cluster-boundary-chip .cluster-boundary-time {
-            font-weight: 600;
-            color: #4b5563;
+        /* Only stack into a column when there are MORE than 3 segments. With
+           3 or fewer, keep them inline (separated by a bullet) so a small
+           cluster reads as one tidy line. */
+        .cluster-boundary-chip:not(:has(> .cluster-boundary-seg:nth-child(4))) {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 10px;
         }
         .cluster-boundary-chip .cluster-boundary-seg {
             display: inline-flex;
@@ -866,6 +871,27 @@
             height: 9px;
             border-radius: 50%;
             flex: 0 0 auto;
+        }
+        /* Inner time-rows inside a cluster: pulled left so the time-col aligns
+           with the day's rail (outside the cluster's bg), while content sits
+           in the cluster's content column. Each inner row's .time-col is its
+           own sticky element, so boundary times push each other out exactly
+           like the outer day's time-col labels. */
+        .overlap-group .overlap-group-items {
+            gap: 8px;
+        }
+        .overlap-group .cluster-time-row {
+            display: grid;
+            align-items: stretch;
+            margin-left: calc(-1 * (var(--time-col-width) + 8px + 10px));
+            width: calc(100% + var(--time-col-width) + 8px + 10px);
+            column-gap: 18px;  /* outer time-row gap (8) + cluster padding-left (10) */
+        }
+        .overlap-group .cluster-time-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
         }
         /* Contained overlaps (different start times) still get a quiet footnote
            on the longer card, since they can't be visually grouped. */
@@ -1727,7 +1753,8 @@
             }
 
             /* Mobile: use native sticky time labels so each time is pushed out by the next one. */
-            .mobile-time-group .time-col {
+            .mobile-time-group .time-col,
+            .cluster-time-row .time-col {
                 position: sticky;
                 top: var(--mobile-time-sticky-top, 0px);
                 z-index: 14;
@@ -1736,8 +1763,16 @@
                 padding-top: 0;
                 padding-bottom: 2px;
             }
+            /* Empty outer time-col (cluster-bearing row): yields its sticky
+               slot to the cluster's inner labels so the previous row's time
+               stays sticky until the first inner label scrolls into view. */
+            .mobile-time-group .time-col.time-col-empty {
+                position: static;
+                background: transparent;
+            }
 
-            #scheduleContainer.starred-view .mobile-time-group .time-col {
+            #scheduleContainer.starred-view .mobile-time-group .time-col,
+            #scheduleContainer.starred-view .cluster-time-row .time-col {
                 top: calc(var(--mobile-time-sticky-top, 0px) + var(--starred-day-sticky-height));
             }
 
@@ -1973,6 +2008,10 @@
                 background: var(--bg);
                 padding-top: 0;
                 padding-bottom: 2px;
+            }
+            #scheduleContainer.starred-view .time-row .time-col.time-col-empty {
+                position: static;
+                background: transparent;
             }
         }
 
@@ -3846,10 +3885,15 @@ function renderStarredView(container) {
             header.className = 'overlap-group-header';
             const dotsEl = document.createElement('div');
             dotsEl.className = 'overlap-dots';
+            const seenColors = new Set();
             cluster.sessions.forEach(s => {
+                const color = getSessionAccentColor(s, s.Track);
+                const key = (color || '').toLowerCase();
+                if (seenColors.has(key)) return;
+                seenColors.add(key);
                 const dot = document.createElement('span');
                 dot.className = 'overlap-dot';
-                dot.style.background = getSessionAccentColor(s, s.Track);
+                dot.style.background = color;
                 dot.title = s.Title || '';
                 dotsEl.appendChild(dot);
             });
@@ -3892,15 +3936,26 @@ function renderStarredView(container) {
             const sortedTimes = [...allTimes].sort((a, b) => a - b);
 
             sortedTimes.forEach(t => {
-                // Boundary chip first (end/start info), then any cards starting at t.
+                // Each time-segment of the cluster becomes its own real
+                // .time-row with a sticky .time-col, so boundary times push
+                // each other out exactly like the day's regular time labels.
+                const innerRow = document.createElement('div');
+                innerRow.className = 'time-row cluster-time-row';
+                innerRow.style.gridTemplateColumns = `var(--time-col-width) 1fr`;
+                innerRow.dataset.time = formatClockMinutes(t);
+
+                const tCol = document.createElement('div');
+                tCol.className = 'time-col';
+                tCol.textContent = formatClockMinutes(t);
+                innerRow.appendChild(tCol);
+
+                const cellWrap = document.createElement('div');
+                cellWrap.className = 'cluster-time-cell';
+
                 const b = boundaryByTime.get(t);
                 if (b && (b.ends.length || b.starts.length)) {
                     const chip = document.createElement('div');
                     chip.className = 'cluster-boundary-chip';
-                    const timeEl = document.createElement('span');
-                    timeEl.className = 'cluster-boundary-time';
-                    timeEl.textContent = formatClockMinutes(t);
-                    chip.appendChild(timeEl);
 
                     const appendSegment = (session, label, isStart) => {
                         const seg = document.createElement('span');
@@ -3923,14 +3978,20 @@ function renderStarredView(container) {
                         chip.appendChild(seg);
                     };
 
-                    // If a single session both ends and starts at this time in
-                    // the same room (back-to-back same-room session), collapse
-                    // to one segment: "ends, then starts in <room>".
-                    // More generally, pair ends+starts that share a room.
+                    // If a session both ends and starts at this time in the
+                    // same room, collapse to one "next in <room>" segment.
+                    // Sort by canonical room order so multi-segment chips read
+                    // in the same left-to-right order as the day's columns.
+                    const roomRank = (room) => {
+                        const i = ROOM_ORDER.indexOf(room || '');
+                        return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+                    };
+                    const sortedStarts = [...b.starts].sort((a, c) => roomRank(a.room) - roomRank(c.room));
+                    const sortedEnds = [...b.ends].sort((a, c) => roomRank(a.room) - roomRank(c.room));
                     const usedEnd = new Set();
                     const usedStart = new Set();
-                    b.starts.forEach((sStart, i) => {
-                        const matchIdx = b.ends.findIndex((sEnd, j) =>
+                    sortedStarts.forEach((sStart, i) => {
+                        const matchIdx = sortedEnds.findIndex((sEnd, j) =>
                             !usedEnd.has(j) && (sEnd.room || '') === (sStart.room || '') && sStart.room
                         );
                         if (matchIdx >= 0) {
@@ -3952,17 +4013,21 @@ function renderStarredView(container) {
                             chip.appendChild(seg);
                         }
                     });
-                    b.ends.forEach((s, j) => { if (!usedEnd.has(j)) appendSegment(s, 'ends', false); });
-                    b.starts.forEach((s, i) => { if (!usedStart.has(i)) appendSegment(s, 'starts', true); });
+                    sortedEnds.forEach((s, j) => { if (!usedEnd.has(j)) appendSegment(s, 'ends', false); });
+                    sortedStarts.forEach((s, i) => { if (!usedStart.has(i)) appendSegment(s, 'starts', true); });
 
-                    innerItems.appendChild(chip);
+                    cellWrap.appendChild(chip);
                 }
+
                 cardEntries.filter(c => c.time === t).forEach(c => {
                     const cardWrap = document.createElement('div');
                     cardWrap.className = 'mobile-card-wrap';
                     cardWrap.appendChild(createSessionCard(c.session, true));
-                    innerItems.appendChild(cardWrap);
+                    cellWrap.appendChild(cardWrap);
                 });
+
+                innerRow.appendChild(cellWrap);
+                innerItems.appendChild(innerRow);
             });
 
             return overlapEl;
@@ -4005,6 +4070,10 @@ function renderStarredView(container) {
             // "Salon B or Salon C" / "Salon B, C, or D" instead of picking one.
             // Build destination room entries with track-color for dot rendering.
             let nextRoomEntries;
+            const roomRankGlobal = (room) => {
+                const i = ROOM_ORDER.indexOf(room || '');
+                return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+            };
             if (cIdxNext !== undefined) {
                 const c = clusterList[cIdxNext];
                 const startingHere = c.sessions.filter(s => s.time === next.time);
@@ -4018,6 +4087,7 @@ function renderStarredView(container) {
                 if (nextRoomEntries.length === 0 && next.room) {
                     nextRoomEntries = [{ name: next.room, color: getSessionAccentColor(next, next.Track) }];
                 }
+                nextRoomEntries.sort((a, b) => roomRankGlobal(a.name) - roomRankGlobal(b.name));
             } else {
                 nextRoomEntries = next.room
                     ? [{ name: next.room, color: getSessionAccentColor(next, next.Track) }]
@@ -4209,6 +4279,9 @@ function renderStarredView(container) {
         timeRowsEl.className = isMobile ? 'mobile-day-list' : 'time-rows';
         
         sortedTimes.forEach(time => {
+            const items = timeGroups[time];
+            const hasCluster = items.some(it => it.kind === 'cluster');
+
             if (isMobile) {
                 const group = document.createElement('div');
                 group.className = 'mobile-time-group';
@@ -4217,7 +4290,11 @@ function renderStarredView(container) {
 
                 const label = document.createElement('div');
                 label.className = 'time-col';
-                label.textContent = formatTime(time);
+                if (hasCluster) {
+                    label.classList.add('time-col-empty');
+                } else {
+                    label.textContent = formatTime(time);
+                }
                 group.appendChild(label);
 
                 const stack = document.createElement('div');
@@ -4263,7 +4340,11 @@ function renderStarredView(container) {
 
             const tCol = document.createElement('div');
             tCol.className = 'time-col';
-            tCol.textContent = formatTime(time);
+            if (hasCluster) {
+                tCol.classList.add('time-col-empty');
+            } else {
+                tCol.textContent = formatTime(time);
+            }
             row.appendChild(tCol);
 
             const wrap = document.createElement('div');
