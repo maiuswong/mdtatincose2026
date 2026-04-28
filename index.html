@@ -2420,7 +2420,17 @@ const TOPBAR_COMPACT_EXIT_WIDTH = 1240;
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
 let isStarredEditMode = false;
 let pendingRemovals = new Set();
-let currentView = Object.keys(data)[0];
+let currentView = (() => {
+    // Restore last-visited tab on reload. Validate against current data so a
+    // saved key for a removed day cleanly falls back to the first day.
+    try {
+        const saved = localStorage.getItem('incose_2026_currentView');
+        if (saved && (saved === 'starred' || Object.prototype.hasOwnProperty.call(data, saved))) {
+            return saved;
+        }
+    } catch (e) { /* localStorage may be unavailable */ }
+    return Object.keys(data)[0];
+})();
 let activeTrackFilters = new Set(); // empty = show all
 let searchQuery = '';
 let isGlobalSearchMode = false;
@@ -2873,13 +2883,16 @@ function init() {
     const tabsContainer = document.getElementById('dayTabs');
     Object.keys(data).forEach((day, i) => {
         const btn = document.createElement('button');
-        btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+        const isActive = (currentView === 'starred')
+            ? false
+            : (currentView === day || (currentView == null && i === 0));
+        btn.className = 'tab-btn' + (isActive ? ' active' : '');
         btn.textContent = day;
         btn.onclick = () => switchDay(day, btn);
         tabsContainer.appendChild(btn);
     });
     const starBtn = document.createElement('button');
-    starBtn.className = 'tab-btn starred-tab';
+    starBtn.className = 'tab-btn starred-tab' + (currentView === 'starred' ? ' active' : '');
     starBtn.innerHTML = 'My Schedule';
     starBtn.onclick = () => switchDay('starred', starBtn);
     tabsContainer.appendChild(starBtn);
@@ -5111,6 +5124,7 @@ function switchDay(viewId, btn) {
         pendingRemovals.clear();
     }
     currentView = viewId;
+    try { localStorage.setItem('incose_2026_currentView', viewId); } catch (e) { /* ignore */ }
     activeTrackFilters.clear();
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
