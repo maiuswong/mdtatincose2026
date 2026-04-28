@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>INCOSE HWGC 2026</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="application-name" content="HWGC 2026">
+    <meta name="description" content="INCOSE Systems Engineering in Healthcare 2026 conference schedule.">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HWGC 2026">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
@@ -5284,6 +5297,27 @@ requestAnimationFrame(() => requestAnimationFrame(() => {
     updateSessionTitleLayout();
     updateScrollDateTimeIndicator();
 }));
+
+// ─── PWA: register service worker ───
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Use a relative URL so it works under any GitHub Pages base path.
+        navigator.serviceWorker.register('sw.js').then((reg) => {
+            // When a new SW is found, activate it on next load.
+            reg.addEventListener('updatefound', () => {
+                const sw = reg.installing;
+                if (!sw) return;
+                sw.addEventListener('statechange', () => {
+                    if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                        // New version available; will take effect after refresh.
+                    }
+                });
+            });
+        }).catch((err) => {
+            console.warn('Service worker registration failed:', err);
+        });
+    });
+}
 </script>
 </body>
 </html>
