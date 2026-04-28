@@ -1,5 +1,5 @@
 /* Service Worker for INCOSE HWGC 2026 Schedule PWA */
-const VERSION = 'v1.0.0';
+const VERSION = 'v1.0.1';
 const CACHE_NAME = `hwgc2026-${VERSION}`;
 
 // Resolve URLs relative to the SW's scope so this works on GitHub Pages
@@ -9,7 +9,7 @@ const asScoped = (path) => new URL(path, SCOPE).toString();
 
 const PRECACHE_URLS = [
   './',
-  './conference_schedule_v2.html',
+  './index.html',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/icon-maskable.svg',
@@ -83,7 +83,8 @@ async function networkFirst(req) {
     const cached = await cache.match(req);
     if (cached) return cached;
     // Fallback to the main app shell.
-    const shell = await cache.match(asScoped('./conference_schedule_v2.html'));
+    const shell = await cache.match(asScoped('./index.html'))
+      || await cache.match(asScoped('./'));
     if (shell) return shell;
     return new Response('Offline', { status: 503, statusText: 'Offline' });
   }

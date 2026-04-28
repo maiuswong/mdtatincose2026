@@ -2,7 +2,7 @@
   "name": "INCOSE HWGC 2026 Schedule",
   "short_name": "HWGC 2026",
   "description": "INCOSE Systems Engineering in Healthcare 2026 conference schedule.",
-  "start_url": "./conference_schedule_v2.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
