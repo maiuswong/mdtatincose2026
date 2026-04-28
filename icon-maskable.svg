@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Maskable: keep important content within the inner 80% safe zone (centered ~410px) -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a73e8"/>
+      <stop offset="100%" stop-color="#0b57c9"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#g)"/>
+  <g transform="translate(51 51) scale(0.8)">
+    <rect x="120" y="92" width="28" height="56" rx="10" fill="#ffffff"/>
+    <rect x="364" y="92" width="28" height="56" rx="10" fill="#ffffff"/>
+    <rect x="96" y="128" width="320" height="296" rx="32" fill="#ffffff"/>
+    <rect x="96" y="128" width="320" height="64" rx="32" fill="#e8f0fe"/>
+    <rect x="132" y="220" width="80" height="20" rx="6" fill="#1a73e8"/>
+    <rect x="224" y="220" width="156" height="20" rx="6" fill="#cfd8e3"/>
+    <rect x="132" y="260" width="80" height="20" rx="6" fill="#1a73e8"/>
+    <rect x="224" y="260" width="120" height="20" rx="6" fill="#cfd8e3"/>
+    <rect x="132" y="300" width="80" height="20" rx="6" fill="#1a73e8"/>
+    <rect x="224" y="300" width="140" height="20" rx="6" fill="#cfd8e3"/>
+    <rect x="132" y="340" width="80" height="20" rx="6" fill="#1a73e8"/>
+    <rect x="224" y="340" width="100" height="20" rx="6" fill="#cfd8e3"/>
+    <path d="M348 372l11.4 23.1 25.5 3.7-18.45 18 4.35 25.4L348 430.2l-22.8 12 4.35-25.4-18.45-18 25.5-3.7z" fill="#f59e0b"/>
+  </g>
+</svg>
