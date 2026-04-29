@@ -2441,41 +2441,46 @@
         }
         .nn-row {
             all: unset;
-            display: flex;
-            align-items: stretch;
+            display: block;
             cursor: pointer;
             font-family: 'Google Sans', sans-serif;
             color: var(--text-main);
             box-sizing: border-box;
             width: 100%;
             position: relative;
-            border-left: 3px solid var(--nn-color, var(--text-secondary));
-            padding-left: 12px;
-            /* Shift right so the 3px tab center aligns with the section
-               dot center (both at x=5.5 from the section content edge). */
-            margin: 1px 0 1px 4px;
-            border-radius: 0 6px 6px 0;
+            padding: 10px 0;
+            border-radius: 6px;
             transition: background 0.18s ease;
         }
         .nn-row:hover {
-            background: rgba(0, 0, 0, 0.02);
+            background: rgba(0, 0, 0, 0.025);
         }
         .nn-row:focus-visible {
             outline: 2px solid var(--primary);
             outline-offset: -2px;
             border-radius: 6px;
         }
+
+        /* Col 1: Time. Leads the meta line. Tabular numerics, slightly
+           heavier than the rest so it pops as the row's anchor. */
+        .nn-row-time {
+            font-weight: 600;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            letter-spacing: 0.01em;
+            flex-shrink: 0;
+        }
+
+        /* Title + meta line. */
         .nn-row-main {
             min-width: 0;
-            flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             gap: 3px;
-            padding: 8px 0;
         }
         .nn-row-title {
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 500;
             line-height: 1.35;
             color: var(--text-main);
@@ -2487,85 +2492,44 @@
         .nn-row-meta {
             font-size: 11.5px;
             color: var(--text-secondary);
-            line-height: 1.25;
+            line-height: 1.3;
             white-space: nowrap;
+            letter-spacing: 0.01em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .nn-row-room {
             overflow: hidden;
             text-overflow: ellipsis;
-            letter-spacing: 0.01em;
+            min-width: 0;
         }
-        /* The legacy stripe element is unused in the panel layout but is
-           still emitted by the row builder for backwards compatibility. */
-        .nn-row-stripe { display: none; }
-
-        /* Featured rows: starred + non-starrable (breaks/meals/plenaries). */
-        .nn-row-featured .nn-row-main {
-            padding: 10px 0;
+        .nn-row-sep {
+            color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
         }
-        .nn-row-featured .nn-row-title {
-            font-size: 15px;
+        /* Track kicker: small label above the title in the row's accent
+           color. Replaces the inline chip — keeps the meta line clean
+           and the track always visible without competing for width. */
+        .nn-row-chip {
+            display: block;
+            font-size: 11px;
             font-weight: 600;
-            line-height: 1.35;
-            white-space: normal;
-            letter-spacing: -0.01em;
-        }
-        .nn-row-featured .nn-row-meta {
-            font-size: 12.5px;
-            margin-top: 3px;
-            white-space: normal;
+            letter-spacing: 0.04em;
+            color: var(--chip-color, var(--text-secondary));
+            margin-bottom: 2px;
         }
 
-        /* In the Now hero, the (typically single) featured row is the
-           centerpiece — large title, generous spacing, horizontal
-           progress bar at the bottom for live sessions. */
-        .nn-section.is-now .nn-row {
-            border-left-width: 4px;
-            border-radius: 0 8px 8px 0;
-            padding-left: 14px;
-        }
-        .nn-section.is-now .nn-row-main {
-            padding: 10px 0;
-        }
-        .nn-section.is-now .nn-row-title {
-            font-size: 15.5px;
-        }
-        .nn-section.is-now .nn-row-meta {
-            font-size: 12.5px;
-        }
-        .nn-section.is-now .nn-row-featured .nn-row-title {
-            font-size: 22px;
-            font-weight: 700;
-            line-height: 1.25;
-            letter-spacing: -0.015em;
-            white-space: normal;
-        }
-        .nn-section.is-now .nn-row-featured .nn-row-meta {
-            font-size: 13.5px;
-            margin-top: 5px;
-            white-space: normal;
-        }
-        .nn-section.is-now .nn-row-featured .nn-row-main {
-            padding: 12px 0;
-        }
-
-        /* In the Now hero, drop the vertical color tab — the inline
-           progress bar next to the room name carries the live signal. */
-        .nn-section.is-now .nn-row {
-            border-left: none;
-            padding-left: 0;
-            border-radius: 8px;
-        }
-
-        /* Inline progress bar: appears after the room name on live rows.
-           50px wide pill with track + fill. In the Now hero it's pushed
-           to the right edge of the row via auto-margin so it sits flush
-           with the row's right side. */
-        .nn-row-meta-live {
-            display: flex !important;
+        /* Live indicator: pushed to the right end of the meta line so the
+           title above gets full width. */
+        .nn-row-live-col {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             white-space: nowrap;
-            overflow: visible;
-            width: 100%;
+            margin-left: auto;
+            flex-shrink: 0;
         }
         .nn-inline-progress {
             display: inline-block;
@@ -2575,7 +2539,13 @@
             background: color-mix(in srgb, var(--nn-color, var(--primary)) 18%, transparent);
             overflow: hidden;
             flex-shrink: 0;
-            margin-left: auto;
+        }
+        .nn-inline-progress > span {
+            display: block;
+            height: 100%;
+            background: var(--nn-color, var(--primary));
+            border-radius: 999px;
+            transition: width 0.6s ease;
         }
         .nn-row-remaining {
             font-size: 11.5px;
@@ -2585,22 +2555,67 @@
             white-space: nowrap;
             flex-shrink: 0;
         }
-        .nn-section.is-now .nn-row-remaining {
-            font-size: 12.5px;
-        }
-        .nn-inline-progress > span {
-            display: block;
-            height: 100%;
-            background: var(--nn-color, var(--primary));
-            border-radius: 999px;
-            transition: width 0.6s ease;
-        }
 
-        /* Expanded session card detail — currently unused (rows open the
-           popover instead) but the wrapper exists; keep it hidden. */
+        /* Legacy hooks kept for backwards compat. */
+        .nn-row-stripe { display: none; }
         .nn-row-detail { display: none; }
 
-        /* ── "After the break" sub-header ───────────────────────────── */
+        /* Featured rows: starred + non-starrable (breaks/meals/plenaries).
+           Slightly heavier title weight; structure stays identical so the
+           time column lines up across all rows. */
+        .nn-row-featured .nn-row-title {
+            font-weight: 600;
+            white-space: normal;
+            letter-spacing: -0.008em;
+        }
+
+        /* Now hero: scale up. Larger type, larger progress bar, more
+           vertical breathing room. */
+        .nn-section.is-now .nn-row {
+            padding: 14px 0;
+        }
+        .nn-section.is-now .nn-row + .nn-row {
+            border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+        }
+        .nn-section.is-now .nn-row-time {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .nn-section.is-now .nn-row-title {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.3;
+            white-space: normal;
+            letter-spacing: -0.012em;
+        }
+        .nn-section.is-now .nn-row-meta {
+            font-size: 13px;
+        }
+        .nn-section.is-now .nn-row-chip {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .nn-section.is-now .nn-row-featured .nn-row-title {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.22;
+            letter-spacing: -0.018em;
+        }
+        .nn-section.is-now .nn-row-featured .nn-row-meta {
+            font-size: 13.5px;
+            margin-top: 3px;
+        }
+        .nn-section.is-now .nn-inline-progress {
+            width: 64px;
+            height: 5px;
+        }
+        .nn-section.is-now .nn-row-remaining {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
         .nn-after-break-header {
             display: flex;
             align-items: center;
@@ -2778,11 +2793,9 @@
             .nn-section.is-now .nn-row-featured .nn-row-meta {
                 font-size: 14.5px;
             }
-            .nn-section.is-now .nn-row-featured .nn-row-main {
-                padding: 14px 0;
-            }
-            .nn-inline-progress {
-                width: 60px;
+            .nn-section.is-now .nn-inline-progress {
+                width: 80px;
+                height: 6px;
             }
         }
     </style>
@@ -4489,29 +4502,63 @@ function buildNowNextRow(item, { featured }) {
     row.type = 'button';
     row.className = 'nn-row';
     if (featured) row.classList.add('nn-row-featured');
+    if (isLive) row.classList.add('nn-row-is-live');
     row.setAttribute('aria-expanded', 'false');
 
+    // Legacy stripe — kept for any callers still styling against it.
     const stripe = document.createElement('span');
     stripe.className = 'nn-row-stripe';
     row.appendChild(stripe);
 
+    // Title + meta line. Track label sits above the title as a kicker.
     const main = document.createElement('span');
     main.className = 'nn-row-main';
+
+    if (trackLabel) {
+        const chip = document.createElement('span');
+        chip.className = 'nn-row-chip';
+        chip.textContent = trackLabel;
+        chip.style.setProperty('--chip-color', color);
+        main.appendChild(chip);
+    }
 
     const title = document.createElement('span');
     title.className = 'nn-row-title';
     title.textContent = session.Title || '';
     main.appendChild(title);
 
-    if (session.room) {
-        const meta = document.createElement('span');
-        meta.className = 'nn-row-meta';
-        meta.textContent = session.room;
-        main.appendChild(meta);
+    const meta = document.createElement('span');
+    meta.className = 'nn-row-meta';
+
+    let timeStr = '';
+    try {
+        timeStr = win.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    } catch (_) { /* leave blank */ }
+    if (timeStr) {
+        const timeEl = document.createElement('span');
+        timeEl.className = 'nn-row-time';
+        timeEl.textContent = timeStr;
+        meta.appendChild(timeEl);
     }
+    if (session.room) {
+        if (timeStr) {
+            const sep = document.createElement('span');
+            sep.className = 'nn-row-sep';
+            sep.textContent = '·';
+            sep.setAttribute('aria-hidden', 'true');
+            meta.appendChild(sep);
+        }
+        const roomEl = document.createElement('span');
+        roomEl.className = 'nn-row-room';
+        roomEl.textContent = session.room;
+        meta.appendChild(roomEl);
+    }
+    main.appendChild(meta);
     row.appendChild(main);
 
-    // Live sessions: render an inline progress bar next to the room name.
+    // Col 3: Live indicator (progress bar + remaining time) — only on live rows.
+    // Appended into the meta line so it sits *below* the title, sharing the
+    // same horizontal space as room/chip and right-aligned via auto margin.
     if (isLive) {
         const total = win.end - win.start;
         const elapsed = Math.max(0, Math.min(total, now - win.start));
@@ -4530,24 +4577,28 @@ function buildNowNextRow(item, { featured }) {
         }
         wrap.classList.add('nn-row-live');
         wrap.style.setProperty('--nn-progress', pctStr);
-        // Find or create the meta line so we can append the bar inline.
+
+        // Ensure a meta line exists to host the live indicator.
         let metaEl = main.querySelector('.nn-row-meta');
         if (!metaEl) {
             metaEl = document.createElement('span');
             metaEl.className = 'nn-row-meta';
             main.appendChild(metaEl);
         }
-        metaEl.classList.add('nn-row-meta-live');
+
+        const live = document.createElement('span');
+        live.className = 'nn-row-live-col';
         const bar = document.createElement('span');
         bar.className = 'nn-inline-progress';
         const fill = document.createElement('span');
         fill.style.width = pctStr;
         bar.appendChild(fill);
-        metaEl.appendChild(bar);
+        live.appendChild(bar);
         const remaining = document.createElement('span');
         remaining.className = 'nn-row-remaining';
         remaining.textContent = remainingStr;
-        metaEl.appendChild(remaining);
+        live.appendChild(remaining);
+        metaEl.appendChild(live);
     }
 
     row.addEventListener('click', () => {
@@ -4582,7 +4633,7 @@ function buildOtherSessionsBranch(others) {
 
     const label = document.createElement('span');
     label.className = 'nn-branch-label';
-    label.textContent = `${others.length} other ${others.length === 1 ? 'session' : 'sessions'} running`;
+    label.textContent = `${others.length} other ${others.length === 1 ? 'session' : 'sessions'}`;
     main.appendChild(label);
 
     // Track dots preview — unique track colors at this time slot.
