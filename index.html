@@ -2737,6 +2737,228 @@
             }
             .nn-section-title { font-size: 0.72rem; }
         }
+
+        /* ─── Desktop layout ───
+           The vertical-rail metaphor doesn't translate to a split layout,
+           so on desktop we drop the rail entirely and present:
+             • Left:  Happening Now as a large card panel with a top
+                      track-color accent bar and a horizontal progress bar.
+             • Right: Happening Next and Thereafter as compact list
+                      sections, each row marked by a small left color tab
+                      (no connecting rail). */
+        @media (min-width: 720px) {
+            #scheduleContainer.now-next-view {
+                display: grid;
+                grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+                grid-auto-rows: min-content;
+                column-gap: 40px;
+                row-gap: 22px;
+                padding: 32px var(--page-gutter) 40px;
+                max-width: 1200px;
+                margin: 0 auto;
+                align-items: start;
+            }
+            .nn-section.is-now {
+                grid-column: 1;
+                grid-row: 1 / span 99;
+                position: sticky;
+                top: 24px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                padding: 32px 32px 28px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px rgba(0, 0, 0, 0.05);
+                overflow: hidden;
+            }
+            .nn-section.is-next,
+            .nn-section.is-thereafter {
+                grid-column: 2;
+            }
+            .nn-updated {
+                grid-column: 2;
+                text-align: right;
+                padding-top: 4px;
+            }
+
+            /* Drop the rail entirely on desktop. */
+            #scheduleContainer.now-next-view .nn-row {
+                grid-template-columns: minmax(0, 1fr) auto !important;
+            }
+            #scheduleContainer.now-next-view .nn-row-stripe {
+                display: none !important;
+            }
+            /* Section dots become inline bullets, not rail anchors. */
+            #scheduleContainer.now-next-view .nn-section-title .nn-dot,
+            #scheduleContainer.now-next-view .nn-after-break-left .nn-dot {
+                margin-left: 0;
+                margin-right: 10px;
+                box-shadow: none;
+            }
+            .nn-section.is-now .nn-section-title .nn-dot {
+                box-shadow: 0 0 0 4px color-mix(in srgb, #5C8DFF 18%, transparent);
+            }
+
+            /* ── "Now" hero ────────────────────────────────────────── */
+            .nn-section.is-now .nn-section-header {
+                padding: 0 0 20px 0;
+            }
+            .nn-section.is-now .nn-section-title {
+                font-size: 0.78rem;
+                letter-spacing: 0.12em;
+            }
+            .nn-section.is-now .nn-section-time {
+                font-size: 0.85rem;
+                color: var(--text-main);
+                font-weight: 500;
+            }
+            .nn-section.is-now .nn-card-list {
+                gap: 14px;
+            }
+            .nn-section.is-now .nn-row {
+                padding: 6px 0 !important;
+                border-radius: 8px;
+                transition: background 0.15s ease;
+            }
+            .nn-section.is-now .nn-row:hover {
+                background: rgba(0, 0, 0, 0.025);
+            }
+            .nn-section.is-now .nn-row-main {
+                padding: 4px 6px !important;
+            }
+            .nn-section.is-now .nn-row-title {
+                font-size: 16px;
+                font-weight: 500;
+            }
+            .nn-section.is-now .nn-row-meta {
+                font-size: 13px;
+            }
+            .nn-section.is-now .nn-row-featured .nn-row-title {
+                font-size: 26px;
+                font-weight: 700;
+                line-height: 1.25;
+                letter-spacing: -0.015em;
+                white-space: normal;
+            }
+            .nn-section.is-now .nn-row-featured .nn-row-meta {
+                font-size: 14.5px;
+                margin-top: 6px;
+                white-space: normal;
+            }
+            .nn-section.is-now .nn-row-featured .nn-row-main {
+                padding: 10px 6px 14px !important;
+            }
+            .nn-section.is-now .nn-empty {
+                margin: 4px 0 0 0;
+                padding: 28px 22px;
+                font-size: 0.95rem;
+            }
+
+            /* Horizontal progress for live rows. The vertical stripe
+               gradient is hidden via the global rail-removal rules; we
+               render a thin track and fill bar across the bottom of the
+               row using the --nn-progress var mirrored onto the wrap. */
+            .nn-section.is-now .nn-row-live {
+                position: relative;
+                padding-bottom: 18px;
+            }
+            .nn-section.is-now .nn-row-live::before,
+            .nn-section.is-now .nn-row-live::after {
+                content: '';
+                position: absolute;
+                left: 6px;
+                right: 6px;
+                bottom: 6px;
+                height: 4px;
+                border-radius: 999px;
+                pointer-events: none;
+            }
+            .nn-section.is-now .nn-row-live::before {
+                background: color-mix(in srgb, var(--nn-color, var(--primary)) 18%, transparent);
+            }
+            .nn-section.is-now .nn-row-live::after {
+                width: calc((100% - 12px) * var(--nn-progress, 0%) / 100%);
+                background: var(--nn-color, var(--primary));
+                transition: width 0.6s ease;
+            }
+
+            /* ── Right column: Next + Thereafter ──────────────────── */
+            .nn-section.is-next,
+            .nn-section.is-thereafter {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 18px 18px 14px;
+            }
+            .nn-section.is-next .nn-section-header,
+            .nn-section.is-thereafter .nn-section-header {
+                padding: 0 0 12px 0;
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 8px;
+            }
+            .nn-section.is-next .nn-section-title,
+            .nn-section.is-thereafter .nn-section-title {
+                font-size: 0.74rem;
+            }
+            .nn-section.is-next .nn-card-list,
+            .nn-section.is-thereafter .nn-card-list {
+                gap: 2px;
+            }
+            /* Right-column rows: small left color tab via border, no rail. */
+            .nn-section.is-next .nn-row,
+            .nn-section.is-thereafter .nn-row {
+                border-left: 3px solid var(--nn-color, var(--text-secondary));
+                padding-left: 12px !important;
+                margin: 2px 0;
+                border-radius: 0 6px 6px 0;
+            }
+            .nn-section.is-next .nn-row-main,
+            .nn-section.is-thereafter .nn-row-main {
+                padding: 8px 0 !important;
+            }
+            .nn-section.is-next .nn-row-featured .nn-row-title,
+            .nn-section.is-thereafter .nn-row-featured .nn-row-title {
+                font-size: 15px;
+            }
+            .nn-section.is-next .nn-row-featured .nn-row-meta,
+            .nn-section.is-thereafter .nn-row-featured .nn-row-meta {
+                font-size: 12.5px;
+            }
+            .nn-section.is-next .nn-row-featured .nn-row-main,
+            .nn-section.is-thereafter .nn-row-featured .nn-row-main {
+                padding: 10px 0 !important;
+            }
+
+            /* "Other sessions" branch: keep the hollow ring metaphor as a
+               simple inline indicator (no rail behind it on desktop). */
+            #scheduleContainer.now-next-view .nn-branch-stripe-col::before {
+                display: none;
+            }
+            #scheduleContainer.now-next-view .nn-branch-ring {
+                margin-left: 0;
+            }
+            #scheduleContainer.now-next-view .nn-branch-row {
+                grid-template-columns: 22px minmax(0, 1fr) auto !important;
+                padding-left: 4px !important;
+            }
+            #scheduleContainer.now-next-view .nn-branch-detail .nn-row {
+                border-left: none !important;
+                padding-left: 4px !important;
+                opacity: 0.85;
+            }
+            /* The branch row itself represents many tracks at once, so no
+               single-color left tab. Override the right-column rule. */
+            #scheduleContainer.now-next-view .nn-branch-row {
+                border-left: none !important;
+                padding-left: 4px !important;
+            }
+
+            /* After-the-break header on desktop: simpler inline header. */
+            #scheduleContainer.now-next-view .nn-after-break-header {
+                padding: 14px 0 8px;
+                border-top: 1px dashed var(--border);
+                margin-top: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -4460,30 +4682,22 @@ function buildNowNextRow(item, { featured }) {
         const total = win.end - win.start;
         const elapsed = Math.max(0, Math.min(total, now - win.start));
         const pct = total > 0 ? (elapsed / total) * 100 : 0;
+        const pctStr = pct.toFixed(2) + '%';
         stripe.classList.add('nn-row-stripe-live');
-        stripe.style.setProperty('--nn-progress', pct.toFixed(2) + '%');
+        stripe.style.setProperty('--nn-progress', pctStr);
+        // Mirror progress on the wrap so non-rail layouts (desktop hero)
+        // can render the indicator however they like.
+        wrap.classList.add('nn-row-live');
+        wrap.style.setProperty('--nn-progress', pctStr);
+        wrap.dataset.startLabel = win.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        wrap.dataset.endLabel = win.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     }
 
-    const detail = document.createElement('div');
-    detail.className = 'nn-row-detail';
-
     row.addEventListener('click', () => {
-        const isOpen = wrap.classList.toggle('open');
-        row.setAttribute('aria-expanded', String(isOpen));
-        if (isOpen && !detail.hasChildNodes()) {
-            const cardWrap = document.createElement('div');
-            cardWrap.className = 'mobile-card-wrap';
-            if (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session)) {
-                cardWrap.appendChild(createSessionCard(session, true));
-            } else {
-                cardWrap.appendChild(createFullWidthCard(session));
-            }
-            detail.appendChild(cardWrap);
-        }
+        openSessionDetails(session, row);
     });
 
     wrap.appendChild(row);
-    wrap.appendChild(detail);
     return wrap;
 }
 
@@ -4725,6 +4939,36 @@ function renderNowNextView(container) {
         buildNowNextSectionHeader('Happening Next', nextMeta),
         nextBody,
         pickSectionColor(nextGroup.items));
+
+    // ─── Thereafter: the next start group after "Happening Next" ends
+    // (or after the After-the-break group, if one was shown).
+    let thereafterCursor = null;
+    if (nextGroup.items.length) {
+        const nextEnd = new Date(Math.max(...nextGroup.items.map(i => i.win.end.getTime())));
+        thereafterCursor = new Date(nextEnd.getTime() - 1);
+        if (isAllBreakOrMeal(nextGroup.items)) {
+            // Skip past the after-break group too, if there was one.
+            const afterBreak = findNextStartGroup(allItems, thereafterCursor);
+            if (afterBreak.items.length) {
+                const abEnd = new Date(Math.max(...afterBreak.items.map(i => i.win.end.getTime())));
+                thereafterCursor = new Date(abEnd.getTime() - 1);
+            }
+        }
+    }
+    const thereafter = thereafterCursor ? findNextStartGroup(allItems, thereafterCursor) : { items: [], startDate: null };
+    if (thereafter.items.length) {
+        const tStart = thereafter.startDate;
+        const tStartLabel = tStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const sameDay = tStart.toDateString() === now.toDateString();
+        const dayLabel = sameDay
+            ? ''
+            : tStart.toLocaleDateString([], { weekday: 'short' }) + ' ';
+        const tMeta = `${dayLabel}${tStartLabel} · ${formatRelativeMinutes(tStart, now)}`;
+        appendNowNextSection(container, 'is-thereafter',
+            buildNowNextSectionHeader('Thereafter', tMeta),
+            buildNowNextList(thereafter.items),
+            pickSectionColor(thereafter.items));
+    }
 
     const updated = document.createElement('div');
     updated.className = 'nn-updated';
