@@ -2786,6 +2786,12 @@
 <div class="toast" id="appToast" role="status" aria-live="polite"></div>
 
 <script>
+// Prevent the browser from restoring the previous scroll position on reload.
+// Without this, mobile reloads land mid-page (e.g. wherever the user last
+// scrolled in the timetable) which feels like the page is "starting scrolled".
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
 const data = {
   "Tuesday 4/28": [
     {"day":"Tuesday 4/28","time":"8:00 AM","room":"Bristol","type":"training","Track":"Training","Title":"SE Fundamentals 200 Tutorial","Abstract":"Building on last year's Fundamental 100 tutorial, this full-day tutorial will consist of four 90-minute classes and exercises focused on Integration Planning, System Design, System Testing, and Change Management. About half the time will be spent in lectures, and half the time the students will work on an example as a team to practice what they are learning. We will supply supporting reference documents for those who want to learn more, as well as example solutions. Limited to 28 students, so register early!","Authors":"Christopher Unger, Joseph Green and John Vantuno","Affiliation":"Practical SE, LLC, GE Healthcare, Medtronic and Eli Lilly and Company","SessionLength":"9h 30m","isMedtronic":false,"session_id":801,"uid":"s_801"},
@@ -4505,7 +4511,7 @@ function buildOtherSessionsBranch(others) {
 
     const label = document.createElement('span');
     label.className = 'nn-branch-label';
-    label.textContent = `${others.length} other ${others.length === 1 ? 'session' : 'sessions'} running `;
+    label.textContent = `${others.length} other ${others.length === 1 ? 'session' : 'sessions'} running`;
     main.appendChild(label);
 
     // Track dots preview — unique track colors at this time slot.
