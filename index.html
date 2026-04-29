@@ -2616,6 +2616,32 @@
             color: var(--text-main);
         }
 
+        /* Free-time row: structurally a session card but with "Free time"
+           as the title (the most important fact). Duration + window read
+           as the meta line below, exactly like a session's time · room.
+           No background or border — it inherits the row's rhythm. */
+        .nn-free-row {
+            cursor: default;
+        }
+        .nn-free-row:hover {
+            background: transparent;
+        }
+        .nn-free-title {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 8px;
+        }
+        .nn-free-cup {
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .nn-section.is-now .nn-free-cup {
+            width: 20px;
+            height: 20px;
+        }
+
         .nn-after-break-header {
             display: flex;
             align-items: center;
@@ -4680,13 +4706,7 @@ function buildOtherSessionsBranch(others) {
     return wrap;
 }
 
-function buildNowNextList(items) {
-    // Featured (starred + non-starrable rows like breaks/meals/plenaries)
-    // render on the timeline rail. Non-starred concurrent sessions are
-    // collapsed into a single "branch" row on the rail with a hollow dot
-    // — they exist at the same time but are off the user's path.
-    sortNowNextItems(items);
-
+function partitionFeaturedItems(items) {
     const featured = [];
     const others = [];
     items.forEach(item => {
@@ -4699,9 +4719,104 @@ function buildNowNextList(items) {
             others.push(item);
         }
     });
+    return { featured, others };
+}
+
+function buildNowNextList(items, opts = {}) {
+    // Featured (starred + non-starrable rows like breaks/meals/plenaries)
+    // render on the timeline rail. Non-starred concurrent sessions are
+    // collapsed into a single "branch" row on the rail with a hollow dot
+    // — they exist at the same time but are off the user's path.
+    sortNowNextItems(items);
+
+    const { featured, others } = partitionFeaturedItems(items);
 
     const list = document.createElement('div');
     list.className = 'nn-card-list';
+
+    // No starred / featured items, only "other" sessions. Render a
+    // session-card-shaped row for the free time: title is "Free time",
+    // meta line carries duration · window.
+    // Caller may opt into:
+    //   - opts.suppressFreeChip:  hide the chip entirely (used when an
+    //     earlier section is already showing a combined free chip that
+    //     covers this slot too).
+    //   - opts.freeChipEndOverride: extend the chip's window end so it
+    //     spans the whole run of consecutive free-only slots.
+    //   - opts.freeChipStartOverride: pin the start to "now" so the
+    //     window reads from the user's actual moment (not the slot's
+    //     own start, which may be in the past).
+    if (!featured.length && others.length && !opts.suppressFreeChip) {
+        let slotStart = null, slotEnd = null;
+        others.forEach(it => {
+            if (!slotStart || it.win.start < slotStart) slotStart = it.win.start;
+            if (!slotEnd || it.win.end > slotEnd) slotEnd = it.win.end;
+        });
+        if (opts.freeChipStartOverride) slotStart = opts.freeChipStartOverride;
+        if (opts.freeChipEndOverride) slotEnd = opts.freeChipEndOverride;
+        const totalMin = slotStart && slotEnd ? Math.max(0, Math.round((slotEnd - slotStart) / 60000)) : 0;
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        const amount = totalMin <= 0 ? '' : (h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`);
+        let windowStr = '';
+        try {
+            if (slotStart && slotEnd) {
+                const fmt = d => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                windowStr = `${fmt(slotStart)} – ${fmt(slotEnd)}`;
+            }
+        } catch (_) { /* ignore */ }
+
+        const free = document.createElement('div');
+        free.className = 'nn-row-wrap nn-free-wrap';
+
+        const row = document.createElement('div');
+        row.className = 'nn-row nn-free-row';
+
+        const main = document.createElement('span');
+        main.className = 'nn-row-main';
+
+        // Title is the headline: "Free time" — that's the user's actual
+        // status. The cup glyph hugs the title rather than living in a
+        // kicker, so the title stays the dominant element.
+        const title = document.createElement('span');
+        title.className = 'nn-row-title nn-free-title';
+        title.innerHTML =
+            '<svg class="nn-free-cup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<path d="M4 9h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9z"/>' +
+            '<path d="M17 11h2a2 2 0 0 1 0 4h-2"/>' +
+            '<path d="M8 3c0 1.5 1 1.5 1 3M12 3c0 1.5 1 1.5 1 3"/>' +
+            '</svg>' +
+            '<span>Free time</span>';
+        main.appendChild(title);
+
+        // Meta: duration · window. Same shape as a session row (time +
+        // separators), so it inherits the row's rhythm.
+        const metaParts = [];
+        if (amount) metaParts.push(amount);
+        if (windowStr) metaParts.push(windowStr);
+        if (metaParts.length) {
+            const meta = document.createElement('span');
+            meta.className = 'nn-row-meta';
+            metaParts.forEach((part, idx) => {
+                if (idx > 0) {
+                    const sep = document.createElement('span');
+                    sep.className = 'nn-row-sep';
+                    sep.textContent = '·';
+                    sep.setAttribute('aria-hidden', 'true');
+                    meta.appendChild(sep);
+                }
+                const span = document.createElement('span');
+                if (idx === 0) span.className = 'nn-row-time';
+                span.textContent = part;
+                meta.appendChild(span);
+            });
+            main.appendChild(meta);
+        }
+
+        row.appendChild(main);
+        free.appendChild(row);
+        list.appendChild(free);
+    }
 
     featured.forEach(item => {
         list.appendChild(buildNowNextRow(item, { featured: true }));
@@ -4774,10 +4889,45 @@ function renderNowNextView(container) {
     // ─── Happening Now: every session whose window contains `now`.
     const happeningNow = allItems.filter(i => now >= i.win.start && now < i.win.end);
 
+    // ─── Look ahead so we can detect a *run* of consecutive free-only
+    // slots and render a single combined free-time chip on the first
+    // section, suppressing duplicates on subsequent sections.
+    const nextGroup = findNextStartGroup(allItems, now);
+    const nowFreeOnly = happeningNow.length > 0
+        && partitionFeaturedItems(happeningNow).featured.length === 0;
+    const nextFreeOnly = nextGroup.items.length > 0
+        && partitionFeaturedItems(nextGroup.items).featured.length === 0;
+
+    // Compute the end of the free run starting from "now": if Next is
+    // also free-only, extend through it (and recursively, the slot after
+    // that, until we hit a featured/starred slot).
+    let freeRunEnd = null;
+    if (nowFreeOnly) {
+        let cursor = new Date();
+        let runEnd = new Date(Math.max(...happeningNow.map(i => i.win.end.getTime())));
+        let nextRun = nextGroup;
+        let nextRunFree = nextFreeOnly;
+        while (nextRunFree && nextRun.items.length) {
+            const ends = nextRun.items.map(i => i.win.end.getTime());
+            runEnd = new Date(Math.max(runEnd.getTime(), Math.max(...ends)));
+            cursor = nextRun.startDate ? new Date(nextRun.startDate.getTime()) : cursor;
+            const peek = findNextStartGroup(allItems, cursor);
+            if (!peek.items.length) break;
+            const peekFree = partitionFeaturedItems(peek.items).featured.length === 0;
+            if (!peekFree) break;
+            nextRun = peek;
+            nextRunFree = true;
+        }
+        freeRunEnd = runEnd;
+    }
+
     let nowMeta = '';
     let nowBody;
     if (happeningNow.length) {
-        nowBody = buildNowNextList(happeningNow);
+        nowBody = buildNowNextList(happeningNow, nowFreeOnly ? {
+            freeChipStartOverride: now,
+            freeChipEndOverride: freeRunEnd
+        } : {});
     } else {
         nowBody = document.createElement('div');
         nowBody.className = 'nn-empty';
@@ -4788,18 +4938,23 @@ function renderNowNextView(container) {
         nowBody);
 
     // ─── Happening Next: next start time after now, plus everything sharing it.
-    const nextGroup = findNextStartGroup(allItems, now);
     let nextMeta = '';
     if (nextGroup.startDate) {
         const startLabel = nextGroup.startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         nextMeta = `${startLabel} · ${formatRelativeMinutes(nextGroup.startDate, now)}`;
     }
 
+    // If the Now section is already showing a combined free chip that
+    // covers this slot too, suppress the duplicate here.
+    const suppressNextFreeChip = nowFreeOnly && nextFreeOnly;
+
     let nextBody;
     if (nextGroup.items.length) {
         nextBody = document.createElement('div');
         nextBody.className = 'nn-subgroup';
-        nextBody.appendChild(buildNowNextList(nextGroup.items));
+        nextBody.appendChild(buildNowNextList(nextGroup.items, {
+            suppressFreeChip: suppressNextFreeChip
+        }));
 
         // If "Next" is purely break/meal, also surface what's happening
         // *after* the break so users can plan. Use the EARLIEST end so a
@@ -4875,9 +5030,16 @@ function renderNowNextView(container) {
             ? ''
             : tStart.toLocaleDateString([], { weekday: 'short' }) + ' ';
         const tMeta = `${dayLabel}${tStartLabel} · ${formatRelativeMinutes(tStart, now)}`;
+        // If this slot is also part of the free run we already covered
+        // on Now's chip, suppress the duplicate free-time chip here.
+        const thereafterFreeOnly = partitionFeaturedItems(thereafter.items).featured.length === 0;
+        const suppressThereafterFreeChip = nowFreeOnly && thereafterFreeOnly
+            && freeRunEnd && tStart < freeRunEnd;
         appendNowNextSection(container, 'is-thereafter',
             buildNowNextSectionHeader('Thereafter', tMeta),
-            buildNowNextList(thereafter.items),
+            buildNowNextList(thereafter.items, {
+                suppressFreeChip: suppressThereafterFreeChip
+            }),
             pickSectionColor(thereafter.items));
     }
 
