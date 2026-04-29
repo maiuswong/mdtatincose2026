@@ -183,6 +183,27 @@
         .tab-btn.starred-tab.active { background: var(--star-color); color: white; }
         .tab-btn.starred-tab.active:active { filter: brightness(0.88); transform: scale(0.95); }
 
+        .tab-btn.now-tab {
+            color: #0b5a36;
+            background: #e1f5ec;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tab-btn.now-tab::before {
+            content: "";
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #16a34a;
+            box-shadow: 0 0 0 0 rgba(22,163,74,0.6);
+            animation: nowPulse 1.6s ease-out infinite;
+        }
+        .tab-btn.now-tab:hover { background: #c9ecd8; color: #074a2c; }
+        .tab-btn.now-tab:active { background: #b3e3c7; transform: scale(0.95); }
+        .tab-btn.now-tab.active { background: #16a34a; color: #fff; }
+        .tab-btn.now-tab.active::before { background: #fff; box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+        .tab-btn.now-tab.active:active { filter: brightness(0.92); transform: scale(0.95); }
+
         /* ─── SEARCH ─── */
         #searchBar {
             padding: 6px 14px;
@@ -2249,6 +2270,351 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* ─── My Schedule: highlight the currently in-progress session ─── */
+        .mobile-time-group.is-current .session-card,
+        .mobile-time-group.is-current .event-card,
+        .schedule-item.is-current .session-card,
+        .schedule-item.is-current .event-card,
+        .overlap-group.is-current {
+            box-shadow: 0 0 0 2px var(--primary), 0 6px 18px rgba(26, 115, 232, 0.18);
+        }
+        .mobile-time-group.is-current .time-col {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .now-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 6px;
+            padding: 1px 7px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #fff;
+            background: var(--primary);
+            border-radius: 999px;
+            vertical-align: middle;
+        }
+        .now-pill::before {
+            content: "";
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 0 rgba(255,255,255,0.7);
+            animation: nowPulse 1.6s ease-out infinite;
+        }
+        @keyframes nowPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            70%  { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
+        /* "Jump to now" floating button on My Schedule */
+        .jump-to-now-btn {
+            position: fixed;
+            right: 16px;
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            z-index: 60;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 999px;
+            font: 600 0.85rem/1 'Google Sans', system-ui, sans-serif;
+            box-shadow: 0 6px 18px rgba(26, 115, 232, 0.35);
+            cursor: pointer;
+        }
+        .jump-to-now-btn.show { display: inline-flex; }
+        .jump-to-now-btn:hover { filter: brightness(1.05); }
+        .jump-to-now-btn .arrow { font-size: 1rem; line-height: 1; }
+
+        /* ─── Now & Next view ─── */
+        #scheduleContainer.now-next-view {
+            padding: 0 var(--page-gutter) 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .nn-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .nn-section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 4px 2px;
+            border-bottom: 1px solid var(--border);
+        }
+        .nn-section-title {
+            font-family: 'Google Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nn-section-title .nn-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #16a34a;
+            box-shadow: 0 0 0 0 rgba(22,163,74,0.6);
+            animation: nowPulse 1.6s ease-out infinite;
+        }
+        .nn-section.is-next .nn-section-title .nn-dot {
+            background: var(--primary);
+            animation: none;
+        }
+        .nn-section-time {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .nn-empty {
+            padding: 14px 12px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            background: var(--card-bg);
+        }
+        .nn-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nn-card-list .mobile-card-wrap {
+            width: 100%;
+        }
+
+        /* "Other sessions" block: groups non-starred starrable sessions at
+           the bottom of each Now/Next section under a small heading. */
+        .nn-card-list .nn-other-block {
+            margin-top: 4px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .nn-card-list .nn-other-heading {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0 2px;
+        }
+
+        /* Non-starred cards: compact two-row preview — title + duration on
+           top, room on the second line. The colored track stripe is the
+           only differentiator from the starred cards. Hover/tap restores
+           the full card. */
+        .nn-card-list .nn-muted-wrap > .session-card,
+        .nn-card-list .nn-muted-wrap > .event-card {
+            display: grid !important;
+            grid-template-columns: 1fr auto;
+            column-gap: 8px;
+            row-gap: 2px;
+            align-items: center;
+            padding: 8px 12px 8px 16px !important;
+            min-height: 0 !important;
+            height: auto !important;
+            box-shadow: none !important;
+            border-radius: 6px !important;
+            opacity: 0.78;
+            transition: opacity 0.15s ease, padding 0.15s ease;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card,
+        .nn-card-list .nn-muted-wrap:hover > .event-card,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card,
+        .nn-card-list .nn-muted-wrap:focus-within > .event-card {
+            opacity: 1;
+        }
+        /* Hide the track badge + star (room stays visible) */
+        .nn-card-list .nn-muted-wrap > .session-card > .card-top > .track-badge,
+        .nn-card-list .nn-muted-wrap > .session-card > .card-top > .star-btn {
+            display: none !important;
+        }
+        .nn-card-list .nn-muted-wrap > .session-card > .keynote-abstract,
+        .nn-card-list .nn-muted-wrap > .session-card > .session-affiliation,
+        .nn-card-list .nn-muted-wrap > .session-card > .inline-keynote-abstract {
+            display: none !important;
+        }
+        /* Title: row 1, col 1 */
+        .nn-card-list .nn-muted-wrap > .session-card > .session-title {
+            grid-row: 1;
+            grid-column: 1;
+            font-size: 0.82rem !important;
+            line-height: 1.25 !important;
+            font-weight: 500 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-height: 1.3em;
+        }
+        /* Duration: spans both rows on the right, centered vertically */
+        .nn-card-list .nn-muted-wrap > .session-card > .card-bottom {
+            grid-row: 1 / span 2;
+            grid-column: 2;
+            display: flex !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .nn-card-list .nn-muted-wrap > .session-card > .card-bottom > .session-authors {
+            display: none !important;
+        }
+        .nn-card-list .nn-muted-wrap > .session-card > .card-bottom > .duration-tag {
+            font-size: 0.7rem !important;
+        }
+        /* Room: row 2, full width */
+        .nn-card-list .nn-muted-wrap > .session-card > .card-top {
+            grid-row: 2;
+            grid-column: 1 / -1;
+            display: flex !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+        }
+        .nn-card-list .nn-muted-wrap > .session-card > .card-top > .room-name-mobile {
+            font-size: 0.72rem !important;
+            color: var(--text-secondary) !important;
+            font-weight: 400 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        /* Hover/tap: restore the original layout. */
+        .nn-card-list .nn-muted-wrap:hover > .session-card,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            grid-template-columns: none;
+            column-gap: 0;
+            row-gap: 0;
+            padding: 12px 16px !important;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-top > .track-badge,
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-top > .star-btn,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-top > .track-badge,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-top > .star-btn {
+            display: revert !important;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .keynote-abstract,
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .session-affiliation,
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .inline-keynote-abstract,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .keynote-abstract,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .session-affiliation,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .inline-keynote-abstract {
+            display: revert !important;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-bottom > .session-authors,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-bottom > .session-authors {
+            display: revert !important;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-bottom,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-bottom {
+            justify-content: space-between !important;
+            align-items: flex-end !important;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .session-title,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .session-title {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-height: none;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            line-height: 1.35 !important;
+        }
+        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-top > .room-name-mobile,
+        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-top > .room-name-mobile {
+            font-size: revert !important;
+            color: revert !important;
+            font-weight: revert !important;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+        }
+        .nn-subgroup {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nn-subgroup-label {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2px 2px 0;
+        }
+        .nn-after-break-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 4px 0;
+            border-top: 1px dashed var(--border);
+            margin-top: 6px;
+        }
+        .nn-after-break-title {
+            font-family: 'Google Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+        .nn-after-break-time {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.74rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .nn-updated {
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            padding: 4px 0 0;
+        }
+        @media (max-width: 480px) {
+            #scheduleContainer.now-next-view {
+                padding: 0 12px 20px;
+                gap: 14px;
+            }
+            .nn-section-title { font-size: 0.95rem; }
+            .nn-section-time { font-size: 0.72rem; }
+        }
+        /* Foldables and very narrow widths */
+        @media (max-width: 360px) {
+            #scheduleContainer.now-next-view {
+                padding: 0 8px 16px;
+            }
+            .nn-section-header {
+                flex-wrap: wrap;
+                row-gap: 2px;
+            }
+            .nn-section-title { font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
@@ -2438,7 +2804,7 @@ let currentView = (() => {
     // saved key for a removed day cleanly falls back to the first day.
     try {
         const saved = localStorage.getItem('incose_2026_currentView');
-        if (saved && (saved === 'starred' || Object.prototype.hasOwnProperty.call(data, saved))) {
+        if (saved && (saved === 'starred' || saved === 'now' || Object.prototype.hasOwnProperty.call(data, saved))) {
             return saved;
         }
     } catch (e) { /* localStorage may be unavailable */ }
@@ -2892,11 +3258,189 @@ function openSessionDetails(session, anchorEl) {
 }
 
 // ─── INIT ───
+// ─── Live "now" awareness for the My Schedule view ─────────────────────────
+// Conference is in-progress. In the starred view we want to:
+//   1) Auto-scroll to the first in-progress (or next upcoming) starred session
+//      whenever the user opens My Schedule.
+//   2) Highlight the in-progress card with a "NOW" pill + ring.
+//   3) Offer a floating "Jump to now" button if the user scrolls away.
+// We don't fade past sessions — they stay fully visible for reference.
+
+const DAY_DATE_REGEX = /(\d{1,2})\/(\d{1,2})/;
+function parseDayLabelToDate(dayString) {
+    const match = (dayString || '').match(DAY_DATE_REGEX);
+    if (!match) return null;
+    const month = parseInt(match[1], 10) - 1;
+    const dayNum = parseInt(match[2], 10);
+    const year = new Date().getFullYear();
+    const date = new Date(year, month, dayNum);
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
+}
+
+function getSessionTimeWindow(dayLabel, timeLabel) {
+    const baseDate = parseDayLabelToDate(dayLabel);
+    if (!baseDate) return null;
+    const startMinutes = parseClockMinutes(timeLabel);
+    const sessions = data[dayLabel] || [];
+    const dayTimes = sessions.map(s => s.time);
+
+    let durationMinutes = 0;
+    sessions.forEach(s => {
+        if (s.time !== timeLabel) return;
+        const d = getSessionDurationMinutes(dayTimes, s);
+        if (d > durationMinutes) durationMinutes = d;
+    });
+    if (!durationMinutes) {
+        const sortedTimes = sortTimes([...new Set(dayTimes)]);
+        const idx = sortedTimes.indexOf(timeLabel);
+        const next = idx >= 0 ? sortedTimes[idx + 1] : null;
+        durationMinutes = next ? Math.max(SLOT_MINUTES, parseClockMinutes(next) - startMinutes) : 30;
+    }
+
+    const start = new Date(baseDate);
+    start.setHours(0, 0, 0, 0);
+    start.setMinutes(startMinutes);
+    const end = new Date(start.getTime() + durationMinutes * 60000);
+    return { start, end };
+}
+
+// Find the best target row in the currently rendered starred view:
+// prefer the in-progress one, else the next upcoming, else null.
+function findStarredNowTarget() {
+    const container = document.getElementById('scheduleContainer');
+    if (!container || !container.classList.contains('starred-view')) return null;
+    const now = new Date();
+
+    const rows = [...container.querySelectorAll('[data-day][data-time]')];
+    let current = null;
+    let nextUpcoming = null;
+    let nextUpcomingStart = Infinity;
+
+    rows.forEach(el => {
+        const win = getSessionTimeWindow(el.dataset.day, el.dataset.time);
+        if (!win) return;
+        if (now >= win.start && now < win.end) {
+            if (!current) current = el;
+        } else if (win.start > now) {
+            const t = win.start.getTime();
+            if (t < nextUpcomingStart) {
+                nextUpcomingStart = t;
+                nextUpcoming = el;
+            }
+        }
+    });
+
+    return { current, next: nextUpcoming, target: current || nextUpcoming };
+}
+
+function highlightStarredCurrent() {
+    const container = document.getElementById('scheduleContainer');
+    if (!container || !container.classList.contains('starred-view')) return;
+    const now = new Date();
+
+    container.querySelectorAll('.is-current').forEach(el => el.classList.remove('is-current'));
+    container.querySelectorAll('.now-pill').forEach(el => el.remove());
+
+    container.querySelectorAll('[data-day][data-time]').forEach(el => {
+        const win = getSessionTimeWindow(el.dataset.day, el.dataset.time);
+        if (!win) return;
+        if (now >= win.start && now < win.end) {
+            el.classList.add('is-current');
+            // Tag any cards inside so overlap-group children also light up
+            el.querySelectorAll('.session-card, .event-card').forEach(card => {
+                if (!card.querySelector('.now-pill')) {
+                    const titleEl = card.querySelector('.session-title, .event-title, h3, h4');
+                    const pill = document.createElement('span');
+                    pill.className = 'now-pill';
+                    pill.textContent = 'Now';
+                    (titleEl || card).appendChild(pill);
+                }
+            });
+        }
+    });
+}
+
+let jumpToNowBtn = null;
+function ensureJumpToNowButton() {
+    if (jumpToNowBtn) return jumpToNowBtn;
+    jumpToNowBtn = document.createElement('button');
+    jumpToNowBtn.className = 'jump-to-now-btn';
+    jumpToNowBtn.type = 'button';
+    jumpToNowBtn.innerHTML = '<span class="arrow">↓</span><span>Jump to now</span>';
+    jumpToNowBtn.addEventListener('click', () => scrollStarredToNow({ behavior: 'smooth' }));
+    document.body.appendChild(jumpToNowBtn);
+    return jumpToNowBtn;
+}
+
+function scrollStarredToNow(opts = {}) {
+    const info = findStarredNowTarget();
+    if (!info || !info.target) return false;
+
+    // Compute the actual height of everything that stays pinned at the top so
+    // the target lands flush below them (no past-session gap left in view).
+    const stack = document.getElementById('headerStickyStack');
+    const stackBottom = stack ? stack.getBoundingClientRect().bottom : 0;
+    const dayStickyHeight = parseFloat(
+        getComputedStyle(document.documentElement)
+            .getPropertyValue('--starred-day-sticky-height')
+    ) || 30;
+    const headerOffset = Math.max(0, stackBottom) + dayStickyHeight + 4;
+
+    const rect = info.target.getBoundingClientRect();
+    const top = window.scrollY + rect.top - headerOffset;
+    window.scrollTo({ top: Math.max(0, top), behavior: opts.behavior || 'auto' });
+    return true;
+}
+
+function updateJumpToNowVisibility() {
+    const container = document.getElementById('scheduleContainer');
+    const btn = ensureJumpToNowButton();
+    if (!container || !container.classList.contains('starred-view')) {
+        btn.classList.remove('show');
+        return;
+    }
+    const info = findStarredNowTarget();
+    if (!info || !info.target) {
+        btn.classList.remove('show');
+        return;
+    }
+    const rect = info.target.getBoundingClientRect();
+    const viewportH = window.innerHeight || document.documentElement.clientHeight;
+    // Show if the target row isn't visible in the central portion of the viewport
+    const offscreen = rect.bottom < 80 || rect.top > viewportH - 80;
+    btn.classList.toggle('show', offscreen);
+}
+
+let starredNowTickId = null;
+function startStarredNowTicker() {
+    if (starredNowTickId) return;
+    starredNowTickId = setInterval(() => {
+        if (currentView === 'now') {
+            // Re-render the at-a-glance view so cards transition from
+            // "happening next" to "happening now" automatically.
+            renderSchedule();
+            return;
+        }
+        highlightStarredCurrent();
+        updateJumpToNowVisibility();
+    }, 60 * 1000);
+}
+
 function init() {
     const tabsContainer = document.getElementById('dayTabs');
+
+    // "Now & Next" goes first so it's the natural at-a-glance entry during
+    // the conference. Pulses green to draw the eye.
+    const nowBtn = document.createElement('button');
+    nowBtn.className = 'tab-btn now-tab' + (currentView === 'now' ? ' active' : '');
+    nowBtn.textContent = 'Now & Next';
+    nowBtn.onclick = () => switchDay('now', nowBtn);
+    tabsContainer.appendChild(nowBtn);
+
     Object.keys(data).forEach((day, i) => {
         const btn = document.createElement('button');
-        const isActive = (currentView === 'starred')
+        const isActive = (currentView === 'starred' || currentView === 'now')
             ? false
             : (currentView === day || (currentView == null && i === 0));
         btn.className = 'tab-btn' + (isActive ? ' active' : '');
@@ -2914,6 +3458,7 @@ function init() {
     renderSchedule();
     setupShareModal();
     handleStarsImportFromHash();
+    startStarredNowTicker();
 }
 
 // ─── SHARE / IMPORT MY SCHEDULE ───
@@ -3162,15 +3707,24 @@ function toggleTrackFilter(track) {
 // ─── RENDER SCHEDULE ───
 function renderSchedule() {
     searchQuery = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
-    isGlobalSearchMode = currentView !== 'starred' && searchQuery !== '';
+    isGlobalSearchMode = currentView !== 'starred' && currentView !== 'now' && searchQuery !== '';
 
     // Keep talk-track chips aligned with current mode (day-only vs all-days search).
     renderTrackFilters();
 
     const container = document.getElementById('scheduleContainer');
     container.innerHTML = '';
-    container.classList.remove('starred-view', 'search-results-view');
+    container.classList.remove('starred-view', 'search-results-view', 'now-next-view');
     closeSessionDetails();
+
+    if (currentView === 'now') {
+        renderNowNextView(container);
+        applyMobileLayout();
+        requestAnimationFrame(updateSessionTitleLayout);
+        requestAnimationFrame(updateScrollDateTimeIndicator);
+        requestAnimationFrame(updateJumpToNowVisibility);
+        return;
+    }
 
     if (currentView === 'starred') {
         container.classList.add('starred-view');
@@ -3179,6 +3733,17 @@ function renderSchedule() {
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
         requestAnimationFrame(updateScrollDateTimeIndicator);
+        requestAnimationFrame(() => {
+            highlightStarredCurrent();
+            // Auto-scroll to in-progress / next upcoming starred session.
+            // Run twice so any layout settle (sticky bar height, font swap)
+            // doesn't leave a gap of past sessions above the target.
+            scrollStarredToNow({ behavior: 'auto' });
+            requestAnimationFrame(() => {
+                scrollStarredToNow({ behavior: 'auto' });
+                updateJumpToNowVisibility();
+            });
+        });
         return;
     }
 
@@ -3194,6 +3759,7 @@ function renderSchedule() {
         applyMobileLayout();
         requestAnimationFrame(updateSessionTitleLayout);
         requestAnimationFrame(updateScrollDateTimeIndicator);
+        requestAnimationFrame(updateJumpToNowVisibility);
         return;
     }
 
@@ -3211,6 +3777,7 @@ function renderSchedule() {
     applyMobileLayout();
     requestAnimationFrame(updateSessionTitleLayout);
     requestAnimationFrame(updateScrollDateTimeIndicator);
+    requestAnimationFrame(updateJumpToNowVisibility);
 }
 
 function renderDesktopDayGrid(day, container) {
@@ -3494,6 +4061,7 @@ function renderDesktopDayGrid(day, container) {
         const wrap = document.createElement('div');
         wrap.className = 'schedule-item';
         if (overlay) wrap.classList.add('overlay-item');
+        wrap.dataset.day = day;
         wrap.dataset.time = originalSession.time;
         wrap.dataset.room = originalSession.room;
 
@@ -3536,6 +4104,7 @@ function renderDesktopDayGrid(day, container) {
         const wrap = document.createElement('div');
         wrap.className = 'schedule-item';
         if (overlay) wrap.classList.add('overlay-item');
+        wrap.dataset.day = day;
         wrap.dataset.time = session.time;
         wrap.dataset.room = session.room;
 
@@ -3604,6 +4173,7 @@ function renderDesktopDayGrid(day, container) {
             if (!isMeal && occupiedIndices.has(idx)) return;
             const wrap = document.createElement('div');
             wrap.className = 'schedule-item overlay-item';
+            wrap.dataset.day = day;
             wrap.dataset.time = session.time;
             wrap.dataset.room = session.room;
             wrap.style.gridColumn = `${idx + 2}`;
@@ -3635,6 +4205,264 @@ function renderDesktopDayGrid(day, container) {
     canvas.appendChild(grid);
     shell.appendChild(canvas);
     container.appendChild(shell);
+}
+
+// ─── Now & Next view: at-a-glance live snapshot ─────────────────────────
+// Shows two short lists across the entire conference:
+//   • Happening Now  — sessions whose [start, end) brackets the current time.
+//   • Happening Next — earliest upcoming start time, plus any sessions sharing
+//                      that start time. If "Next" is a break/meal, also show
+//                      what's happening *after* the break.
+// Starred (your-schedule) sessions are sorted to the top of each list and
+// visually emphasized with a star ring + "On your schedule" badge.
+
+function collectAllWindowed() {
+    // Flatten every session with a resolved time window once.
+    const out = [];
+    Object.keys(data).forEach(day => {
+        (data[day] || []).forEach(session => {
+            const win = getSessionTimeWindow(day, session.time);
+            if (!win) return;
+            out.push({ session, day, win });
+        });
+    });
+    return out;
+}
+
+function isStarredItem(item) {
+    return !!(item.session.uid && starredSessions.includes(item.session.uid));
+}
+
+function sortNowNextItems(items) {
+    // Starred first, then by start time, then by room, then by title.
+    items.sort((a, b) => {
+        const sa = isStarredItem(a) ? 0 : 1;
+        const sb = isStarredItem(b) ? 0 : 1;
+        if (sa !== sb) return sa - sb;
+        if (a.win.start - b.win.start !== 0) return a.win.start - b.win.start;
+        return (a.session.room || '').localeCompare(b.session.room || '')
+            || (a.session.Title || '').localeCompare(b.session.Title || '');
+    });
+    return items;
+}
+
+function formatNowNextRange(items) {
+    if (!items.length) return '';
+    const start = new Date(Math.min(...items.map(i => i.win.start.getTime())));
+    const end = new Date(Math.max(...items.map(i => i.win.end.getTime())));
+    const fmt = d => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function formatRelativeMinutes(toDate, fromDate) {
+    const diffMin = Math.round((toDate - fromDate) / 60000);
+    if (diffMin <= 0) return 'starting now';
+    if (diffMin < 60) return `in ${diffMin} min`;
+    const h = Math.floor(diffMin / 60);
+    const m = diffMin % 60;
+    if (h < 24) return m === 0 ? `in ${h} hr` : `in ${h} hr ${m} min`;
+    const days = Math.round(h / 24);
+    return `in ${days} day${days === 1 ? '' : 's'}`;
+}
+
+function buildNowNextSectionHeader(title, headerMeta) {
+    const header = document.createElement('div');
+    header.className = 'nn-section-header';
+
+    const titleEl = document.createElement('span');
+    titleEl.className = 'nn-section-title';
+    const dot = document.createElement('span');
+    dot.className = 'nn-dot';
+    titleEl.appendChild(dot);
+    titleEl.appendChild(document.createTextNode(title));
+    header.appendChild(titleEl);
+
+    if (headerMeta) {
+        const metaEl = document.createElement('span');
+        metaEl.className = 'nn-section-time';
+        metaEl.textContent = headerMeta;
+        header.appendChild(metaEl);
+    }
+    return header;
+}
+
+function buildNowNextCard({ session }, { starred }) {
+    // Starred cards keep their full layout (the existing top-right ★ already
+    // marks them). Non-starred *starrable* sessions collapse to a one-line
+    // preview so the eye lands on your-schedule items first. Breaks, meals,
+    // and other non-starrable rows always render at full size — they're
+    // unavoidable context, not "skippable" content.
+    const isStarrable = !!session.uid
+        && (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session));
+    const shouldCollapse = isStarrable && !starred;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'mobile-card-wrap '
+        + (starred ? 'nn-starred-wrap' : (shouldCollapse ? 'nn-muted-wrap' : ''));
+
+    if (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session)) {
+        wrap.appendChild(createSessionCard(session, true));
+    } else {
+        wrap.appendChild(createFullWidthCard(session));
+    }
+    return wrap;
+}
+
+function buildNowNextList(items) {
+    // Featured (starred + non-starrable rows like breaks/meals/plenaries)
+    // render at the top in full. Non-starred starrable sessions group into
+    // a labeled "Other sessions" block at the bottom, each rendered as a
+    // compact preview row that expands on hover/tap.
+    sortNowNextItems(items);
+
+    const featured = [];
+    const others = [];
+    items.forEach(item => {
+        const session = item.session;
+        const isStarrable = !!session.uid
+            && (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session));
+        if (!isStarrable || isStarredItem(item)) {
+            featured.push(item);
+        } else {
+            others.push(item);
+        }
+    });
+
+    const list = document.createElement('div');
+    list.className = 'nn-card-list';
+
+    featured.forEach(item => {
+        list.appendChild(buildNowNextCard(item, { starred: isStarredItem(item) }));
+    });
+
+    if (others.length) {
+        const block = document.createElement('div');
+        block.className = 'nn-other-block';
+
+        const heading = document.createElement('div');
+        heading.className = 'nn-other-heading';
+        heading.textContent = `Other sessions (${others.length})`;
+        block.appendChild(heading);
+
+        others.forEach(item => {
+            block.appendChild(buildNowNextCard(item, { starred: false }));
+        });
+
+        list.appendChild(block);
+    }
+
+    return list;
+}
+
+function appendNowNextSection(container, sectionClass, header, body) {
+    const section = document.createElement('section');
+    section.className = `nn-section ${sectionClass}`;
+    section.appendChild(header);
+    section.appendChild(body);
+    container.appendChild(section);
+}
+
+function findNextStartGroup(allItems, afterDate) {
+    // Find earliest start time strictly after `afterDate`, return all items
+    // sharing that exact start.
+    let earliest = Infinity;
+    const out = [];
+    allItems.forEach(it => {
+        const t = it.win.start.getTime();
+        if (t <= afterDate.getTime()) return;
+        if (t < earliest) {
+            earliest = t;
+            out.length = 0;
+            out.push(it);
+        } else if (t === earliest) {
+            out.push(it);
+        }
+    });
+    return { items: out, startDate: out.length ? out[0].win.start : null };
+}
+
+function isAllBreakOrMeal(items) {
+    if (!items.length) return false;
+    return items.every(i => isBreakStyleEvent(i.session) || isMealStyleEvent(i.session));
+}
+
+function renderNowNextView(container) {
+    document.getElementById('trackFilters').innerHTML = '';
+    container.classList.add('now-next-view');
+
+    const now = new Date();
+    const allItems = collectAllWindowed();
+
+    // ─── Happening Now: every session whose window contains `now`.
+    const happeningNow = allItems.filter(i => now >= i.win.start && now < i.win.end);
+
+    let nowMeta = happeningNow.length ? formatNowNextRange(happeningNow) : '';
+    let nowBody;
+    if (happeningNow.length) {
+        nowBody = buildNowNextList(happeningNow);
+    } else {
+        nowBody = document.createElement('div');
+        nowBody.className = 'nn-empty';
+        nowBody.textContent = 'No sessions are in progress right now.';
+    }
+    appendNowNextSection(container, 'is-now',
+        buildNowNextSectionHeader('Happening Now', nowMeta),
+        nowBody);
+
+    // ─── Happening Next: next start time after now, plus everything sharing it.
+    const nextGroup = findNextStartGroup(allItems, now);
+    let nextMeta = '';
+    if (nextGroup.startDate) {
+        const startLabel = nextGroup.startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        nextMeta = `${startLabel} · ${formatRelativeMinutes(nextGroup.startDate, now)}`;
+    }
+
+    let nextBody;
+    if (nextGroup.items.length) {
+        nextBody = document.createElement('div');
+        nextBody.className = 'nn-subgroup';
+        nextBody.appendChild(buildNowNextList(nextGroup.items));
+
+        // If "Next" is purely break/meal, also surface what's happening
+        // *after* the break so users can plan.
+        if (isAllBreakOrMeal(nextGroup.items)) {
+            const breakEnd = new Date(Math.max(...nextGroup.items.map(i => i.win.end.getTime())));
+            // Look for next start that isn't part of this same break group.
+            // Use breakEnd - 1ms as the cursor so a session starting exactly at
+            // break end is still included.
+            const cursor = new Date(breakEnd.getTime() - 1);
+            const afterBreak = findNextStartGroup(allItems, cursor);
+            if (afterBreak.items.length) {
+                const subHeader = document.createElement('div');
+                subHeader.className = 'nn-after-break-header';
+                const titleEl = document.createElement('span');
+                titleEl.className = 'nn-after-break-title';
+                titleEl.textContent = 'After the break';
+                subHeader.appendChild(titleEl);
+                if (afterBreak.startDate) {
+                    const t = afterBreak.startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    const timeEl = document.createElement('span');
+                    timeEl.className = 'nn-after-break-time';
+                    timeEl.textContent = `${t} · ${formatRelativeMinutes(afterBreak.startDate, now)}`;
+                    subHeader.appendChild(timeEl);
+                }
+                nextBody.appendChild(subHeader);
+                nextBody.appendChild(buildNowNextList(afterBreak.items));
+            }
+        }
+    } else {
+        nextBody = document.createElement('div');
+        nextBody.className = 'nn-empty';
+        nextBody.textContent = 'No more sessions scheduled.';
+    }
+    appendNowNextSection(container, 'is-next',
+        buildNowNextSectionHeader('Happening Next', nextMeta),
+        nextBody);
+
+    const updated = document.createElement('div');
+    updated.className = 'nn-updated';
+    updated.textContent = `Updated ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    container.appendChild(updated);
 }
 
 function renderMobileDayList(day, container) {
@@ -5128,7 +5956,7 @@ function toggleStar(uid, starEl) {
         starEl.title = 'Remove from schedule';
     }
     localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
-    if (currentView === 'starred') renderSchedule();
+    if (currentView === 'starred' || currentView === 'now') renderSchedule();
 }
 
 function switchDay(viewId, btn) {
@@ -5281,14 +6109,25 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('resize', queueViewportRefresh);
 window.addEventListener('orientationchange', queueViewportRefresh);
 window.addEventListener('focus', queueViewportRefresh);
+window.addEventListener('focus', () => {
+    if (currentView === 'now') renderSchedule();
+    highlightStarredCurrent();
+    updateJumpToNowVisibility();
+});
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) queueViewportRefresh();
+    if (!document.hidden) {
+        queueViewportRefresh();
+        if (currentView === 'now') renderSchedule();
+        highlightStarredCurrent();
+        updateJumpToNowVisibility();
+    }
 });
 if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', queueViewportRefreshIfWidthChanged);
 }
 window.addEventListener('scroll', applyScrollLayout, { passive: true });
 window.addEventListener('scroll', scheduleScrollDateTimeIndicatorUpdate, { passive: true });
+window.addEventListener('scroll', updateJumpToNowVisibility, { passive: true });
 
 init();
 // Delay to let DOM render first
