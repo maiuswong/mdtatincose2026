@@ -2365,7 +2365,6 @@
         .nn-section-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
             padding: 0 0 10px 0;
         }
@@ -2381,7 +2380,6 @@
             min-width: 0;
         }
         .nn-section.is-now .nn-section-title {
-            color: #5C8DFF;
             font-size: 0.78rem;
             letter-spacing: 0.1em;
         }
@@ -2402,7 +2400,28 @@
             70%  { box-shadow: 0 0 0 8px rgba(92, 141, 255, 0); }
             100% { box-shadow: 0 0 0 0 rgba(92, 141, 255, 0); }
         }
+        /* Per-track color dots, sit to the right of the section label.
+           One dot per distinct track represented in the section's items. */
+        .nn-section-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+        .nn-section-track-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            flex: 0 0 auto;
+        }
+        .nn-section.is-now .nn-section-track-dot {
+            width: 10px;
+            height: 10px;
+        }
         .nn-section-time {
+            margin-left: auto;
             font-family: 'Google Sans', sans-serif;
             font-size: 0.75rem;
             font-weight: 500;
@@ -2616,6 +2635,113 @@
             color: var(--text-main);
         }
 
+        /* Full-width progress strip: only appears on the Now hero
+           featured row. Sits below the meta line and spans the full
+           width of the row body — no clipping risk. */
+        .nn-row-progressbar {
+            display: none;
+        }
+        .nn-section.is-now .nn-row-featured .nn-row-progressbar {
+            display: block;
+            width: 100%;
+            height: 4px;
+            margin-top: 10px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--nn-color, var(--primary)) 16%, transparent);
+            overflow: hidden;
+        }
+        .nn-section.is-now .nn-row-featured .nn-row-progressbar > span {
+            display: block;
+            height: 100%;
+            background: var(--nn-color, var(--primary));
+            border-radius: 999px;
+            transition: width 0.6s ease;
+        }
+
+        /* Speakers / authors line: muted subtitle below the title on
+           featured rows. Single line, ellipsis on overflow. */
+        .nn-row-authors {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            letter-spacing: 0.005em;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .nn-section.is-now .nn-row-featured .nn-row-authors {
+            font-size: 14px;
+            white-space: normal;
+        }
+
+        /* Now hero footer: contextual hints + day-at-a-glance strip.
+           Sits below the live row, separated by a hairline. */
+        .nn-hero-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        }
+        .nn-hero-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            line-height: 1.35;
+            color: var(--text-main);
+        }
+        .nn-hint-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        .nn-hero-hint.is-stay { color: #2e7d49; }
+        .nn-hero-hint.is-stay .nn-hint-icon { color: #2e7d49; }
+        .nn-hero-hint.is-move { color: var(--text-main); }
+        .nn-hero-hint.is-move .nn-hint-icon { color: var(--primary); }
+        .nn-hero-hint strong { font-weight: 700; letter-spacing: -0.005em; }
+
+        /* Day-at-a-glance strip: small label + row of ticks for every
+           upcoming start time of today. */
+        .nn-hero-strip {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .nn-hero-strip-label {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 10.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+        .nn-hero-ticks {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .nn-hero-tick {
+            width: 18px;
+            height: 6px;
+            border-radius: 3px;
+            background: color-mix(in srgb, var(--text-secondary) 18%, transparent);
+            flex: 0 0 auto;
+        }
+        .nn-hero-tick.is-featured {
+            background: var(--nn-tick-color, var(--primary));
+        }
+        .nn-hero-tick.is-other {
+            background: transparent;
+            box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-secondary) 35%, transparent);
+        }
+
         /* Free-time row: structurally a session card but with "Free time"
            as the title (the most important fact). Duration + window read
            as the meta line below, exactly like a session's time · room.
@@ -2822,6 +2948,21 @@
             .nn-section.is-now .nn-inline-progress {
                 width: 80px;
                 height: 6px;
+            }
+            .nn-section.is-now .nn-row-featured .nn-row-authors {
+                font-size: 15px;
+            }
+            .nn-hero-footer {
+                margin-top: 18px;
+                padding-top: 18px;
+                gap: 16px;
+            }
+            .nn-hero-hint {
+                font-size: 14.5px;
+            }
+            .nn-hero-tick {
+                width: 22px;
+                height: 7px;
             }
         }
     </style>
@@ -4490,17 +4631,57 @@ function formatRelativeMinutes(toDate, fromDate) {
     return `in ${days} day${days === 1 ? '' : 's'}`;
 }
 
-function buildNowNextSectionHeader(title, headerMeta) {
+function collectSectionTrackColors(items) {
+    // Distinct (color, label) pairs for the items in a section. Each
+    // becomes a small colored dot in the section header so users can
+    // see at a glance which tracks are present. Only counts items the
+    // user is actually attending — starred sessions and non-starrable
+    // items like keynotes/plenaries. Non-starred parallel sessions are
+    // already represented as dots inside the "X other sessions" branch.
+    const seen = new Map();
+    (items || []).forEach(item => {
+        const s = item.session;
+        if (isBreakStyleEvent(s) || isMealStyleEvent(s)) return;
+        const isStarrable = !!s.uid
+            && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
+        if (isStarrable && !isStarredItem(item)) return;
+        const trackLabel = isKeynoteSession(s)
+            ? 'Keynote'
+            : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
+        if (!trackLabel) return;
+        const color = getSessionAccentColor(s, trackLabel);
+        if (!color) return;
+        const key = trackLabel + '|' + color;
+        if (!seen.has(key)) seen.set(key, { color, label: trackLabel });
+    });
+    return [...seen.values()];
+}
+
+function buildNowNextSectionHeader(title, headerMeta, items) {
     const header = document.createElement('div');
     header.className = 'nn-section-header';
 
     const titleEl = document.createElement('span');
     titleEl.className = 'nn-section-title';
-    const dot = document.createElement('span');
-    dot.className = 'nn-dot';
-    titleEl.appendChild(dot);
     titleEl.appendChild(document.createTextNode(title));
     header.appendChild(titleEl);
+
+    // Track-color dots for every distinct track present in this
+    // section's items. Sit immediately to the right of the label.
+    const tracks = collectSectionTrackColors(items);
+    if (tracks.length) {
+        const dots = document.createElement('span');
+        dots.className = 'nn-section-dots';
+        tracks.forEach(t => {
+            const d = document.createElement('span');
+            d.className = 'nn-section-track-dot';
+            d.style.background = t.color;
+            d.title = t.label;
+            d.setAttribute('aria-label', t.label);
+            dots.appendChild(d);
+        });
+        header.appendChild(dots);
+    }
 
     if (headerMeta) {
         const metaEl = document.createElement('span');
@@ -4553,6 +4734,18 @@ function buildNowNextRow(item, { featured }) {
     title.textContent = session.Title || '';
     main.appendChild(title);
 
+    // Authors / speakers line — only on featured rows, since the
+    // collapsed branch list keeps things compact.
+    if (featured && session.Authors) {
+        const authorsText = String(session.Authors).trim();
+        if (authorsText && authorsText.toLowerCase() !== 'nan') {
+            const authors = document.createElement('span');
+            authors.className = 'nn-row-authors';
+            authors.textContent = authorsText;
+            main.appendChild(authors);
+        }
+    }
+
     const meta = document.createElement('span');
     meta.className = 'nn-row-meta';
 
@@ -4591,16 +4784,9 @@ function buildNowNextRow(item, { featured }) {
         const pct = total > 0 ? (elapsed / total) * 100 : 0;
         const pctStr = pct.toFixed(2) + '%';
         const minsRemaining = Math.max(0, Math.round((win.end - now) / 60000));
-        const hoursLeft = Math.floor(minsRemaining / 60);
-        const minsLeft = minsRemaining % 60;
-        let remainingStr;
-        if (minsRemaining < 1) {
-            remainingStr = 'ending';
-        } else if (hoursLeft > 0) {
-            remainingStr = `${hoursLeft}h ${minsLeft}m`;
-        } else {
-            remainingStr = `${minsLeft}m`;
-        }
+        const remainingStr = minsRemaining < 1
+            ? 'ending'
+            : `${minsRemaining} min left`;
         wrap.classList.add('nn-row-live');
         wrap.style.setProperty('--nn-progress', pctStr);
 
@@ -4614,17 +4800,21 @@ function buildNowNextRow(item, { featured }) {
 
         const live = document.createElement('span');
         live.className = 'nn-row-live-col';
-        const bar = document.createElement('span');
-        bar.className = 'nn-inline-progress';
-        const fill = document.createElement('span');
-        fill.style.width = pctStr;
-        bar.appendChild(fill);
-        live.appendChild(bar);
         const remaining = document.createElement('span');
         remaining.className = 'nn-row-remaining';
         remaining.textContent = remainingStr;
         live.appendChild(remaining);
         metaEl.appendChild(live);
+
+        // Full-width progress bar below the meta line. Hidden via CSS
+        // except inside the Now hero featured row, where it gets the
+        // entire row width and can't clip.
+        const bar = document.createElement('span');
+        bar.className = 'nn-row-progressbar';
+        const fill = document.createElement('span');
+        fill.style.width = pctStr;
+        bar.appendChild(fill);
+        main.appendChild(bar);
     }
 
     row.addEventListener('click', () => {
@@ -4838,6 +5028,60 @@ function appendNowNextSection(container, sectionClass, header, body, color) {
     container.appendChild(section);
 }
 
+function buildHeroDayStrip(allItems, now) {
+    // Build a compact "rest of today" strip: one tick per upcoming start
+    // time. Filled tick = a featured/starred slot; hollow tick = only
+    // non-starred sessions; muted dot = free time. The current "now"
+    // anchors the leftmost edge so users see how much of the day remains.
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+    // Group remaining items by start time within today.
+    const groups = new Map();
+    allItems.forEach(it => {
+        const s = it.win.start;
+        if (s < now || s >= tomorrowStart) return;
+        const key = s.getTime();
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(it);
+    });
+    if (!groups.size) return null;
+
+    const sortedKeys = [...groups.keys()].sort((a, b) => a - b);
+    const strip = document.createElement('div');
+    strip.className = 'nn-hero-strip';
+
+    const label = document.createElement('span');
+    label.className = 'nn-hero-strip-label';
+    label.textContent = 'Rest of today';
+    strip.appendChild(label);
+
+    const ticks = document.createElement('span');
+    ticks.className = 'nn-hero-ticks';
+    sortedKeys.forEach(k => {
+        const items = groups.get(k);
+        const { featured } = partitionFeaturedItems(items);
+        const tick = document.createElement('span');
+        tick.className = 'nn-hero-tick';
+        if (featured.length) {
+            tick.classList.add('is-featured');
+            const color = pickSectionColor(items);
+            if (color) tick.style.setProperty('--nn-tick-color', color);
+        } else {
+            tick.classList.add('is-other');
+        }
+        const t = new Date(k);
+        try {
+            tick.title = t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        } catch (_) { /* ignore */ }
+        ticks.appendChild(tick);
+    });
+    strip.appendChild(ticks);
+    return strip;
+}
+
 function pickSectionColor(items) {
     // Prefer the first featured (starred or non-starrable) session's
     // color; fall back to the first item.
@@ -4928,13 +5172,75 @@ function renderNowNextView(container) {
             freeChipStartOverride: now,
             freeChipEndOverride: freeRunEnd
         } : {});
+
+        // ── Hero footer: contextual hints + mini day strip ──
+        // The room/then hint requires the user to actually be IN a room
+        // right now — i.e. they have a starred current session. If they
+        // didn't pick anything for this slot (free time), don't suggest
+        // staying or moving from a room they're not in.
+        const heroFeatured = partitionFeaturedItems(happeningNow).featured;
+        const heroPrimary = heroFeatured[0] || null;
+        const nextFeatured = nextGroup.items.length
+            ? (partitionFeaturedItems(nextGroup.items).featured[0] || null)
+            : null;
+
+        const footer = document.createElement('div');
+        footer.className = 'nn-hero-footer';
+
+        // Room transition hint: stay vs. move. Only meaningful when both
+        // the current and next sessions are on your schedule AND the
+        // upcoming starred slot points at a single room.
+        if (heroPrimary && nextGroup.items.length) {
+            const fromRoom = heroPrimary.session.room || '';
+            const nextStarred = partitionFeaturedItems(nextGroup.items).featured;
+            const distinctRooms = [...new Set(
+                nextStarred.map(it => (it.session.room || '').trim()).filter(Boolean)
+            )];
+            const hint = document.createElement('div');
+            hint.className = 'nn-hero-hint';
+            if (distinctRooms.length === 1 && fromRoom) {
+                const toRoom = distinctRooms[0];
+                const sameRoom = fromRoom.trim().toLowerCase() === toRoom.toLowerCase();
+                if (sameRoom) {
+                    hint.classList.add('is-stay');
+                    hint.innerHTML =
+                        '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                        '<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>' +
+                        `<span><strong>Stay in this room</strong> for the next session</span>`;
+                } else {
+                    hint.classList.add('is-move');
+                    hint.innerHTML =
+                        '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                        '<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>' +
+                        `<span>Then: <strong>${escapeHtml(toRoom)}</strong></span>`;
+                }
+                footer.appendChild(hint);
+            } else if (distinctRooms.length > 1) {
+                // Multiple starred sessions in different rooms — surface the
+                // conflict instead of picking arbitrarily.
+                hint.classList.add('is-move');
+                hint.innerHTML =
+                    '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>' +
+                    `<span><strong>${distinctRooms.length} starred sessions</strong> next — pick one below</span>`;
+                footer.appendChild(hint);
+            }
+        }
+
+        // Mini day-at-a-glance strip: every remaining slot of today as a
+        // small tick. Filled = you have something starred there; hollow
+        // = only "other" sessions; muted = free time.
+        const dayStrip = buildHeroDayStrip(allItems, now);
+        if (dayStrip) footer.appendChild(dayStrip);
+
+        if (footer.children.length) nowBody.appendChild(footer);
     } else {
         nowBody = document.createElement('div');
         nowBody.className = 'nn-empty';
         nowBody.textContent = 'No sessions are in progress right now.';
     }
     appendNowNextSection(container, 'is-now',
-        buildNowNextSectionHeader('Happening Now', nowMeta),
+        buildNowNextSectionHeader('Happening Now', nowMeta, happeningNow),
         nowBody);
 
     // ─── Happening Next: next start time after now, plus everything sharing it.
@@ -5000,7 +5306,7 @@ function renderNowNextView(container) {
         nextBody.textContent = 'No more sessions scheduled.';
     }
     appendNowNextSection(container, 'is-next',
-        buildNowNextSectionHeader('Happening Next', nextMeta),
+        buildNowNextSectionHeader('Happening Next', nextMeta, nextGroup.items),
         nextBody,
         pickSectionColor(nextGroup.items));
 
@@ -5036,7 +5342,7 @@ function renderNowNextView(container) {
         const suppressThereafterFreeChip = nowFreeOnly && thereafterFreeOnly
             && freeRunEnd && tStart < freeRunEnd;
         appendNowNextSection(container, 'is-thereafter',
-            buildNowNextSectionHeader('Thereafter', tMeta),
+            buildNowNextSectionHeader('Thereafter', tMeta, thereafter.items),
             buildNowNextList(thereafter.items, {
                 suppressFreeChip: suppressThereafterFreeChip
             }),
