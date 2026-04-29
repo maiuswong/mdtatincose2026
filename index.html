@@ -2335,229 +2335,333 @@
         .jump-to-now-btn .arrow { font-size: 1rem; line-height: 1; }
 
         /* ─── Now & Next view ─── */
+        /* Timeline rail: dot and row stripes share the same x-coordinate.
+           --nn-rail-x is the rail's CENTER, measured from the section's
+           left edge. Dot and stripe are both 4px wide (we render the dot
+           wider via radius) and centered there. */
         #scheduleContainer.now-next-view {
-            padding: 0 var(--page-gutter) 24px;
+            padding: 20px var(--page-gutter) 32px var(--page-gutter);
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 8px;
+            --nn-rail-x: 11px;
+            --nn-stripe-w: 3px;
+            --nn-dot-size: 11px;
+            --nn-text-pad: 24px;
+            font-feature-settings: "ss01", "cv11";
         }
         .nn-section {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            padding: 0;
         }
         .nn-section-header {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: space-between;
-            gap: 8px;
-            padding: 6px 4px 2px;
-            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            padding: 0 4px 12px 0;
         }
         .nn-section-title {
             font-family: 'Google Sans', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 0;
+            min-width: 0;
         }
+        .nn-section.is-now .nn-section-title {
+            color: #5C8DFF;
+        }
+        /* Dot is positioned so its center sits exactly at --nn-rail-x. */
         .nn-section-title .nn-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #16a34a;
-            box-shadow: 0 0 0 0 rgba(22,163,74,0.6);
-            animation: nowPulse 1.6s ease-out infinite;
+            flex: 0 0 auto;
+            width: var(--nn-dot-size);
+            height: var(--nn-dot-size);
+            border-radius: 50%;
+            background: var(--nn-section-color, var(--primary));
+            margin-left: calc(var(--nn-rail-x) - var(--nn-dot-size) / 2);
+            margin-right: calc(var(--nn-text-pad) - var(--nn-rail-x) - var(--nn-dot-size) / 2);
+            box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 4px color-mix(in srgb, var(--nn-section-color, var(--primary)) 18%, transparent);
         }
-        .nn-section.is-next .nn-section-title .nn-dot {
-            background: var(--primary);
-            animation: none;
+        .nn-section.is-now .nn-section-title .nn-dot {
+            background: #5C8DFF;
+            animation: nnNowPulse 1.8s ease-out infinite;
+        }
+        @keyframes nnNowPulse {
+            0%   { box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 4px rgba(92, 141, 255, 0.45); }
+            70%  { box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 12px rgba(92, 141, 255, 0); }
+            100% { box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 4px rgba(92, 141, 255, 0); }
         }
         .nn-section-time {
             font-family: 'Google Sans', sans-serif;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: var(--text-secondary);
             white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
         .nn-empty {
-            padding: 14px 12px;
+            margin-left: var(--nn-text-pad);
+            padding: 14px 16px;
             border: 1px dashed var(--border);
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--text-secondary);
-            font-size: 0.88rem;
-            background: var(--card-bg);
+            font-size: 0.85rem;
         }
         .nn-card-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 0; /* stripes touch to form a continuous timeline rail */
+            position: relative;
         }
         .nn-card-list .mobile-card-wrap {
             width: 100%;
         }
 
-        /* "Other sessions" block: groups non-starred starrable sessions at
-           the bottom of each Now/Next section under a small heading. */
-        .nn-card-list .nn-other-block {
-            margin-top: 4px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--border);
+        /* "Other sessions" branch: a single node ON the timeline that
+           represents all parallel non-starred concurrent sessions. The
+           hollow ring (vs a solid dot) signals "off your path". Tapping
+           expands the list of compact rows. */
+        .nn-branch-wrap {
             display: flex;
             flex-direction: column;
-            gap: 6px;
         }
-        .nn-card-list .nn-other-heading {
+        .nn-branch-row {
+            grid-template-columns: var(--nn-text-pad) minmax(0, 1fr) auto !important;
+            align-items: center !important;
+            padding: 8px 4px 8px 0 !important;
+        }
+        .nn-branch-stripe-col {
+            position: relative;
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        /* Faint connector segment of the rail behind the ring, so the
+           timeline keeps reading as continuous through the branch node. */
+        .nn-branch-stripe-col::before {
+            content: '';
+            position: absolute;
+            left: calc(var(--nn-rail-x) - var(--nn-stripe-w) / 2);
+            top: 0;
+            bottom: 0;
+            width: var(--nn-stripe-w);
+            background: var(--border);
+            border-radius: 2px;
+        }
+        .nn-branch-ring {
+            position: relative;
+            z-index: 1;
+            width: var(--nn-dot-size);
+            height: var(--nn-dot-size);
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--text-secondary);
+            opacity: 0.55;
+            margin-left: calc(var(--nn-rail-x) - var(--nn-dot-size) / 2);
+            transition: opacity 0.15s ease;
+        }
+        .nn-branch-row:hover .nn-branch-ring {
+            opacity: 0.85;
+        }
+        .nn-branch-main {
+            padding: 0 !important;
+            flex-direction: row !important;
+            align-items: center;
+            gap: 16px;
+        }
+        .nn-branch-label {
             font-family: 'Google Sans', sans-serif;
-            font-size: 0.72rem;
-            font-weight: 600;
+            font-size: 12.5px;
             color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 0 2px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .nn-branch-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .nn-branch-dot {
+            flex: 0 0 auto;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .nn-branch-chev {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: transform 0.18s ease;
+            padding: 0 8px 0 4px;
+            line-height: 1;
+            transform-origin: center;
+        }
+        .nn-branch-wrap.open .nn-branch-chev {
+            transform: rotate(180deg);
+        }
+        .nn-branch-wrap.open .nn-branch-ring {
+            opacity: 1;
+            border-color: var(--text-main);
+        }
+        .nn-branch-detail {
+            display: none;
+            padding: 0 0 4px 0;
+        }
+        .nn-branch-wrap.open .nn-branch-detail {
+            display: block;
+        }
+        /* Inside the expanded branch, the rows ARE on a sub-rail. Use a
+           thinner muted stripe so they read as "tributary" not main path. */
+        .nn-branch-detail .nn-row {
+            grid-template-columns: var(--nn-text-pad) minmax(0, 1fr) auto;
+        }
+        .nn-branch-detail .nn-row-stripe {
+            opacity: 0.45;
+            width: 2px;
+            margin-left: calc(var(--nn-rail-x) - 1px);
+        }
+        .nn-branch-detail .nn-row-main {
+            padding: 8px 0;
+        }
+        .nn-branch-detail .nn-row-title {
+            font-size: 12.5px;
+        }
+        .nn-branch-detail .nn-row-meta {
+            font-size: 11px;
         }
 
-        /* Non-starred cards: compact two-row preview — title + duration on
-           top, room on the second line. The colored track stripe is the
-           only differentiator from the starred cards. Hover/tap restores
-           the full card. */
-        .nn-card-list .nn-muted-wrap > .session-card,
-        .nn-card-list .nn-muted-wrap > .event-card {
-            display: grid !important;
-            grid-template-columns: 1fr auto;
-            column-gap: 8px;
-            row-gap: 2px;
-            align-items: center;
-            padding: 8px 12px 8px 16px !important;
-            min-height: 0 !important;
-            height: auto !important;
-            box-shadow: none !important;
-            border-radius: 6px !important;
-            opacity: 0.78;
-            transition: opacity 0.15s ease, padding 0.15s ease;
+        /* ── Row-based "Now & Next" item ─────────────────────────────── */
+        .nn-row-wrap {
+            display: flex;
+            flex-direction: column;
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card,
-        .nn-card-list .nn-muted-wrap:hover > .event-card,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card,
-        .nn-card-list .nn-muted-wrap:focus-within > .event-card {
-            opacity: 1;
-        }
-        /* Hide the track badge + star (room stays visible) */
-        .nn-card-list .nn-muted-wrap > .session-card > .card-top > .track-badge,
-        .nn-card-list .nn-muted-wrap > .session-card > .card-top > .star-btn {
-            display: none !important;
-        }
-        .nn-card-list .nn-muted-wrap > .session-card > .keynote-abstract,
-        .nn-card-list .nn-muted-wrap > .session-card > .session-affiliation,
-        .nn-card-list .nn-muted-wrap > .session-card > .inline-keynote-abstract {
-            display: none !important;
-        }
-        /* Title: row 1, col 1 */
-        .nn-card-list .nn-muted-wrap > .session-card > .session-title {
-            grid-row: 1;
-            grid-column: 1;
-            font-size: 0.82rem !important;
-            line-height: 1.25 !important;
-            font-weight: 500 !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin: 0 !important;
-            padding: 0 !important;
-            max-height: 1.3em;
-        }
-        /* Duration: spans both rows on the right, centered vertically */
-        .nn-card-list .nn-muted-wrap > .session-card > .card-bottom {
-            grid-row: 1 / span 2;
-            grid-column: 2;
-            display: flex !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            align-items: center;
-            justify-content: flex-end;
-        }
-        .nn-card-list .nn-muted-wrap > .session-card > .card-bottom > .session-authors {
-            display: none !important;
-        }
-        .nn-card-list .nn-muted-wrap > .session-card > .card-bottom > .duration-tag {
-            font-size: 0.7rem !important;
-        }
-        /* Room: row 2, full width */
-        .nn-card-list .nn-muted-wrap > .session-card > .card-top {
-            grid-row: 2;
-            grid-column: 1 / -1;
-            display: flex !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            min-height: 0 !important;
-        }
-        .nn-card-list .nn-muted-wrap > .session-card > .card-top > .room-name-mobile {
-            font-size: 0.72rem !important;
-            color: var(--text-secondary) !important;
-            font-weight: 400 !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        /* Hover/tap: restore the original layout. */
-        .nn-card-list .nn-muted-wrap:hover > .session-card,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-            grid-template-columns: none;
+        .nn-row {
+            all: unset;
+            display: grid;
+            grid-template-columns: var(--nn-text-pad) minmax(0, 1fr) auto;
             column-gap: 0;
-            row-gap: 0;
-            padding: 12px 16px !important;
+            align-items: stretch;
+            padding: 0;
+            cursor: pointer;
+            font-family: 'Google Sans', sans-serif;
+            color: var(--text-main);
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+            transition: background 0.18s ease;
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-top > .track-badge,
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-top > .star-btn,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-top > .track-badge,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-top > .star-btn {
-            display: revert !important;
+        .nn-row:hover {
+            background: rgba(0, 0, 0, 0.02);
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .keynote-abstract,
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .session-affiliation,
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .inline-keynote-abstract,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .keynote-abstract,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .session-affiliation,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .inline-keynote-abstract {
-            display: revert !important;
+        .nn-row:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+            border-radius: 6px;
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-bottom > .session-authors,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-bottom > .session-authors {
-            display: revert !important;
+        .nn-row-stripe {
+            width: var(--nn-stripe-w);
+            justify-self: start;
+            margin-left: calc(var(--nn-rail-x) - var(--nn-stripe-w) / 2);
+            background: var(--nn-color, var(--text-secondary));
+            align-self: stretch;
+            min-height: 100%;
+            border-radius: 0;
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-bottom,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-bottom {
-            justify-content: space-between !important;
-            align-items: flex-end !important;
+        /* Round the very first stripe top and last stripe bottom so the
+           rail has clean caps without breaking continuity in between. */
+        .nn-card-list .nn-row-wrap:first-child .nn-row-stripe { border-radius: 2px 2px 0 0; }
+        .nn-card-list > .nn-row-wrap:last-of-type .nn-row-stripe { border-radius: 0 0 2px 2px; }
+        /* Live rows: the stripe IS the progress bar. It fills from top
+           to bottom as the session elapses, using a hard gradient stop
+           at --nn-progress (set inline). The unfilled portion stays as
+           a faded track in the same track color, with a soft taper
+           around the boundary so the leading edge feels alive. */
+        .nn-row-stripe-live {
+            --nn-progress: 0%;
+            position: relative;
+            background:
+                linear-gradient(
+                    to bottom,
+                    var(--nn-color, var(--primary)) 0%,
+                    var(--nn-color, var(--primary)) var(--nn-progress),
+                    color-mix(in srgb, var(--nn-color, var(--primary)) 22%, transparent) var(--nn-progress),
+                    color-mix(in srgb, var(--nn-color, var(--primary)) 22%, transparent) 100%
+                );
+            transition: background 0.6s ease;
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .session-title,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .session-title {
+        .nn-row-main {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 3px;
+            padding: 11px 0 9px;
+        }
+        .nn-row-title {
+            font-size: 13.5px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.005em;
+        }
+        .nn-row-meta {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.01em;
+        }
+
+        /* Featured rows: starred + non-starrable (breaks/meals/plenaries). */
+        .nn-row-featured .nn-row-main {
+            padding: 17px 0 15px;
+        }
+        .nn-row-featured .nn-row-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.35;
             white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            max-height: none;
-            font-size: 13px !important;
-            font-weight: 700 !important;
-            line-height: 1.35 !important;
+            letter-spacing: -0.01em;
         }
-        .nn-card-list .nn-muted-wrap:hover > .session-card > .card-top > .room-name-mobile,
-        .nn-card-list .nn-muted-wrap:focus-within > .session-card > .card-top > .room-name-mobile {
-            font-size: revert !important;
-            color: revert !important;
-            font-weight: revert !important;
+        .nn-row-featured .nn-row-meta {
+            font-size: 12.5px;
+            margin-top: 3px;
             white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
+        }
+
+        /* Expanded detail panel — holds the full session card. */
+        .nn-row-detail {
+            display: none;
+            padding: 6px 0 14px var(--nn-text-pad);
+        }
+        .nn-row-wrap.open > .nn-row-detail {
+            display: block;
+        }
+        .nn-row-wrap.open > .nn-row {
+            background: rgba(0, 0, 0, 0.02);
+        }
+        .nn-row-wrap.open > .nn-row .nn-row-title,
+        .nn-row-wrap.open > .nn-row .nn-row-meta {
+            white-space: normal;
         }
         .nn-subgroup {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 0;
         }
         .nn-subgroup-label {
             font-family: 'Google Sans', sans-serif;
@@ -2570,50 +2674,68 @@
         }
         .nn-after-break-header {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: space-between;
-            gap: 8px;
-            padding: 10px 4px 0;
-            border-top: 1px dashed var(--border);
-            margin-top: 6px;
+            gap: 10px;
+            padding: 12px 4px 12px 0;
+        }
+        .nn-after-break-left {
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+        }
+        .nn-after-break-left .nn-dot {
+            flex: 0 0 auto;
+            width: var(--nn-dot-size);
+            height: var(--nn-dot-size);
+            border-radius: 50%;
+            background: var(--nn-after-break-color, var(--primary));
+            margin-left: calc(var(--nn-rail-x) - var(--nn-dot-size) / 2);
+            margin-right: calc(var(--nn-text-pad) - var(--nn-rail-x) - var(--nn-dot-size) / 2);
+            box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 4px color-mix(in srgb, var(--nn-after-break-color, var(--primary)) 18%, transparent);
         }
         .nn-after-break-title {
             font-family: 'Google Sans', sans-serif;
             font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-main);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
         }
         .nn-after-break-time {
             font-family: 'Google Sans', sans-serif;
-            font-size: 0.74rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: var(--text-secondary);
             white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
         .nn-updated {
             text-align: center;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
-            padding: 4px 0 0;
+            padding: 18px 0 0;
+            letter-spacing: 0.04em;
+            font-variant-numeric: tabular-nums;
         }
         @media (max-width: 480px) {
             #scheduleContainer.now-next-view {
-                padding: 0 12px 20px;
-                gap: 14px;
+                padding: 16px 14px 24px;
+                gap: 6px;
             }
-            .nn-section-title { font-size: 0.95rem; }
+            .nn-section-title { font-size: 0.74rem; }
             .nn-section-time { font-size: 0.72rem; }
         }
         /* Foldables and very narrow widths */
         @media (max-width: 360px) {
             #scheduleContainer.now-next-view {
-                padding: 0 8px 16px;
+                padding: 14px 10px 20px;
             }
             .nn-section-header {
                 flex-wrap: wrap;
                 row-gap: 2px;
             }
-            .nn-section-title { font-size: 0.9rem; }
+            .nn-section-title { font-size: 0.72rem; }
         }
     </style>
 </head>
@@ -4286,33 +4408,155 @@ function buildNowNextSectionHeader(title, headerMeta) {
     return header;
 }
 
-function buildNowNextCard({ session }, { starred }) {
-    // Starred cards keep their full layout (the existing top-right ★ already
-    // marks them). Non-starred *starrable* sessions collapse to a one-line
-    // preview so the eye lands on your-schedule items first. Breaks, meals,
-    // and other non-starrable rows always render at full size — they're
-    // unavoidable context, not "skippable" content.
-    const isStarrable = !!session.uid
-        && (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session));
-    const shouldCollapse = isStarrable && !starred;
+function buildNowNextRow(item, { featured }) {
+    const { session, win } = item;
+    const now = new Date();
+    const trackLabel = isKeynoteSession(session)
+        ? 'Keynote'
+        : (session.Track || (isSessionStyleEvent(session) ? 'General' : ''));
+    const color = getSessionAccentColor(session, trackLabel);
+    const isLive = now >= win.start && now < win.end;
 
     const wrap = document.createElement('div');
-    wrap.className = 'mobile-card-wrap '
-        + (starred ? 'nn-starred-wrap' : (shouldCollapse ? 'nn-muted-wrap' : ''));
+    wrap.className = 'nn-row-wrap';
+    wrap.style.setProperty('--nn-color', color);
 
-    if (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session)) {
-        wrap.appendChild(createSessionCard(session, true));
-    } else {
-        wrap.appendChild(createFullWidthCard(session));
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'nn-row';
+    if (featured) row.classList.add('nn-row-featured');
+    row.setAttribute('aria-expanded', 'false');
+
+    const stripe = document.createElement('span');
+    stripe.className = 'nn-row-stripe';
+    row.appendChild(stripe);
+
+    const main = document.createElement('span');
+    main.className = 'nn-row-main';
+
+    const title = document.createElement('span');
+    title.className = 'nn-row-title';
+    title.textContent = session.Title || '';
+    main.appendChild(title);
+
+    if (session.room) {
+        const meta = document.createElement('span');
+        meta.className = 'nn-row-meta';
+        meta.textContent = session.room;
+        main.appendChild(meta);
     }
+    row.appendChild(main);
+
+    // Live sessions: the stripe itself becomes the progress indicator —
+    // filling from top to bottom as elapsed time grows. Set CSS vars on
+    // the stripe; the gradient does the rest.
+    if (isLive) {
+        const total = win.end - win.start;
+        const elapsed = Math.max(0, Math.min(total, now - win.start));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
+        stripe.classList.add('nn-row-stripe-live');
+        stripe.style.setProperty('--nn-progress', pct.toFixed(2) + '%');
+    }
+
+    const detail = document.createElement('div');
+    detail.className = 'nn-row-detail';
+
+    row.addEventListener('click', () => {
+        const isOpen = wrap.classList.toggle('open');
+        row.setAttribute('aria-expanded', String(isOpen));
+        if (isOpen && !detail.hasChildNodes()) {
+            const cardWrap = document.createElement('div');
+            cardWrap.className = 'mobile-card-wrap';
+            if (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session)) {
+                cardWrap.appendChild(createSessionCard(session, true));
+            } else {
+                cardWrap.appendChild(createFullWidthCard(session));
+            }
+            detail.appendChild(cardWrap);
+        }
+    });
+
+    wrap.appendChild(row);
+    wrap.appendChild(detail);
+    return wrap;
+}
+
+function buildOtherSessionsBranch(others) {
+    // A single timeline node representing the parallel non-starred
+    // concurrent sessions. Hollow "branch" dot (ring) on the rail signals
+    // these are off your path. Tap to expand into the full list of rows.
+    const wrap = document.createElement('div');
+    wrap.className = 'nn-row-wrap nn-branch-wrap';
+
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'nn-row nn-branch-row';
+    row.setAttribute('aria-expanded', 'false');
+
+    const stripeCol = document.createElement('span');
+    stripeCol.className = 'nn-branch-stripe-col';
+    const ring = document.createElement('span');
+    ring.className = 'nn-branch-ring';
+    stripeCol.appendChild(ring);
+    row.appendChild(stripeCol);
+
+    const main = document.createElement('span');
+    main.className = 'nn-row-main nn-branch-main';
+
+    const label = document.createElement('span');
+    label.className = 'nn-branch-label';
+    label.textContent = `${others.length} other ${others.length === 1 ? 'session' : 'sessions'} running `;
+    main.appendChild(label);
+
+    // Track dots preview — unique track colors at this time slot.
+    const seen = new Set();
+    const dotsRow = document.createElement('span');
+    dotsRow.className = 'nn-branch-dots';
+    others.forEach(item => {
+        const s = item.session;
+        const trackLabel = isKeynoteSession(s)
+            ? 'Keynote'
+            : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
+        const color = getSessionAccentColor(s, trackLabel);
+        const key = trackLabel + '|' + color;
+        if (seen.has(key)) return;
+        seen.add(key);
+        const d = document.createElement('span');
+        d.className = 'nn-branch-dot';
+        d.style.background = color;
+        d.title = trackLabel;
+        dotsRow.appendChild(d);
+    });
+    main.appendChild(dotsRow);
+    row.appendChild(main);
+
+    const chev = document.createElement('span');
+    chev.className = 'nn-branch-chev';
+    chev.textContent = '⌄';
+    chev.setAttribute('aria-hidden', 'true');
+    row.appendChild(chev);
+
+    const detail = document.createElement('div');
+    detail.className = 'nn-branch-detail';
+    others.forEach(item => {
+        detail.appendChild(buildNowNextRow(item, { featured: false }));
+    });
+
+    row.addEventListener('click', () => {
+        const isOpen = wrap.classList.toggle('open');
+        row.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    wrap.appendChild(row);
+    wrap.appendChild(detail);
     return wrap;
 }
 
 function buildNowNextList(items) {
     // Featured (starred + non-starrable rows like breaks/meals/plenaries)
-    // render at the top in full. Non-starred starrable sessions group into
-    // a labeled "Other sessions" block at the bottom, each rendered as a
-    // compact preview row that expands on hover/tap.
+    // render on the timeline rail. Non-starred concurrent sessions are
+    // collapsed into a single "branch" row on the rail with a hollow dot
+    // — they exist at the same time but are off the user's path.
     sortNowNextItems(items);
 
     const featured = [];
@@ -4332,34 +4576,40 @@ function buildNowNextList(items) {
     list.className = 'nn-card-list';
 
     featured.forEach(item => {
-        list.appendChild(buildNowNextCard(item, { starred: isStarredItem(item) }));
+        list.appendChild(buildNowNextRow(item, { featured: true }));
     });
 
     if (others.length) {
-        const block = document.createElement('div');
-        block.className = 'nn-other-block';
-
-        const heading = document.createElement('div');
-        heading.className = 'nn-other-heading';
-        heading.textContent = `Other sessions (${others.length})`;
-        block.appendChild(heading);
-
-        others.forEach(item => {
-            block.appendChild(buildNowNextCard(item, { starred: false }));
-        });
-
-        list.appendChild(block);
+        list.appendChild(buildOtherSessionsBranch(others));
     }
 
     return list;
 }
 
-function appendNowNextSection(container, sectionClass, header, body) {
+function appendNowNextSection(container, sectionClass, header, body, color) {
     const section = document.createElement('section');
     section.className = `nn-section ${sectionClass}`;
+    if (color) section.style.setProperty('--nn-section-color', color);
     section.appendChild(header);
     section.appendChild(body);
     container.appendChild(section);
+}
+
+function pickSectionColor(items) {
+    // Prefer the first featured (starred or non-starrable) session's
+    // color; fall back to the first item.
+    if (!items.length) return '';
+    const featured = items.find(item => {
+        const s = item.session;
+        const isStarrable = !!s.uid
+            && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
+        return !isStarrable || isStarredItem(item);
+    }) || items[0];
+    const s = featured.session;
+    const trackLabel = isKeynoteSession(s)
+        ? 'Keynote'
+        : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
+    return getSessionAccentColor(s, trackLabel);
 }
 
 function findNextStartGroup(allItems, afterDate) {
@@ -4435,10 +4685,20 @@ function renderNowNextView(container) {
             if (afterBreak.items.length) {
                 const subHeader = document.createElement('div');
                 subHeader.className = 'nn-after-break-header';
+                const color = pickSectionColor(afterBreak.items);
+                if (color) subHeader.style.setProperty('--nn-after-break-color', color);
+
+                const left = document.createElement('span');
+                left.className = 'nn-after-break-left';
+                const dot = document.createElement('span');
+                dot.className = 'nn-dot';
+                left.appendChild(dot);
                 const titleEl = document.createElement('span');
                 titleEl.className = 'nn-after-break-title';
                 titleEl.textContent = 'After the break';
-                subHeader.appendChild(titleEl);
+                left.appendChild(titleEl);
+                subHeader.appendChild(left);
+
                 if (afterBreak.startDate) {
                     const t = afterBreak.startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
                     const timeEl = document.createElement('span');
@@ -4457,7 +4717,8 @@ function renderNowNextView(container) {
     }
     appendNowNextSection(container, 'is-next',
         buildNowNextSectionHeader('Happening Next', nextMeta),
-        nextBody);
+        nextBody,
+        pickSectionColor(nextGroup.items));
 
     const updated = document.createElement('div');
     updated.className = 'nn-updated';
