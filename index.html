@@ -3149,6 +3149,96 @@
             font-variant-numeric: tabular-nums;
         }
 
+        .nn-conflict-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 14px;
+            margin-top: 4px;
+            background: var(--surface-1, #f8fafc);
+            border: 1px solid var(--border-default, rgba(15, 23, 42, 0.08));
+            border-radius: 14px;
+        }
+        .nn-conflict-heading {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+            margin-bottom: 2px;
+        }
+        .nn-conflict-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid var(--border-default, rgba(15, 23, 42, 0.08));
+            border-radius: 10px;
+            padding: 8px 12px;
+            font: inherit;
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .nn-conflict-row:hover {
+            background: rgba(99, 102, 241, 0.04);
+            border-color: rgba(99, 102, 241, 0.25);
+        }
+        .nn-conflict-row.is-unresolved {
+            border-color: rgba(234, 88, 12, 0.45);
+            background: rgba(254, 243, 199, 0.45);
+        }
+        .nn-conflict-row.is-unresolved:hover {
+            background: rgba(254, 243, 199, 0.75);
+        }
+        .nn-conflict-dots {
+            display: inline-flex;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        .nn-conflict-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .nn-conflict-dot.is-hollow {
+            background: transparent;
+            border: 1.5px solid currentColor;
+            box-sizing: border-box;
+        }
+        .nn-conflict-time {
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+        .nn-conflict-text {
+            flex: 1;
+            font-size: 0.86rem;
+            line-height: 1.3;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nn-conflict-text strong {
+            font-weight: 600;
+        }
+        .nn-conflict-edit {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.55;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .nn-conflict-chev {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
         @media (max-width: 480px) {
             #scheduleContainer.now-next-view {
                 padding: 14px 12px 22px;
@@ -3415,16 +3505,42 @@ const TOPBAR_COMPACT_EXIT_WIDTH = 1240;
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
 let isStarredEditMode = false;
 let pendingRemovals = new Set();
-// Recorded decisions for overlap moments: { [fromUid]: keptUid }.
-// keptUid === fromUid means "stay in the current session"; otherwise
-// the user committed to switch to that next starred session.
-let transitionDecisions = (() => {
-    try { return JSON.parse(localStorage.getItem('incose_2026_decisions') || '{}') || {}; }
+// ─── Conflict resolutions ──────────────────────────────────────────
+// A "conflict" is a maximal time interval where 2+ starred sessions
+// run simultaneously. Each conflict has a key = sorted starrable-UIDs
+// joined by '|'. Resolutions live in:
+//   { [conflictKey]: chosenUid }
+// where chosenUid is the session the user committed to follow through
+// that overlap. The other starred sessions stay starred (still in My
+// Schedule) but get demoted to the "other sessions" branch of section
+// views *during* the conflict's time window.
+let conflictResolutions = (() => {
+    try { return JSON.parse(localStorage.getItem('incose_2026_conflicts') || '{}') || {}; }
     catch (_) { return {}; }
 })();
-function saveTransitionDecisions() {
-    localStorage.setItem('incose_2026_decisions', JSON.stringify(transitionDecisions));
+function saveConflictResolutions() {
+    localStorage.setItem('incose_2026_conflicts', JSON.stringify(conflictResolutions));
 }
+// One-time migration from the legacy transitionDecisions map. Each
+// (fromUid → keptUid) pair becomes a 2-UID conflict resolution.
+(function migrateTransitionDecisions() {
+    let legacy = {};
+    try { legacy = JSON.parse(localStorage.getItem('incose_2026_decisions') || '{}') || {}; }
+    catch (_) { legacy = {}; }
+    let mutated = false;
+    Object.entries(legacy).forEach(([fromUid, keptUid]) => {
+        if (!fromUid || !keptUid || fromUid === keptUid) return;
+        const key = [fromUid, keptUid].sort().join('|');
+        if (!conflictResolutions[key]) {
+            conflictResolutions[key] = keptUid;
+            mutated = true;
+        }
+    });
+    if (mutated) saveConflictResolutions();
+    if (Object.keys(legacy).length) {
+        localStorage.removeItem('incose_2026_decisions');
+    }
+})();
 let currentView = (() => {
     // Restore last-visited tab on reload. Validate against current data so a
     // saved key for a removed day cleanly falls back to the first day.
@@ -5195,20 +5311,149 @@ function buildOtherSessionsBranch(others) {
     return wrap;
 }
 
-function partitionFeaturedItems(items) {
+function partitionFeaturedItems(items, demotedUids) {
     const featured = [];
     const others = [];
+    const dem = demotedUids instanceof Set
+        ? demotedUids
+        : (currentRenderDemotedUids instanceof Set ? currentRenderDemotedUids : null);
     items.forEach(item => {
         const session = item.session;
         const isStarrable = !!session.uid
             && (session.type === 'session' || session.type === 'training' || isSessionStyleEvent(session));
-        if (!isStarrable || isStarredItem(item)) {
+        const starred = isStarrable && isStarredItem(item);
+        // Demoted starred sessions: still starred (and in My Schedule),
+        // but render as "other" for this view because the user resolved
+        // a conflict against them at this section's reference time.
+        const demoted = starred && dem && dem.has(session.uid);
+        if (!isStarrable || (starred && !demoted)) {
             featured.push(item);
         } else {
             others.push(item);
         }
     });
     return { featured, others };
+}
+// Render-scoped fallback for partitionFeaturedItems. Set per section
+// (Happening Now, Next, Thereafter) using getDemotedUidsAt(refTime).
+let currentRenderDemotedUids = null;
+
+// ─── Conflict detection (sweep-line) ──────────────────────────────
+// A maximal interval where 2+ starred starrable sessions overlap is
+// one "conflict". Members = union of all starred starrable items
+// active at any moment within that interval.
+function isStarrableSession(s) {
+    return !!s && !!s.uid
+        && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
+}
+function computeStarredConflicts(allItems) {
+    const starred = (allItems || []).filter(i =>
+        isStarrableSession(i.session) && isStarredItem(i)
+    );
+    if (starred.length < 2) return [];
+
+    // Build sorted event list. At equal timestamps, process 'end'
+    // before 'start' so a session ending exactly when another starts
+    // does NOT count as overlap.
+    const events = [];
+    starred.forEach(it => {
+        events.push({ t: it.win.start.getTime(), kind: 'start', it });
+        events.push({ t: it.win.end.getTime(), kind: 'end', it });
+    });
+    events.sort((a, b) => a.t - b.t || (a.kind === 'end' ? -1 : 1));
+
+    const conflicts = [];
+    const active = new Set();
+    let inConflict = false;
+    let conflictStart = null;
+    let members = new Set();
+
+    events.forEach(e => {
+        if (e.kind === 'start') active.add(e.it);
+        else active.delete(e.it);
+
+        if (active.size >= 2 && !inConflict) {
+            inConflict = true;
+            conflictStart = e.t;
+            members = new Set(active);
+        } else if (active.size >= 2 && inConflict) {
+            active.forEach(it => members.add(it));
+        } else if (active.size < 2 && inConflict) {
+            inConflict = false;
+            const items = Array.from(members);
+            const uids = items.map(it => it.session.uid).sort();
+            const key = uids.join('|');
+            conflicts.push({
+                key,
+                items,
+                uids,
+                start: new Date(conflictStart),
+                end: new Date(e.t),
+                chosen: conflictResolutions[key] || null
+            });
+            members = new Set();
+        }
+    });
+    return conflicts;
+}
+// Drop resolution entries whose conflict no longer exists (e.g. a
+// participant was unstarred). Returns true if anything changed.
+function pruneStaleConflictResolutions(conflicts) {
+    const live = new Set(conflicts.map(c => c.key));
+    let changed = false;
+    Object.keys(conflictResolutions).forEach(k => {
+        if (!live.has(k)) {
+            delete conflictResolutions[k];
+            changed = true;
+        }
+    });
+    if (changed) saveConflictResolutions();
+    return changed;
+}
+// Returns Set of UIDs to demote at reference time `t`: a starred uid
+// is demoted if there's a resolved conflict whose interval contains
+// `t` and where the uid is NOT the chosen one. This is time-aware so
+// a long session that overlaps a shorter conflict gets demoted only
+// during the overlap, then resumes its featured place afterwards.
+function getDemotedUidsAt(conflicts, t) {
+    const out = new Set();
+    if (!conflicts || !t) return out;
+    const tt = t instanceof Date ? t.getTime() : t;
+    conflicts.forEach(c => {
+        if (!c.chosen) return;
+        if (!(c.start.getTime() <= tt && tt < c.end.getTime())) return;
+        c.uids.forEach(u => { if (u !== c.chosen) out.add(u); });
+    });
+    return out;
+}
+// Find the most relevant resolved/unresolved conflict among a candidate
+// set of items (e.g. [fromItem, ...nextStarred]). Returns null if none.
+// Strategy: prefer the smallest conflict whose UIDs ⊇ the candidates'
+// UIDs (exact or superset). Falls back to any conflict sharing ≥2 UIDs.
+function findRelevantConflict(items, conflicts) {
+    if (!items || !items.length || !conflicts || !conflicts.length) return null;
+    const wantedUids = items
+        .filter(it => it.session && isStarrableSession(it.session))
+        .map(it => it.session.uid);
+    if (wantedUids.length < 2) return null;
+    const wantedSet = new Set(wantedUids);
+
+    const supersets = conflicts.filter(c => {
+        const cset = new Set(c.uids);
+        for (const u of wantedSet) if (!cset.has(u)) return false;
+        return true;
+    });
+    if (supersets.length) {
+        return supersets.sort((a, b) => a.uids.length - b.uids.length)[0];
+    }
+    let best = null, bestN = 0;
+    conflicts.forEach(c => {
+        const cset = new Set(c.uids);
+        let n = 0;
+        wantedSet.forEach(u => { if (cset.has(u)) n++; });
+        if (n >= 2 && n > bestN) { best = c; bestN = n; }
+    });
+    return best;
 }
 
 function buildNowNextList(items, opts = {}) {
@@ -5402,24 +5647,32 @@ function buildRoomTransitionHint(fromItem, toItems) {
     // surfaces the choice without a misleading directional arrow.
     // Clickable: opens the conflict picker so the user can resolve it.
     if (overlaps || distinctRooms.length > 1) {
-        const fromUid = fromItem.session.uid;
-        const decidedUid = fromUid && transitionDecisions[fromUid];
         const allOptions = overlaps ? [fromItem, ...nextStarred] : nextStarred;
+        // Look up the conflict (if any) that involves this immediate
+        // decision. The user resolves whole conflicts; the hint just
+        // surfaces the pending or recorded resolution.
+        const conflicts = computeStarredConflicts(collectAllWindowed());
+        const conflict = findRelevantConflict(allOptions, conflicts);
+        const decidedUid = conflict ? conflict.chosen : null;
         const decided = decidedUid
             ? allOptions.find(it => it.session.uid === decidedUid)
+              || (conflict && conflict.items.find(it => it.session.uid === decidedUid))
             : null;
 
         const btn = document.createElement('button');
         btn.type = 'button';
         const openPicker = () => {
-            openConflictPicker(allOptions, {
-                title: overlaps ? 'Resolve overlap' : 'Pick one for this slot',
-                desc: overlaps
-                    ? 'These starred sessions overlap. Pick the one to attend — your decision will be recorded.'
-                    : 'These starred sessions all start at the same time. Pick the one to attend — your decision will be recorded.',
-                fromItem: overlaps ? fromItem : null,
-                decidedUid: decidedUid || null
-            });
+            openConflictPicker(
+                conflict ? conflict.items : allOptions,
+                {
+                    title: overlaps ? 'Resolve overlap' : 'Pick one for this slot',
+                    desc: overlaps
+                        ? 'These starred sessions overlap. Pick the one to attend — the others stay starred but move to “other sessions” during the overlap.'
+                        : 'These starred sessions all start at the same time. Pick the one to attend — the others stay starred but move to “other sessions” during the overlap.',
+                    fromItem: overlaps ? fromItem : null,
+                    conflict: conflict || null
+                }
+            );
         };
         btn.addEventListener('click', openPicker);
 
@@ -5527,13 +5780,20 @@ function buildRoomTransitionHint(fromItem, toItems) {
 
 function openConflictPicker(items, opts = {}) {
     // Pick-one modal. `items` is a list of nn-items (each with .session
-    // and .win). Clicking a row records a stay/move decision (if
-    // opts.fromItem is provided) and unstars the OTHER starrable items
-    // that the kept window fully contains. Non-starrable items
-    // (keynotes/plenaries) are shown for context but aren't touched.
+    // and .win). Clicking a row records a conflict resolution: the
+    // chosen UID becomes the user's path through the (sorted-uids)
+    // conflict key. Loser sessions stay starred — they're demoted to
+    // the "other sessions" branch in section views during the overlap.
     if (!items || items.length < 2) return;
     const fromItem = opts.fromItem || null;
-    const fromUid = fromItem && fromItem.session && fromItem.session.uid;
+    // Conflict key from passed-in conflict, or derived from items.
+    const starrableUids = items
+        .filter(it => isStarrableSession(it.session))
+        .map(it => it.session.uid)
+        .sort();
+    const conflictKey = (opts.conflict && opts.conflict.key)
+        || (starrableUids.length >= 2 ? starrableUids.join('|') : null);
+    const decidedUid = conflictKey ? (conflictResolutions[conflictKey] || null) : null;
 
     const overlay = document.createElement('div');
     overlay.className = 'pick-modal';
@@ -5552,14 +5812,11 @@ function openConflictPicker(items, opts = {}) {
 
     const desc = document.createElement('div');
     desc.className = 'pick-modal-desc';
-    desc.textContent = opts.desc || 'Choose which session to keep on your schedule. The others will be unstarred.';
+    desc.textContent = opts.desc || 'Choose which session to follow through this overlap. The others stay starred but move to “other sessions” during it.';
     box.appendChild(desc);
 
     const list = document.createElement('div');
     list.className = 'pick-modal-list';
-
-    const isStarrableSession = (s) => !!s.uid
-        && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
 
     items.forEach(item => {
         const s = item.session;
@@ -5570,7 +5827,7 @@ function openConflictPicker(items, opts = {}) {
         const starrable = isStarrableSession(s);
         const starred = starrable && isStarredItem(item);
         const isCurrent = fromItem && item === fromItem;
-        const isDecided = opts.decidedUid && s.uid === opts.decidedUid;
+        const isDecided = !!decidedUid && s.uid === decidedUid;
 
         const row = document.createElement('button');
         row.type = 'button';
@@ -5615,33 +5872,16 @@ function openConflictPicker(items, opts = {}) {
             row.disabled = true;
         } else {
             row.addEventListener('click', () => {
-                // Unstar only OTHER starrable items the kept session
-                // FULLY blocks — entirely contained within the kept
-                // window. If a competing session starts earlier
-                // (catchable head) or ends later (catchable tail),
-                // leave it starred.
-                const keptStart = item.win.start.getTime();
-                const keptEnd = item.win.end.getTime();
-                items.forEach(other => {
-                    if (other === item) return;
-                    const os = other.session;
-                    if (!isStarrableSession(os)) return;
-                    const oStart = other.win.start.getTime();
-                    const oEnd = other.win.end.getTime();
-                    if (oStart < keptStart) return;
-                    if (oEnd > keptEnd) return;
-                    const idx = starredSessions.indexOf(os.uid);
-                    if (idx > -1) starredSessions.splice(idx, 1);
-                });
-                if (s.uid && !starredSessions.includes(s.uid)) {
-                    starredSessions.push(s.uid);
-                }
-                localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
-                // Record the stay/move decision keyed off the current
-                // session so the hint can render a confirmed state.
-                if (fromUid && s.uid) {
-                    transitionDecisions[fromUid] = s.uid;
-                    saveTransitionDecisions();
+                // Record the conflict resolution. Losers remain starred
+                // — they'll appear in "other sessions" within the
+                // conflict's time window via the demotion logic.
+                if (s.uid && conflictKey) {
+                    conflictResolutions[conflictKey] = s.uid;
+                    if (!starredSessions.includes(s.uid)) {
+                        starredSessions.push(s.uid);
+                        localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
+                    }
+                    saveConflictResolutions();
                 }
                 close();
                 renderSchedule();
@@ -5654,14 +5894,14 @@ function openConflictPicker(items, opts = {}) {
     const actions = document.createElement('div');
     actions.className = 'pick-modal-actions';
 
-    if (fromUid && opts.decidedUid) {
+    if (conflictKey && decidedUid) {
         const clear = document.createElement('button');
         clear.type = 'button';
         clear.className = 'pick-modal-clear';
         clear.textContent = 'Clear decision';
         clear.addEventListener('click', () => {
-            delete transitionDecisions[fromUid];
-            saveTransitionDecisions();
+            delete conflictResolutions[conflictKey];
+            saveConflictResolutions();
             close();
             renderSchedule();
         });
@@ -5714,6 +5954,92 @@ function findNextAttendedStart(allItems, after) {
     return earliest === Infinity ? null : new Date(earliest);
 }
 
+// ─── Bottom-of-Now&Next conflict list ─────────────────────────────
+// Renders one row per starred-session conflict. Unresolved rows sit
+// at the top (with an amber tint) and read as a "fix this" nag;
+// resolved rows show "Following <Title>" with an Edit affordance.
+// Tapping any row opens the picker against that conflict.
+function buildConflictListEl(conflicts) {
+    if (!conflicts || !conflicts.length) return null;
+
+    const sorted = conflicts.slice().sort((a, b) => {
+        const ar = a.chosen ? 1 : 0;
+        const br = b.chosen ? 1 : 0;
+        if (ar !== br) return ar - br;
+        return a.start - b.start;
+    });
+
+    const wrap = document.createElement('div');
+    wrap.className = 'nn-conflict-list';
+
+    const unresolved = sorted.filter(c => !c.chosen).length;
+    const heading = document.createElement('div');
+    heading.className = 'nn-conflict-heading';
+    if (unresolved) {
+        heading.textContent = `${unresolved} overlap${unresolved === 1 ? '' : 's'} to resolve`;
+    } else {
+        heading.textContent = 'Resolved overlaps';
+    }
+    wrap.appendChild(heading);
+
+    sorted.forEach(c => {
+        const startStr = c.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const endStr = c.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'nn-conflict-row' + (c.chosen ? ' is-resolved' : ' is-unresolved');
+
+        const dotsHtml = c.items.map(it => {
+            const col = getSessionAccentColor(it.session, it.session.Track);
+            const isBreak = isBreakStyleEvent(it.session) || isMealStyleEvent(it.session);
+            const cls = isBreak ? 'nn-conflict-dot is-hollow' : 'nn-conflict-dot';
+            const style = isBreak
+                ? `border-color:${col || 'currentColor'}`
+                : `background:${col}`;
+            return `<span class="${cls}" style="${style}" aria-hidden="true"></span>`;
+        }).join('');
+
+        let label;
+        if (c.chosen) {
+            const keptItem = c.items.find(it => it.session.uid === c.chosen);
+            const keptTrack = (keptItem && (keptItem.session.Track || '')) || '';
+            const keptRoom = (keptItem && (keptItem.session.room || '')) || '';
+            const keptLabel = keptTrack || keptRoom || 'chosen session';
+            label =
+                `<span class="nn-conflict-time">${startStr}–${endStr}</span>` +
+                `<span class="nn-conflict-text">Following <strong>${escapeHtml(keptLabel)}</strong></span>` +
+                '<span class="nn-conflict-edit">Edit</span>';
+        } else {
+            const tracks = c.items
+                .map(it => (it.session.Track || '').trim())
+                .filter(Boolean);
+            const summary = tracks.length >= 2
+                ? `<strong>${escapeHtml(tracks[0])}</strong> vs <strong>${escapeHtml(tracks[1])}</strong>${tracks.length > 2 ? ` +${tracks.length - 2}` : ''}`
+                : `${c.items.length} starred sessions overlap`;
+            label =
+                `<span class="nn-conflict-time">${startStr}–${endStr}</span>` +
+                `<span class="nn-conflict-text">${summary}</span>` +
+                '<span class="nn-conflict-chev" aria-hidden="true">›</span>';
+        }
+        btn.innerHTML = `<span class="nn-conflict-dots">${dotsHtml}</span>${label}`;
+
+        btn.addEventListener('click', () => {
+            // Pick the earliest item as the picker's "current" anchor
+            // — purely for "Stay" labelling in the modal.
+            const anchor = c.items.slice().sort((a, b) => a.win.start - b.win.start)[0];
+            openConflictPicker(c.items, {
+                title: c.chosen ? 'Edit decision' : 'Resolve overlap',
+                desc: 'Pick the session you’ll attend through this overlap. The others stay starred but move to “other sessions” during it.',
+                fromItem: anchor,
+                conflict: c
+            });
+        });
+        wrap.appendChild(btn);
+    });
+    return wrap;
+}
+
 function renderNowNextView(container) {
     document.getElementById('trackFilters').innerHTML = '';
     container.classList.add('now-next-view');
@@ -5721,27 +6047,67 @@ function renderNowNextView(container) {
     const now = new Date();
     const allItems = collectAllWindowed();
 
+    // Recompute starred conflicts on every render so they stay in sync
+    // with the current star set, then prune any stale resolutions.
+    const conflicts = computeStarredConflicts(allItems);
+    pruneStaleConflictResolutions(conflicts);
+    // Demotion is time-aware: each section sets currentRenderDemotedUids
+    // to the losers active at that section's reference time.
+    currentRenderDemotedUids = getDemotedUidsAt(conflicts, now);
+
     // ─── Happening Now: every session whose window contains `now`.
-    // ─── Happening Now: every session whose window contains `now`.
-    // If the user has recorded a decision to switch from session A to
-    // session B and B has already started, hide A — they've committed
-    // to moving and A is no longer their context.
-    const happeningNow = allItems.filter(i => {
-        if (!(now >= i.win.start && now < i.win.end)) return false;
-        const fromUid = i.session.uid;
-        if (!fromUid) return true;
-        const decUid = transitionDecisions[fromUid];
-        if (!decUid || decUid === fromUid) return true;
-        const target = allItems.find(it => it.session.uid === decUid);
-        if (!target) return true;
-        // Only hide once the switched-to session has started.
-        return now < target.win.start;
-    });
+    const happeningNow = allItems.filter(i => now >= i.win.start && now < i.win.end);
 
     // ─── Look ahead so we can detect a *run* of consecutive free-only
     // slots and render a single combined free-time chip on the first
     // section, suppressing duplicates on subsequent sections.
-    const nextGroup = findNextStartGroup(allItems, now);
+    let nextGroup = findNextStartGroup(allItems, now);
+
+    // If the user is currently committed to a starred session that
+    // continues past this next-start, the "next start" is irrelevant
+    // (e.g. an 11:00 break while you're already in a 10–11:30 panel).
+    // Re-anchor Happening Next on the commitment's end time:
+    //   1. If a starred session is already in progress at that moment
+    //      (e.g. they resolved a conflict in favor of a shorter
+    //      session and the longer one is still running), surface it
+    //      as Happening Next so they see "join in progress".
+    //   2. Otherwise advance past the commitment's end so a break
+    //      that's already covered by the commitment is skipped.
+    {
+        const happeningFeatured = partitionFeaturedItems(happeningNow).featured;
+        const happeningUids = new Set(
+            happeningFeatured.map(i => i.session.uid).filter(Boolean)
+        );
+        const commitEnd = happeningFeatured.length
+            ? Math.max(...happeningFeatured.map(i => i.win.end.getTime()))
+            : 0;
+        if (commitEnd) {
+            // Starred sessions in progress AT commitEnd that aren't
+            // already on the Happening Now rail. These are the "join
+            // in progress" candidates (e.g. a longer overlapping
+            // session whose tail extends past the user's pick).
+            const inProgressAtCommitEnd = allItems.filter(it => {
+                if (!isStarrableSession(it.session)) return false;
+                if (!isStarredItem(it)) return false;
+                if (happeningUids.has(it.session.uid)) return false;
+                const s = it.win.start.getTime();
+                const e = it.win.end.getTime();
+                return s <= commitEnd && commitEnd < e;
+            });
+            if (inProgressAtCommitEnd.length) {
+                nextGroup = {
+                    items: inProgressAtCommitEnd,
+                    startDate: new Date(commitEnd)
+                };
+            } else if (nextGroup.startDate
+                && nextGroup.startDate.getTime() < commitEnd) {
+                // No mid-session handoff, but the original next-start
+                // is hidden inside the commitment window (e.g. a
+                // break covered by an ongoing session). Skip past it.
+                nextGroup = findNextStartGroup(allItems, new Date(commitEnd - 1));
+            }
+        }
+    }
     const nowFreeOnly = happeningNow.length > 0
         && partitionFeaturedItems(happeningNow).featured.length === 0;
     const nextFreeOnly = nextGroup.items.length > 0
@@ -5869,6 +6235,11 @@ function renderNowNextView(container) {
         nextMeta = `${startLabel} · ${formatRelativeMinutes(nextGroup.startDate, now)}`;
     }
 
+    // Reference time for Next — demote losers active at this slot.
+    currentRenderDemotedUids = nextGroup.startDate
+        ? getDemotedUidsAt(conflicts, nextGroup.startDate)
+        : new Set();
+
     // If the Now section is already showing a combined free chip that
     // covers this slot too, suppress the duplicate here.
     const suppressNextFreeChip = nowFreeOnly && nextFreeOnly;
@@ -5894,11 +6265,17 @@ function renderNowNextView(container) {
         // If decision = move to a Next row, that moved-to is the
         // commitment (and won't get flagged itself).
         let nowCommitment = heroPrimary;
-        if (heroPrimary) {
-            const decUid = transitionDecisions[heroPrimary.session.uid];
-            if (decUid && decUid !== heroPrimary.session.uid) {
+        if (heroPrimary && heroPrimary.session.uid) {
+            // If the user resolved a conflict involving heroPrimary in
+            // favor of a Next-row session, that moved-to row becomes
+            // the commitment (and won't get tagged itself).
+            const c = conflicts.find(c =>
+                c.chosen && c.uids.includes(heroPrimary.session.uid)
+                && c.chosen !== heroPrimary.session.uid
+            );
+            if (c) {
                 const moved = partitionFeaturedItems(nextGroup.items).featured
-                    .find(it => it.session.uid === decUid);
+                    .find(it => it.session.uid === c.chosen);
                 if (moved) nowCommitment = moved;
             }
         }
@@ -6004,6 +6381,8 @@ function renderNowNextView(container) {
     // ─── Thereafter section render.
     if (thereafter.items.length) {
         const tStart = thereafter.startDate;
+        // Reference time for Thereafter — demote losers active at this slot.
+        currentRenderDemotedUids = getDemotedUidsAt(conflicts, tStart);
         const tStartLabel = tStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         const sameDay = tStart.toDateString() === now.toDateString();
         const dayLabel = sameDay
@@ -6032,11 +6411,16 @@ function renderNowNextView(container) {
             }
             if (nextAnchorForChain) {
                 nextCommitment = nextAnchorForChain;
-                const decUid = transitionDecisions[nextAnchorForChain.session.uid];
-                if (decUid && decUid !== nextAnchorForChain.session.uid) {
-                    const moved = partitionFeaturedItems(thereafter.items).featured
-                        .find(it => it.session.uid === decUid);
-                    if (moved) nextCommitment = moved;
+                if (nextAnchorForChain.session.uid) {
+                    const c = conflicts.find(c =>
+                        c.chosen && c.uids.includes(nextAnchorForChain.session.uid)
+                        && c.chosen !== nextAnchorForChain.session.uid
+                    );
+                    if (c) {
+                        const moved = partitionFeaturedItems(thereafter.items).featured
+                            .find(it => it.session.uid === c.chosen);
+                        if (moved) nextCommitment = moved;
+                    }
                 }
             }
         }
@@ -6050,10 +6434,20 @@ function renderNowNextView(container) {
             pickSectionColor(thereafter.items));
     }
 
+    // ─── Conflict list (bottom-of-Now&Next affordance) ─────────────
+    // One row per starred-session conflict. Unresolved sit at the top
+    // (the "fix me" nag); resolved rows show an Edit affordance.
+    // Only show conflicts that haven't ended yet — past overlaps are
+    // no longer actionable.
+    const upcomingConflicts = conflicts.filter(c => c.end.getTime() > now.getTime());
+    const conflictListEl = buildConflictListEl(upcomingConflicts);
+    if (conflictListEl) container.appendChild(conflictListEl);
+
     const updated = document.createElement('div');
     updated.className = 'nn-updated';
     updated.textContent = `Updated ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
     container.appendChild(updated);
+    currentRenderDemotedUids = null;
 }
 
 function renderMobileDayList(day, container) {
