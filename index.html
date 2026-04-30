@@ -1216,6 +1216,13 @@
         .pick-modal-item.is-starred {
             border-color: color-mix(in srgb, var(--text-main) 35%, var(--border));
         }
+        .pick-modal-item.is-decided {
+            border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+            background: color-mix(in srgb, var(--primary) 5%, #fff);
+        }
+        .pick-modal-item.is-decided .pick-modal-keep {
+            color: var(--primary);
+        }
         .pick-modal-item.is-fixed {
             cursor: not-allowed;
             opacity: 0.65;
@@ -1265,8 +1272,25 @@
         }
         .pick-modal-actions {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 8px;
+        }
+        .pick-modal-clear {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.12s, border-color 0.12s, color 0.12s;
+        }
+        .pick-modal-clear:hover {
+            color: var(--text-main);
+            background: rgba(0, 0, 0, 0.04);
+            border-color: color-mix(in srgb, var(--text-main) 30%, transparent);
         }
         .pick-modal-cancel {
             background: none;
@@ -2873,13 +2897,32 @@
             align-items: center;
             gap: 4px;
             flex-shrink: 0;
-            height: 18px;
+            line-height: 1.35;
+            height: 1.35em;
         }
         .nn-hint-dot {
             width: 9px;
             height: 9px;
             border-radius: 50%;
             flex: 0 0 auto;
+        }
+        /* Inline dot used inside text spans (e.g. "Then: → ● Room").
+           vertical-align: middle aligns it to the actual text x-height
+           rather than the line-box top, so it reads visually centered
+           with the room name. */
+        .nn-hint-dot-inline {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin: -2px 8px 0 0;
+        }
+        .nn-hint-lead {
+            flex: 0 0 auto;
+            font-weight: inherit;
+            letter-spacing: inherit;
+            color: var(--text-main);
         }
         .nn-hero-hint.is-overlap { color: var(--text-main); }
         /* Clickable overlap hint: button reset so it matches the static
@@ -2918,6 +2961,19 @@
             flex: 0 0 auto;
             transition: opacity 0.12s, transform 0.12s;
         }
+        .nn-hero-hint .nn-hint-edit {
+            margin-left: auto;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            opacity: 0.85;
+            flex: 0 0 auto;
+            transition: opacity 0.12s;
+        }
+        button.nn-hero-hint:hover .nn-hint-edit,
+        button.nn-hero-hint:focus-visible .nn-hint-edit { opacity: 1; }
+        .nn-hero-hint.is-decided.is-stay .nn-hint-icon { color: #6b9a7c; }
+        .nn-hero-hint.is-decided.is-move .nn-hint-icon { color: color-mix(in srgb, var(--text-secondary) 80%, var(--primary)); }
         .nn-hero-hint.is-stay { color: var(--text-main); }
         .nn-hero-hint.is-stay .nn-hint-icon { color: #6b9a7c; }
         .nn-hero-hint.is-move { color: var(--text-main); }
@@ -3326,6 +3382,16 @@ const TOPBAR_COMPACT_EXIT_WIDTH = 1240;
 let starredSessions = JSON.parse(localStorage.getItem('incose_2026_stars') || '[]');
 let isStarredEditMode = false;
 let pendingRemovals = new Set();
+// Recorded decisions for overlap moments: { [fromUid]: keptUid }.
+// keptUid === fromUid means "stay in the current session"; otherwise
+// the user committed to switch to that next starred session.
+let transitionDecisions = (() => {
+    try { return JSON.parse(localStorage.getItem('incose_2026_decisions') || '{}') || {}; }
+    catch (_) { return {}; }
+})();
+function saveTransitionDecisions() {
+    localStorage.setItem('incose_2026_decisions', JSON.stringify(transitionDecisions));
+}
 let currentView = (() => {
     // Restore last-visited tab on reload. Validate against current data so a
     // saved key for a removed day cleanly falls back to the first day.
@@ -5274,34 +5340,81 @@ function buildRoomTransitionHint(fromItem, toItems) {
     // surfaces the choice without a misleading directional arrow.
     // Clickable: opens the conflict picker so the user can resolve it.
     if (overlaps || distinctRooms.length > 1) {
+        const fromUid = fromItem.session.uid;
+        const decidedUid = fromUid && transitionDecisions[fromUid];
+        const allOptions = overlaps ? [fromItem, ...nextStarred] : nextStarred;
+        const decided = decidedUid
+            ? allOptions.find(it => it.session.uid === decidedUid)
+            : null;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const openPicker = () => {
+            openConflictPicker(allOptions, {
+                title: overlaps ? 'Resolve overlap' : 'Pick one for this slot',
+                desc: overlaps
+                    ? 'These starred sessions overlap. Pick the one to attend — your decision will be recorded.'
+                    : 'These starred sessions all start at the same time. Pick the one to attend — your decision will be recorded.',
+                fromItem: overlaps ? fromItem : null,
+                decidedUid: decidedUid || null
+            });
+        };
+        btn.addEventListener('click', openPicker);
+
+        if (decided) {
+            // Confirmed decision — render in the same format as the
+            // non-overlap stay/move hint: icon + colored dot + room
+            // text. Titles tend to be long so we deliberately keep
+            // this room-level. Edit affordance reopens the picker.
+            const isStay = decided === fromItem;
+            const decidedRoom = (decided.session.room || '').trim();
+            const sameRoom = isStay
+                || (fromRoom && decidedRoom && fromRoom.toLowerCase() === decidedRoom.toLowerCase());
+            btn.className = 'nn-hero-hint is-decided ' + (sameRoom ? 'is-stay' : 'is-move');
+            const decidedColor = getSessionAccentColor(decided.session, decided.session.Track);
+            const inlineDot = decidedColor
+                ? `<span class="nn-hint-dot-inline" style="background:${decidedColor}" aria-hidden="true"></span>`
+                : '';
+            const iconSvg = sameRoom
+                ? '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>'
+                : '';
+            let inner;
+            if (isStay) {
+                inner = iconSvg +
+                    `<span class="nn-hint-text">${inlineDot}Staying in this session</span>`;
+            } else if (sameRoom) {
+                inner = iconSvg +
+                    `<span class="nn-hint-text">${inlineDot}Stay in this room for the next session</span>`;
+            } else if (decidedRoom) {
+                inner = '<span class="nn-hint-lead">Then:</span>' +
+                    `<span class="nn-hint-text">${inlineDot}<strong>${escapeHtml(decidedRoom)}</strong></span>`;
+            } else {
+                inner = `<span class="nn-hint-text">${inlineDot}Switching to next session</span>`;
+            }
+            btn.innerHTML =
+                inner +
+                '<span class="nn-hint-edit" aria-hidden="true">Edit</span>';
+            btn.setAttribute('aria-label', 'Edit your decision for this overlap');
+            return btn;
+        }
+
         const dots = collectSectionTrackColors(nextStarred);
         const dotsRow = dots.map(d =>
             `<span class="nn-hint-dot" style="background:${d.color}" title="${escapeHtml(d.label)}" aria-label="${escapeHtml(d.label)}"></span>`
         ).join('');
-        const btn = document.createElement('button');
-        btn.type = 'button';
         btn.className = 'nn-hero-hint is-overlap is-clickable';
         let text;
         if (overlaps && toStart) {
             const t = toStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            text = `<strong>Decision at ${t}:</strong> stay in this session, or switch to ${nextStarred.length === 1 ? 'a starred session' : `one of ${nextStarred.length} starred sessions`}`;
+            text = `Decision at ${t}: stay in this session, or switch to ${nextStarred.length === 1 ? 'a starred session' : `one of ${nextStarred.length} starred sessions`}`;
         } else {
-            text = `<strong>${nextStarred.length} starred</strong> next — pick one`;
+            text = `${nextStarred.length} starred next — pick one`;
         }
         btn.innerHTML =
             '<span class="nn-hint-dots">' + dotsRow + '</span>' +
             `<span class="nn-hint-text">${text}</span>` +
             '<span class="nn-hint-chev" aria-hidden="true">›</span>';
         btn.setAttribute('aria-label', 'Resolve overlap — pick one starred session to keep');
-        btn.addEventListener('click', () => {
-            const pickItems = overlaps ? [fromItem, ...nextStarred] : nextStarred;
-            openConflictPicker(pickItems, {
-                title: overlaps ? 'Resolve overlap' : 'Pick one for this slot',
-                desc: overlaps
-                    ? 'These starred sessions overlap. Pick the one to keep — the others will be unstarred.'
-                    : 'These starred sessions all start at the same time. Pick the one to keep — the others will be unstarred.'
-            });
-        });
         return btn;
     }
 
@@ -5310,28 +5423,34 @@ function buildRoomTransitionHint(fromItem, toItems) {
     hint.className = 'nn-hero-hint';
     const toRoom = distinctRooms[0];
     const sameRoom = fromRoom.toLowerCase() === toRoom.toLowerCase();
+    const toColor = getSessionAccentColor(nextStarred[0].session, nextStarred[0].session.Track);
+    const inlineDot = toColor
+        ? `<span class="nn-hint-dot-inline" style="background:${toColor}" aria-hidden="true"></span>`
+        : '';
     if (sameRoom) {
         hint.classList.add('is-stay');
         hint.innerHTML =
             '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
             '<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>' +
-            `<span><strong>Stay in this room</strong> for the next session</span>`;
+            `<span>${inlineDot}Stay in this room for the next session</span>`;
     } else {
         hint.classList.add('is-move');
         hint.innerHTML =
-            '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-            '<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>' +
-            `<span>Then: <strong>${escapeHtml(toRoom)}</strong></span>`;
+            '<span class="nn-hint-lead">Then:</span>' +
+            `<span>${inlineDot}<strong>${escapeHtml(toRoom)}</strong></span>`;
     }
     return hint;
 }
 
 function openConflictPicker(items, opts = {}) {
-    // Pick-one-keep-one modal. `items` is a list of nn-items (each with
-    // .session and .win). Clicking a row keeps that session and unstars
-    // every other STARRABLE session in the list. Non-starrable items
-    // (keynotes/plenaries) are shown for context but don't get touched.
+    // Pick-one modal. `items` is a list of nn-items (each with .session
+    // and .win). Clicking a row records a stay/move decision (if
+    // opts.fromItem is provided) and unstars the OTHER starrable items
+    // that the kept window fully contains. Non-starrable items
+    // (keynotes/plenaries) are shown for context but aren't touched.
     if (!items || items.length < 2) return;
+    const fromItem = opts.fromItem || null;
+    const fromUid = fromItem && fromItem.session && fromItem.session.uid;
 
     const overlay = document.createElement('div');
     overlay.className = 'pick-modal';
@@ -5367,12 +5486,15 @@ function openConflictPicker(items, opts = {}) {
         const color = getSessionAccentColor(s, trackLabel);
         const starrable = isStarrableSession(s);
         const starred = starrable && isStarredItem(item);
+        const isCurrent = fromItem && item === fromItem;
+        const isDecided = opts.decidedUid && s.uid === opts.decidedUid;
 
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'pick-modal-item';
         if (starred) row.classList.add('is-starred');
         if (!starrable) row.classList.add('is-fixed');
+        if (isDecided) row.classList.add('is-decided');
 
         const dot = document.createElement('span');
         dot.className = 'pick-modal-dot';
@@ -5383,7 +5505,8 @@ function openConflictPicker(items, opts = {}) {
         main.className = 'pick-modal-main';
         const titleEl = document.createElement('span');
         titleEl.className = 'pick-modal-item-title';
-        titleEl.textContent = s.Title || s.title || '(untitled)';
+        const titleText = s.Title || s.title || '(untitled)';
+        titleEl.textContent = isCurrent ? `${titleText} (current)` : titleText;
         main.appendChild(titleEl);
 
         const meta = document.createElement('span');
@@ -5399,7 +5522,10 @@ function openConflictPicker(items, opts = {}) {
 
         const action = document.createElement('span');
         action.className = 'pick-modal-keep';
-        action.textContent = starrable ? 'Keep' : 'Locked in';
+        if (!starrable) action.textContent = 'Locked in';
+        else if (isDecided) action.textContent = 'Chosen';
+        else if (isCurrent) action.textContent = 'Stay';
+        else action.textContent = 'Switch';
         row.appendChild(action);
 
         if (!starrable) {
@@ -5407,11 +5533,10 @@ function openConflictPicker(items, opts = {}) {
         } else {
             row.addEventListener('click', () => {
                 // Unstar only OTHER starrable items the kept session
-                // FULLY blocks — i.e., entirely contained within the
-                // kept window (start >= keptStart AND end <= keptEnd).
-                // If a competing session starts earlier (can attend its
-                // head) or ends later (can attend its tail), leave it
-                // starred — the user can still partially attend it.
+                // FULLY blocks — entirely contained within the kept
+                // window. If a competing session starts earlier
+                // (catchable head) or ends later (catchable tail),
+                // leave it starred.
                 const keptStart = item.win.start.getTime();
                 const keptEnd = item.win.end.getTime();
                 items.forEach(other => {
@@ -5420,8 +5545,8 @@ function openConflictPicker(items, opts = {}) {
                     if (!isStarrableSession(os)) return;
                     const oStart = other.win.start.getTime();
                     const oEnd = other.win.end.getTime();
-                    if (oStart < keptStart) return; // can attend its head
-                    if (oEnd > keptEnd) return;     // can attend its tail
+                    if (oStart < keptStart) return;
+                    if (oEnd > keptEnd) return;
                     const idx = starredSessions.indexOf(os.uid);
                     if (idx > -1) starredSessions.splice(idx, 1);
                 });
@@ -5429,6 +5554,12 @@ function openConflictPicker(items, opts = {}) {
                     starredSessions.push(s.uid);
                 }
                 localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
+                // Record the stay/move decision keyed off the current
+                // session so the hint can render a confirmed state.
+                if (fromUid && s.uid) {
+                    transitionDecisions[fromUid] = s.uid;
+                    saveTransitionDecisions();
+                }
                 close();
                 renderSchedule();
             });
@@ -5439,6 +5570,21 @@ function openConflictPicker(items, opts = {}) {
 
     const actions = document.createElement('div');
     actions.className = 'pick-modal-actions';
+
+    if (fromUid && opts.decidedUid) {
+        const clear = document.createElement('button');
+        clear.type = 'button';
+        clear.className = 'pick-modal-clear';
+        clear.textContent = 'Clear decision';
+        clear.addEventListener('click', () => {
+            delete transitionDecisions[fromUid];
+            saveTransitionDecisions();
+            close();
+            renderSchedule();
+        });
+        actions.appendChild(clear);
+    }
+
     const cancel = document.createElement('button');
     cancel.type = 'button';
     cancel.className = 'pick-modal-cancel';
