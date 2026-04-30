@@ -2710,6 +2710,25 @@
         .nn-row-sep {
             color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
         }
+        /* Mid-session indicator: subtle clock + "Join at HH:MM" pill,
+           shown when the user is committed to a prior session that runs
+           into this one. Quiet by default — the meta line should still
+           read time · room first. */
+        .nn-row-midsession {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            font-style: italic;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        .nn-row-midsession svg {
+            width: 12px;
+            height: 12px;
+            flex: 0 0 auto;
+            opacity: 0.85;
+        }
         /* Track kicker: small label above the title in the row's accent
            color. Replaces the inline chip — keeps the meta line clean
            and the track always visible without competing for width. */
@@ -2964,14 +2983,17 @@
         .nn-hero-hint .nn-hint-edit {
             margin-left: auto;
             font-size: 12px;
-            font-weight: 600;
-            color: var(--primary);
-            opacity: 0.85;
+            font-weight: 500;
+            color: var(--text-secondary);
+            opacity: 0.55;
             flex: 0 0 auto;
-            transition: opacity 0.12s;
+            transition: opacity 0.12s, color 0.12s;
         }
         button.nn-hero-hint:hover .nn-hint-edit,
-        button.nn-hero-hint:focus-visible .nn-hint-edit { opacity: 1; }
+        button.nn-hero-hint:focus-visible .nn-hint-edit {
+            opacity: 0.9;
+            color: var(--text-main);
+        }
         .nn-hero-hint.is-decided.is-stay .nn-hint-icon { color: #6b9a7c; }
         .nn-hero-hint.is-decided.is-move .nn-hint-icon { color: color-mix(in srgb, var(--text-secondary) 80%, var(--primary)); }
         .nn-hero-hint.is-stay { color: var(--text-main); }
@@ -4929,7 +4951,7 @@ function buildNowNextSectionHeader(title, headerMeta, items) {
     return header;
 }
 
-function buildNowNextRow(item, { featured }) {
+function buildNowNextRow(item, { featured, joinFrom }) {
     const { session, win } = item;
     const now = new Date();
     const trackLabel = isKeynoteSession(session)
@@ -4937,6 +4959,13 @@ function buildNowNextRow(item, { featured }) {
         : (session.Track || (isSessionStyleEvent(session) ? 'General' : ''));
     const color = getSessionAccentColor(session, trackLabel);
     const isLive = now >= win.start && now < win.end;
+    // Mid-session: caller is committed to a prior session (joinFrom) that
+    // ends after this row starts, so the user can only join this one
+    // partway through. Skip if joinFrom IS this row.
+    const isMidSession = !!(joinFrom && joinFrom !== item
+        && joinFrom.win && joinFrom.win.end
+        && joinFrom.win.end > win.start);
+    const joinAtTime = isMidSession ? joinFrom.win.end : null;
 
     const wrap = document.createElement('div');
     wrap.className = 'nn-row-wrap';
@@ -5008,6 +5037,22 @@ function buildNowNextRow(item, { featured }) {
         roomEl.className = 'nn-row-room';
         roomEl.textContent = session.room;
         meta.appendChild(roomEl);
+    }
+    if (isMidSession) {
+        const sep = document.createElement('span');
+        sep.className = 'nn-row-sep';
+        sep.textContent = '·';
+        sep.setAttribute('aria-hidden', 'true');
+        meta.appendChild(sep);
+        const mid = document.createElement('span');
+        mid.className = 'nn-row-midsession';
+        const joinStr = joinAtTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        mid.innerHTML =
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+            `<span>Join at ${joinStr}</span>`;
+        mid.title = `You\u2019re committed elsewhere until ${joinStr} — you\u2019ll join this session in progress.`;
+        meta.appendChild(mid);
     }
     main.appendChild(meta);
     row.appendChild(main);
@@ -5258,7 +5303,7 @@ function buildNowNextList(items, opts = {}) {
     }
 
     featured.forEach(item => {
-        list.appendChild(buildNowNextRow(item, { featured: true }));
+        list.appendChild(buildNowNextRow(item, { featured: true, joinFrom: opts.joinFrom || null }));
     });
 
     if (others.length) {
@@ -5791,13 +5836,27 @@ function renderNowNextView(container) {
 
     let nextBody;
     if (nextGroup.items.length) {
+        // Determine what the user is committed to during the Now slot
+        // so we can flag Next rows the user can only join mid-session.
+        // If decision = move to a Next row, that moved-to is the
+        // commitment (and won't get flagged itself).
+        let nowCommitment = heroPrimary;
+        if (heroPrimary) {
+            const decUid = transitionDecisions[heroPrimary.session.uid];
+            if (decUid && decUid !== heroPrimary.session.uid) {
+                const moved = partitionFeaturedItems(nextGroup.items).featured
+                    .find(it => it.session.uid === decUid);
+                if (moved) nowCommitment = moved;
+            }
+        }
         nextBody = document.createElement('div');
         nextBody.className = 'nn-subgroup';
         nextBody.appendChild(buildNowNextList(nextGroup.items, {
             suppressFreeChip: suppressNextFreeChip,
             freeChipMaxEnd: nextGroup.startDate
                 ? findNextAttendedStart(allItems, nextGroup.startDate)
-                : null
+                : null,
+            joinFrom: nowCommitment
         }));
 
         // If "Next" is purely break/meal, also surface what's happening
@@ -5899,11 +5958,37 @@ function renderNowNextView(container) {
         const thereafterFreeOnly = partitionFeaturedItems(thereafter.items).featured.length === 0;
         const suppressThereafterFreeChip = nowFreeOnly && thereafterFreeOnly
             && freeRunEnd && tStart < freeRunEnd;
+        // Carry decisions forward: the user's Next-period commitment is
+        // either the chosen Next anchor or, if they decided to move at
+        // Next, the moved-to Thereafter row (which then won't be tagged).
+        let nextCommitment = null;
+        {
+            let nextAnchorForChain = null;
+            if (nextGroup.items.length) {
+                if (isAllBreakOrMeal(nextGroup.items)) {
+                    const cursor = new Date(Math.min(...nextGroup.items.map(i => i.win.end.getTime())) - 1);
+                    const afterBreak = findNextStartGroup(allItems, cursor);
+                    nextAnchorForChain = partitionFeaturedItems(afterBreak.items).featured[0] || null;
+                } else {
+                    nextAnchorForChain = partitionFeaturedItems(nextGroup.items).featured[0] || null;
+                }
+            }
+            if (nextAnchorForChain) {
+                nextCommitment = nextAnchorForChain;
+                const decUid = transitionDecisions[nextAnchorForChain.session.uid];
+                if (decUid && decUid !== nextAnchorForChain.session.uid) {
+                    const moved = partitionFeaturedItems(thereafter.items).featured
+                        .find(it => it.session.uid === decUid);
+                    if (moved) nextCommitment = moved;
+                }
+            }
+        }
         appendNowNextSection(container, 'is-thereafter',
             buildNowNextSectionHeader('Thereafter', tMeta, thereafter.items),
             buildNowNextList(thereafter.items, {
                 suppressFreeChip: suppressThereafterFreeChip,
-                freeChipMaxEnd: findNextAttendedStart(allItems, tStart)
+                freeChipMaxEnd: findNextAttendedStart(allItems, tStart),
+                joinFrom: nextCommitment
             }),
             pickSectionColor(thereafter.items));
     }
