@@ -1147,6 +1147,144 @@
             flex-wrap: wrap;
         }
 
+        /* Pick-one-keep-one conflict resolver modal. Lives on top of
+           the Now & Next view; opened from the overlap hint. */
+        .pick-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.32);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 270;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.16s ease;
+        }
+        .pick-modal.show { opacity: 1; pointer-events: auto; }
+        .pick-modal-box {
+            background: #fff;
+            border-radius: 18px;
+            padding: 22px;
+            width: min(460px, 100%);
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.24);
+            font-family: 'Google Sans', sans-serif;
+        }
+        .pick-modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+        .pick-modal-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            margin-bottom: 16px;
+        }
+        .pick-modal-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .pick-modal-item {
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.12s, background 0.12s, transform 0.08s;
+            background: #fff;
+            box-sizing: border-box;
+        }
+        .pick-modal-item:hover {
+            border-color: color-mix(in srgb, var(--text-main) 40%, transparent);
+            background: rgba(0, 0, 0, 0.02);
+        }
+        .pick-modal-item:active { transform: scale(0.99); }
+        .pick-modal-item:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        .pick-modal-item.is-starred {
+            border-color: color-mix(in srgb, var(--text-main) 35%, var(--border));
+        }
+        .pick-modal-item.is-fixed {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        .pick-modal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            flex: 0 0 auto;
+        }
+        .pick-modal-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+        }
+        .pick-modal-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.3;
+            letter-spacing: -0.005em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .pick-modal-item-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .pick-modal-keep {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+        .pick-modal-item.is-fixed .pick-modal-keep {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .pick-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .pick-modal-cancel {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .pick-modal-cancel:hover {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: color-mix(in srgb, var(--text-main) 30%, transparent);
+        }
+
         /* Edit entry point: quiet text link, no chip styling. */
         .starred-edit-link {
             background: none;
@@ -2744,6 +2882,42 @@
             flex: 0 0 auto;
         }
         .nn-hero-hint.is-overlap { color: var(--text-main); }
+        /* Clickable overlap hint: button reset so it matches the static
+           hint exactly, plus a subtle chevron and hover/focus affordance. */
+        button.nn-hero-hint {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            font: inherit;
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 6px;
+            transition: color 0.12s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button.nn-hero-hint:hover .nn-hint-chev,
+        button.nn-hero-hint:focus-visible .nn-hint-chev {
+            opacity: 1;
+            transform: translateX(2px);
+        }
+        button.nn-hero-hint:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 4px;
+        }
+        .nn-hero-hint .nn-hint-text { flex: 1; min-width: 0; }
+        .nn-hero-hint .nn-hint-chev {
+            margin-left: 6px;
+            font-size: 18px;
+            line-height: 1.2;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            flex: 0 0 auto;
+            transition: opacity 0.12s, transform 0.12s;
+        }
         .nn-hero-hint.is-stay { color: var(--text-main); }
         .nn-hero-hint.is-stay .nn-hint-icon { color: #6b9a7c; }
         .nn-hero-hint.is-move { color: var(--text-main); }
@@ -5098,12 +5272,15 @@ function buildRoomTransitionHint(fromItem, toItems) {
     // Decision variant: next group overlaps current OR multiple
     // distinct rooms. Track-color dots + a "decision at HH:MM" line —
     // surfaces the choice without a misleading directional arrow.
+    // Clickable: opens the conflict picker so the user can resolve it.
     if (overlaps || distinctRooms.length > 1) {
         const dots = collectSectionTrackColors(nextStarred);
         const dotsRow = dots.map(d =>
             `<span class="nn-hint-dot" style="background:${d.color}" title="${escapeHtml(d.label)}" aria-label="${escapeHtml(d.label)}"></span>`
         ).join('');
-        hint.className = 'nn-hero-hint is-overlap';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'nn-hero-hint is-overlap is-clickable';
         let text;
         if (overlaps && toStart) {
             const t = toStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -5111,10 +5288,21 @@ function buildRoomTransitionHint(fromItem, toItems) {
         } else {
             text = `<strong>${nextStarred.length} starred</strong> next — pick one`;
         }
-        hint.innerHTML =
+        btn.innerHTML =
             '<span class="nn-hint-dots">' + dotsRow + '</span>' +
-            `<span>${text}</span>`;
-        return hint;
+            `<span class="nn-hint-text">${text}</span>` +
+            '<span class="nn-hint-chev" aria-hidden="true">›</span>';
+        btn.setAttribute('aria-label', 'Resolve overlap — pick one starred session to keep');
+        btn.addEventListener('click', () => {
+            const pickItems = overlaps ? [fromItem, ...nextStarred] : nextStarred;
+            openConflictPicker(pickItems, {
+                title: overlaps ? 'Resolve overlap' : 'Pick one for this slot',
+                desc: overlaps
+                    ? 'These starred sessions overlap. Pick the one to keep — the others will be unstarred.'
+                    : 'These starred sessions all start at the same time. Pick the one to keep — the others will be unstarred.'
+            });
+        });
+        return btn;
     }
 
     // Single-room transition: needs a known current room.
@@ -5136,6 +5324,146 @@ function buildRoomTransitionHint(fromItem, toItems) {
             `<span>Then: <strong>${escapeHtml(toRoom)}</strong></span>`;
     }
     return hint;
+}
+
+function openConflictPicker(items, opts = {}) {
+    // Pick-one-keep-one modal. `items` is a list of nn-items (each with
+    // .session and .win). Clicking a row keeps that session and unstars
+    // every other STARRABLE session in the list. Non-starrable items
+    // (keynotes/plenaries) are shown for context but don't get touched.
+    if (!items || items.length < 2) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'pick-modal';
+
+    const box = document.createElement('div');
+    box.className = 'pick-modal-box';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-labelledby', 'pickModalTitle');
+
+    const title = document.createElement('div');
+    title.className = 'pick-modal-title';
+    title.id = 'pickModalTitle';
+    title.textContent = opts.title || 'Pick one to keep';
+    box.appendChild(title);
+
+    const desc = document.createElement('div');
+    desc.className = 'pick-modal-desc';
+    desc.textContent = opts.desc || 'Choose which session to keep on your schedule. The others will be unstarred.';
+    box.appendChild(desc);
+
+    const list = document.createElement('div');
+    list.className = 'pick-modal-list';
+
+    const isStarrableSession = (s) => !!s.uid
+        && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
+
+    items.forEach(item => {
+        const s = item.session;
+        const trackLabel = isKeynoteSession(s)
+            ? 'Keynote'
+            : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
+        const color = getSessionAccentColor(s, trackLabel);
+        const starrable = isStarrableSession(s);
+        const starred = starrable && isStarredItem(item);
+
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'pick-modal-item';
+        if (starred) row.classList.add('is-starred');
+        if (!starrable) row.classList.add('is-fixed');
+
+        const dot = document.createElement('span');
+        dot.className = 'pick-modal-dot';
+        if (color) dot.style.background = color;
+        row.appendChild(dot);
+
+        const main = document.createElement('span');
+        main.className = 'pick-modal-main';
+        const titleEl = document.createElement('span');
+        titleEl.className = 'pick-modal-item-title';
+        titleEl.textContent = s.Title || s.title || '(untitled)';
+        main.appendChild(titleEl);
+
+        const meta = document.createElement('span');
+        meta.className = 'pick-modal-item-meta';
+        const start = item.win.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const end = item.win.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const parts = [`${start} – ${end}`];
+        if (s.room) parts.push(s.room);
+        if (trackLabel) parts.push(trackLabel);
+        meta.textContent = parts.join(' · ');
+        main.appendChild(meta);
+        row.appendChild(main);
+
+        const action = document.createElement('span');
+        action.className = 'pick-modal-keep';
+        action.textContent = starrable ? 'Keep' : 'Locked in';
+        row.appendChild(action);
+
+        if (!starrable) {
+            row.disabled = true;
+        } else {
+            row.addEventListener('click', () => {
+                // Unstar only OTHER starrable items the kept session
+                // FULLY blocks — i.e., entirely contained within the
+                // kept window (start >= keptStart AND end <= keptEnd).
+                // If a competing session starts earlier (can attend its
+                // head) or ends later (can attend its tail), leave it
+                // starred — the user can still partially attend it.
+                const keptStart = item.win.start.getTime();
+                const keptEnd = item.win.end.getTime();
+                items.forEach(other => {
+                    if (other === item) return;
+                    const os = other.session;
+                    if (!isStarrableSession(os)) return;
+                    const oStart = other.win.start.getTime();
+                    const oEnd = other.win.end.getTime();
+                    if (oStart < keptStart) return; // can attend its head
+                    if (oEnd > keptEnd) return;     // can attend its tail
+                    const idx = starredSessions.indexOf(os.uid);
+                    if (idx > -1) starredSessions.splice(idx, 1);
+                });
+                if (s.uid && !starredSessions.includes(s.uid)) {
+                    starredSessions.push(s.uid);
+                }
+                localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
+                close();
+                renderSchedule();
+            });
+        }
+        list.appendChild(row);
+    });
+    box.appendChild(list);
+
+    const actions = document.createElement('div');
+    actions.className = 'pick-modal-actions';
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'pick-modal-cancel';
+    cancel.textContent = 'Cancel';
+    cancel.addEventListener('click', close);
+    actions.appendChild(cancel);
+    box.appendChild(actions);
+
+    overlay.appendChild(box);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
+    });
+
+    function close() {
+        overlay.classList.remove('show');
+        document.removeEventListener('keydown', onKey);
+        setTimeout(() => overlay.remove(), 160);
+    }
+    function onKey(e) {
+        if (e.key === 'Escape') close();
+    }
+    document.addEventListener('keydown', onKey);
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('show'));
 }
 
 function findNextAttendedStart(allItems, after) {
