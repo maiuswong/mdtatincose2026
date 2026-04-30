@@ -5720,6 +5720,7 @@ function renderNowNextView(container) {
 
     let nowMeta = '';
     let nowBody;
+    let heroPrimary = null;
     if (happeningNow.length) {
         nowBody = buildNowNextList(happeningNow, nowFreeOnly ? {
             freeChipStartOverride: now,
@@ -5733,7 +5734,7 @@ function renderNowNextView(container) {
         // didn't pick anything for this slot (free time), don't suggest
         // staying or moving from a room they're not in.
         const heroFeatured = partitionFeaturedItems(happeningNow).featured;
-        const heroPrimary = heroFeatured[0] || null;
+        heroPrimary = heroFeatured[0] || null;
 
         const footer = document.createElement('div');
         footer.className = 'nn-hero-footer';
