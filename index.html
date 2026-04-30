@@ -2578,6 +2578,11 @@
             background: var(--text-secondary);
             flex: 0 0 auto;
         }
+        .nn-section-track-dot.is-hollow {
+            background: transparent;
+            border: 1.5px solid var(--text-secondary);
+            box-sizing: border-box;
+        }
         .nn-section.is-now .nn-section-track-dot {
             width: 10px;
             height: 10px;
@@ -2868,6 +2873,7 @@
             line-height: 1.3;
             letter-spacing: 0.005em;
             margin-top: 2px;
+            margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -2936,6 +2942,11 @@
             border-radius: 50%;
             vertical-align: middle;
             margin: -2px 8px 0 0;
+        }
+        .nn-hint-dot-inline.is-hollow {
+            background: transparent;
+            border: 1.5px solid currentColor;
+            box-sizing: border-box;
         }
         .nn-hint-lead {
             flex: 0 0 auto;
@@ -4900,18 +4911,20 @@ function collectSectionTrackColors(items) {
     const seen = new Map();
     (items || []).forEach(item => {
         const s = item.session;
-        if (isBreakStyleEvent(s) || isMealStyleEvent(s)) return;
+        const isBreak = isBreakStyleEvent(s) || isMealStyleEvent(s);
         const isStarrable = !!s.uid
             && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
         if (isStarrable && !isStarredItem(item)) return;
-        const trackLabel = isKeynoteSession(s)
-            ? 'Keynote'
-            : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
+        const trackLabel = isBreak
+            ? (s.Track || s.type || 'Break')
+            : isKeynoteSession(s)
+                ? 'Keynote'
+                : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
         if (!trackLabel) return;
         const color = getSessionAccentColor(s, trackLabel);
-        if (!color) return;
-        const key = trackLabel + '|' + color;
-        if (!seen.has(key)) seen.set(key, { color, label: trackLabel });
+        if (!color && !isBreak) return;
+        const key = trackLabel + '|' + color + '|' + (isBreak ? 'b' : 's');
+        if (!seen.has(key)) seen.set(key, { color, label: trackLabel, hollow: isBreak });
     });
     return [...seen.values()];
 }
@@ -4934,7 +4947,11 @@ function buildNowNextSectionHeader(title, headerMeta, items) {
         tracks.forEach(t => {
             const d = document.createElement('span');
             d.className = 'nn-section-track-dot';
-            d.style.background = t.color;
+            if (t.hollow) d.classList.add('is-hollow');
+            if (t.color) {
+                if (t.hollow) d.style.borderColor = t.color;
+                else d.style.background = t.color;
+            }
             d.title = t.label;
             d.setAttribute('aria-label', t.label);
             dots.appendChild(d);
@@ -5417,8 +5434,23 @@ function buildRoomTransitionHint(fromItem, toItems) {
                 || (fromRoom && decidedRoom && fromRoom.toLowerCase() === decidedRoom.toLowerCase());
             btn.className = 'nn-hero-hint is-decided ' + (sameRoom ? 'is-stay' : 'is-move');
             const decidedColor = getSessionAccentColor(decided.session, decided.session.Track);
-            const inlineDot = decidedColor
-                ? `<span class="nn-hint-dot-inline" style="background:${decidedColor}" aria-hidden="true"></span>`
+            const decidedIsBreak = isBreakStyleEvent(decided.session) || isMealStyleEvent(decided.session);
+            const dotClass = decidedIsBreak ? 'nn-hint-dot-inline is-hollow' : 'nn-hint-dot-inline';
+            const dotStyle = decidedIsBreak
+                ? `border-color:${decidedColor || 'currentColor'}`
+                : `background:${decidedColor}`;
+            const inlineDot = decidedColor || decidedIsBreak
+                ? `<span class="${dotClass}" style="${dotStyle}" aria-hidden="true"></span>`
+                : '';
+            // When moving, surface the switch time inline so the user
+            // sees the cue right in the chip. The switch moment is the
+            // chosen session's start (regardless of whether it overlaps
+            // the current one).
+            const switchTime = (!isStay && decided.win && decided.win.start)
+                ? decided.win.start
+                : null;
+            const switchAtStr = switchTime
+                ? ` at ${switchTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
                 : '';
             const iconSvg = sameRoom
                 ? '<svg class="nn-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>'
@@ -5431,10 +5463,10 @@ function buildRoomTransitionHint(fromItem, toItems) {
                 inner = iconSvg +
                     `<span class="nn-hint-text">${inlineDot}Stay in this room for the next session</span>`;
             } else if (decidedRoom) {
-                inner = '<span class="nn-hint-lead">Then:</span>' +
+                inner = `<span class="nn-hint-lead">Then${switchAtStr}:</span>` +
                     `<span class="nn-hint-text">${inlineDot}<strong>${escapeHtml(decidedRoom)}</strong></span>`;
             } else {
-                inner = `<span class="nn-hint-text">${inlineDot}Switching to next session</span>`;
+                inner = `<span class="nn-hint-text">${inlineDot}Switching${switchAtStr}</span>`;
             }
             btn.innerHTML =
                 inner +
@@ -5468,9 +5500,15 @@ function buildRoomTransitionHint(fromItem, toItems) {
     hint.className = 'nn-hero-hint';
     const toRoom = distinctRooms[0];
     const sameRoom = fromRoom.toLowerCase() === toRoom.toLowerCase();
-    const toColor = getSessionAccentColor(nextStarred[0].session, nextStarred[0].session.Track);
-    const inlineDot = toColor
-        ? `<span class="nn-hint-dot-inline" style="background:${toColor}" aria-hidden="true"></span>`
+    const toSession = nextStarred[0].session;
+    const toColor = getSessionAccentColor(toSession, toSession.Track);
+    const toIsBreak = isBreakStyleEvent(toSession) || isMealStyleEvent(toSession);
+    const inlineDotClass = toIsBreak ? 'nn-hint-dot-inline is-hollow' : 'nn-hint-dot-inline';
+    const inlineDotStyle = toIsBreak
+        ? `border-color:${toColor || 'currentColor'}`
+        : `background:${toColor}`;
+    const inlineDot = (toColor || toIsBreak)
+        ? `<span class="${inlineDotClass}" style="${inlineDotStyle}" aria-hidden="true"></span>`
         : '';
     if (sameRoom) {
         hint.classList.add('is-stay');
@@ -5890,7 +5928,11 @@ function renderNowNextView(container) {
                     tracks.forEach(t => {
                         const d = document.createElement('span');
                         d.className = 'nn-section-track-dot';
-                        d.style.background = t.color;
+                        if (t.hollow) d.classList.add('is-hollow');
+                        if (t.color) {
+                            if (t.hollow) d.style.borderColor = t.color;
+                            else d.style.background = t.color;
+                        }
                         d.title = t.label;
                         d.setAttribute('aria-label', t.label);
                         dots.appendChild(d);
