@@ -5722,7 +5722,21 @@ function renderNowNextView(container) {
     const allItems = collectAllWindowed();
 
     // ─── Happening Now: every session whose window contains `now`.
-    const happeningNow = allItems.filter(i => now >= i.win.start && now < i.win.end);
+    // ─── Happening Now: every session whose window contains `now`.
+    // If the user has recorded a decision to switch from session A to
+    // session B and B has already started, hide A — they've committed
+    // to moving and A is no longer their context.
+    const happeningNow = allItems.filter(i => {
+        if (!(now >= i.win.start && now < i.win.end)) return false;
+        const fromUid = i.session.uid;
+        if (!fromUid) return true;
+        const decUid = transitionDecisions[fromUid];
+        if (!decUid || decUid === fromUid) return true;
+        const target = allItems.find(it => it.session.uid === decUid);
+        if (!target) return true;
+        // Only hide once the switched-to session has started.
+        return now < target.win.start;
+    });
 
     // ─── Look ahead so we can detect a *run* of consecutive free-only
     // slots and render a single combined free-time chip on the first
