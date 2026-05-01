@@ -1259,6 +1259,16 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        .pick-modal-item-hint {
+            display: block;
+            margin-top: 4px;
+            font-size: 11px;
+            font-style: italic;
+            color: var(--text-secondary);
+            line-height: 1.35;
+            white-space: normal;
+            opacity: 0.85;
+        }
         .pick-modal-keep {
             font-size: 12px;
             font-weight: 600;
@@ -2510,6 +2520,7 @@
             flex-direction: column;
             gap: 14px;
             font-feature-settings: "ss01", "cv11";
+            --nn-stack-gap: 14px;
         }
         .nn-section {
             display: flex;
@@ -2520,9 +2531,132 @@
             padding: 18px 18px 10px;
             position: relative;
         }
+        /* Interlude slot: the entire slot section IS the dashed
+           lunch/break card. No white chrome around it; the inner
+           row drops its own dashed wrapper since the section now
+           carries it. */
+        .nn-section.nn-section-interlude {
+            --interlude-color: #6b5b95;
+            background: transparent;
+            border: 2px dashed var(--interlude-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            box-shadow: none;
+        }
+        .nn-section.nn-section-meal {
+            --interlude-color: #3aae9d;
+        }
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-section-header,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-section-title,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-section-time,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-row-title,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-row-meta,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-row-time,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-row-sep,
+        .nn-section.nn-section-interlude.nn-section-interlude .nn-row-room {
+            color: var(--interlude-color);
+        }
+        .nn-section.nn-section-interlude .nn-row-wrap.nn-row-interlude {
+            border: none;
+            padding: 0;
+        }
+        /* "Which talk are you in?" prompt: amber call-to-action
+           rendered above the Happening Now hero whenever the path's
+           interval at `now` is an unresolved overlap (≥2 starred
+           sessions, no resolution recorded). Resolving this single
+           decision collapses downstream node multiplication. */
+        .nn-now-prompt {
+            all: unset;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-rows: auto auto;
+            column-gap: 10px;
+            row-gap: 2px;
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(254, 243, 199, 0.6);
+            border: 1px solid rgba(234, 88, 12, 0.45);
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+        .nn-now-prompt:hover {
+            background: rgba(254, 243, 199, 0.9);
+        }
+        .nn-now-prompt:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        .nn-now-prompt-title {
+            grid-column: 1;
+            grid-row: 1;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #92400e;
+        }
+        .nn-now-prompt-desc {
+            grid-column: 1;
+            grid-row: 2;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+        .nn-now-prompt-chev {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+            align-self: center;
+            font-size: 1.3rem;
+            color: #92400e;
+            opacity: 0.75;
+        }
         .nn-section.is-now {
             padding: 22px 20px 12px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 6px 18px rgba(0, 0, 0, 0.04);
+        }
+
+        /* "Stay" bridge: a stay decision fires DURING an ongoing
+           session. The previous slot's card (top bun) flattens its
+           bottom; the bridge node row attaches directly under it;
+           the next slot's card (bottom bun) flattens its top and
+           drops the duplicated chosen-session row, keeping ONLY the
+           parallel "other sessions" list (which differs per slot).
+           Doubled selectors bump specificity above is-day-slot. */
+        .nn-section.nn-stay-flat-bottom,
+        .nn-section.is-day-slot.nn-stay-flat-bottom,
+        .nn-section.is-now.nn-stay-flat-bottom {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: 0;
+            padding-bottom: 4px;
+        }
+        .nn-section.nn-stay-flat-top,
+        .nn-section.is-day-slot.nn-stay-flat-top {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-top: 0;
+            margin-top: calc(-1 * var(--nn-stack-gap, 14px));
+            padding-top: 12px;
+        }
+        .nn-section.is-day-slot.nn-stay-flat-top .nn-section-header {
+            padding-bottom: 6px;
+        }
+        .nn-decision-node.nn-stay-bridge {
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-top: 1px dashed var(--border);
+            border-bottom: 1px dashed var(--border);
+            border-radius: 0;
+            margin: calc(-1 * var(--nn-stack-gap, 14px)) 0 0 0;
+            padding: 8px 18px;
+        }
+        /* Inside a stay-bridge the inline node row drops its own
+           dashed border so the bridge reads as a single continuous
+           panel of the same color. */
+        .nn-decision-node.nn-stay-bridge .nn-node-row-wrap {
+            border-color: transparent;
+            background: transparent;
+            padding-left: 0;
+            padding-right: 0;
         }
         .nn-section-header {
             display: flex;
@@ -2624,6 +2758,117 @@
         .nn-row-wrap {
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+        /* Star toggle on Now/Next rows. Hidden by default; revealed
+           on row hover/focus, on touch via :active/long-press, and
+           always visible when the session is already starred so users
+           always know it's in their schedule. */
+        .nn-row-star {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            z-index: 2;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            line-height: 1;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nn-row-wrap:hover .nn-row-star,
+        .nn-row-wrap:focus-within .nn-row-star,
+        .nn-row-star:focus-visible,
+        .nn-row-star.is-starred {
+            opacity: 1;
+        }
+        .nn-row-star.is-starred {
+            color: #f5b301;
+        }
+        .nn-row-star:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #f5b301;
+        }
+        @media (hover: none) {
+            /* Touch devices have no hover; show the star at low
+               opacity always, full opacity when starred. */
+            .nn-row-star { opacity: 0.55; }
+            .nn-row-star.is-starred { opacity: 1; }
+        }
+        /* "Not here? Switch session" affordance on the live featured
+           row. Sits below the row so it never crowds the title; lets
+           users re-pick which session they're actually attending. */
+        .nn-row-switch {
+            align-self: flex-start;
+            margin: 6px 0 0 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            font: inherit;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: transparent;
+            border: 1px dashed var(--border-color, rgba(0, 0, 0, 0.2));
+            border-radius: 999px;
+            cursor: pointer;
+            transition: color 0.15s ease, border-color 0.15s ease,
+                background 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nn-row-switch:hover,
+        .nn-row-switch:focus-visible {
+            color: var(--text-primary, #111);
+            border-color: var(--text-primary, #111);
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .nn-row-switch svg { flex: none; }
+        /* Skipped break/meal: dimmed but otherwise intact. The
+           user is staying in their session through it; the row
+           remains visible (and tappable) so they know they CAN
+           still step out if they want. */
+        .nn-row-wrap.nn-row-skipped {
+            opacity: 0.55;
+        }
+        /* Standalone break/meal: no card chrome, dashed outline,
+           text and stroke share an interlude-specific accent
+           color (purple for breaks, teal for meals). Matches the
+           day-schedule lunch/break cards. */
+        .nn-row-wrap.nn-row-interlude {
+            --interlude-color: #6b5b95;
+            background: transparent;
+            border: 1px dashed var(--interlude-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+        .nn-row-wrap.nn-row-meal {
+            --interlude-color: #3aae9d;
+        }
+        .nn-row-wrap.nn-row-interlude .nn-row {
+            background: transparent;
+        }
+        .nn-row-wrap.nn-row-interlude .nn-row-stripe {
+            display: none;
+        }
+        .nn-row-wrap.nn-row-interlude .nn-row-title,
+        .nn-row-wrap.nn-row-interlude .nn-row-meta,
+        .nn-row-wrap.nn-row-interlude .nn-row-time,
+        .nn-row-wrap.nn-row-interlude .nn-row-sep,
+        .nn-row-wrap.nn-row-interlude .nn-row-room {
+            color: var(--interlude-color);
+        }
+        .nn-row-wrap.nn-row-interlude .nn-row-title {
+            font-weight: 600;
+            letter-spacing: 0.02em;
         }
         .nn-row {
             all: unset;
@@ -3149,6 +3394,49 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* Full-schedule timeline below the hero sections.
+           Day banner separates each day; each slot is a slim section. */
+        .nn-day-banner {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            padding: 22px 4px 8px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .nn-day-banner:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+        .nn-section.is-day-slot {
+            padding: 12px 16px 6px;
+            border-radius: 12px;
+            box-shadow: none;
+        }
+        .nn-section.is-day-slot.is-past {
+            opacity: 0.55;
+        }
+        .nn-section.is-day-slot.is-current {
+            box-shadow: 0 0 0 2px rgba(92, 141, 255, 0.45);
+        }
+        .nn-section.is-day-slot .nn-section-header {
+            padding-bottom: 6px;
+        }
+        .nn-section.is-day-slot .nn-section-title {
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            text-transform: none;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .nn-section.is-day-slot .nn-section-title .nn-dot {
+            display: none;
+        }
+
         .nn-conflict-list {
             display: flex;
             flex-direction: column;
@@ -3225,6 +3513,17 @@
         .nn-conflict-text strong {
             font-weight: 600;
         }
+        .nn-conflict-time {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            flex-shrink: 0;
+        }
+        .nn-conflict-sub {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
         .nn-conflict-edit {
             font-size: 0.78rem;
             color: var(--text-secondary);
@@ -3239,14 +3538,278 @@
             flex-shrink: 0;
         }
 
+        /* Inline per-slot decision rows. Live inside the slot body,
+           reusing the conflict-row palette but slimmer and full-width. */
+        .nn-inline-decisions {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        /* Decision node: a standalone row rendered BETWEEN slot
+           sections, marking the timestamp at which the user chose
+           (or needs to choose) which session to follow. Default is
+           a borderless inline row (verb body carries the weight).
+           The .nn-stay-bridge variant overrides geometry to merge
+           with the section above/below into one continuous panel. */
+        .nn-decision-node {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin: 0;
+        }
+        /* Bridge variant: white sandwich panel with dashed top/
+           bottom hairlines. Declared after the base rule so the
+           background-color reliably wins regardless of which
+           neighbor (.is-now hero or .is-day-slot) sits above. */
+        .nn-decision-node.nn-stay-bridge {
+            background-color: #ffffff;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-top: 1px dashed var(--border);
+            border-bottom: 1px dashed var(--border);
+            border-radius: 0;
+            margin: calc(-1 * var(--nn-stack-gap, 14px)) 0 0 0;
+            padding: 8px 18px;
+        }
+        .nn-decision-node.nn-stay-bridge .nn-node-row-wrap {
+            border-color: transparent;
+            background-color: transparent;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .nn-inline-decision {
+            all: unset;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font: inherit;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .nn-inline-decision.is-unresolved {
+            background: rgba(254, 243, 199, 0.5);
+            border: 1px solid rgba(234, 88, 12, 0.45);
+        }
+        .nn-inline-decision.is-unresolved:hover {
+            background: rgba(254, 243, 199, 0.8);
+        }
+        .nn-inline-decision.is-resolved {
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+        }
+        .nn-inline-decision.is-resolved:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .nn-inline-decision.is-forced {
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+            cursor: default;
+        }
+        .nn-inline-decision .nn-conflict-text {
+            font-size: 0.82rem;
+        }
+
+        /* Node marker: small icon-style gutter element rendered on
+           the LEFT of session rows (for stay-through-overlap nodes)
+           and on the LEFT of standalone decision/forced rows (for
+           move nodes). Mirrors the day-schedule's time-gutter layout
+           so every path node has the same visual handle: time / row
+           of all options / arrow / row showing where the path goes. */
+        :root {
+            --nn-marker-col-width: 52px;
+        }
+        .nn-node-marker {
+            box-sizing: border-box;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            padding: 2px 4px;
+            border-radius: 6px;
+            background: transparent;
+            border: 0;
+            cursor: default;
+            font: inherit;
+            color: inherit;
+            line-height: 1;
+        }
+        button.nn-node-marker {
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+        button.nn-node-marker:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        button.nn-node-marker:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        .nn-node-time {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 2px;
+        }
+        .nn-node-dots {
+            display: inline-flex;
+            gap: 3px;
+            line-height: 1;
+        }
+        .nn-node-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+        .nn-node-dot.is-hollow {
+            background: transparent;
+            border: 1px solid currentColor;
+        }
+        .nn-node-dot.is-empty {
+            background: transparent;
+            border: none;
+            visibility: hidden;
+        }
+        .nn-node-graph {
+            display: block;
+            margin: 0 auto;
+            overflow: visible;
+        }
+
+        /* Stay-merged marker stack (deprecated visual: kept for any
+           old callers, but no rules — markers now render inline
+           between cards via .nn-node-row-wrap). */
+        .nn-node-marker-stack {
+            display: none;
+        }
+
+        /* Inline path-node row (decision or forced edge). Lives in
+           the timeline BETWEEN session cards. Marker on the left,
+           verb body on the right; full-width within its container. */
+        /* Default (non-sandwiched) path-node row: borderless, tight
+           vertical padding. The marker on the left and the verb body
+           on the right carry the visual weight; the row itself is a
+           quiet inline element rather than a framed card. The Edit
+           chip inside gets its own subtle border to remain tappable. */
+        .nn-node-row-wrap {
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 2px 12px;
+            border-radius: 8px;
+            background: transparent;
+            border: 0;
+            font: inherit;
+            color: inherit;
+            text-align: left;
+        }
+        .nn-node-row-wrap > .nn-node-marker {
+            flex: 0 0 auto;
+        }
+        button.nn-node-row-wrap {
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+        button.nn-node-row-wrap:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        button.nn-node-row-wrap:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        button.nn-node-row-wrap {
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.12s;
+        }
+        button.nn-node-row-wrap:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        button.nn-node-row-wrap:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        .nn-node-row-body {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.86rem;
+            line-height: 1.3;
+            color: var(--text-secondary);
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+        .nn-node-row-body strong {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .nn-node-row-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nn-node-row-edit,
+        .nn-node-row-chev {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.75;
+            flex-shrink: 0;
+        }
+        /* Subtle frame on the Edit chip so it still reads as an
+           actionable affordance now that the surrounding row no
+           longer has its own border. */
+        .nn-node-row-edit {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 6px;
+            line-height: 1.2;
+        }
+        .nn-node-row-chev {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+        .nn-node-row-wrap.is-unresolved .nn-node-row-body {
+            color: #92400e;
+            font-weight: 600;
+        }
+        .nn-node-row-wrap.is-unresolved {
+            background: rgba(254, 243, 199, 0.45);
+        }
+        .nn-node-row-wrap.is-unresolved:hover {
+            background: rgba(254, 243, 199, 0.75);
+        }
+        .nn-node-row-wrap.is-forced {
+            /* Forced edges are now clickable buttons; inherit
+               hover/cursor from .nn-node-row-wrap base rule. */
+            cursor: pointer;
+        }
+
         @media (max-width: 480px) {
             #scheduleContainer.now-next-view {
                 padding: 14px 12px 22px;
                 gap: 12px;
+                --nn-stack-gap: 12px;
             }
             .nn-section { padding: 16px 16px 8px; border-radius: 12px; }
             .nn-section.is-now { padding: 20px 16px 16px; }
             .nn-section.is-now .nn-row-featured .nn-row-title { font-size: 20px; }
+            /* Match bridge horizontal padding to mobile section
+               padding so the inner content lines up edge-to-edge
+               with the buns above and below. */
+            .nn-decision-node.nn-stay-bridge { padding-left: 16px; padding-right: 16px; }
         }
         @media (max-width: 360px) {
             .nn-section.is-now .nn-row-featured .nn-row-title { font-size: 19px; }
@@ -3254,35 +3817,22 @@
         }
 
         /* ─── Desktop layout ───
-           Same panels as mobile, just side-by-side. Now is sticky on the
-           left, Next + Thereafter stack on the right. */
+           Vertical stack: hero sections on top, full-schedule timeline
+           below. No grid — everything flows in a single column with a
+           comfortable max-width. */
         @media (min-width: 720px) {
             #scheduleContainer.now-next-view {
-                display: grid;
-                grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-                grid-auto-rows: min-content;
-                column-gap: 32px;
-                row-gap: 18px;
                 padding: 32px var(--page-gutter) 40px;
-                max-width: 1200px;
+                max-width: 880px;
                 margin: 0 auto;
-                align-items: start;
+                gap: 16px;
+                --nn-stack-gap: 16px;
             }
             .nn-section.is-now {
-                grid-column: 1;
-                grid-row: 1 / span 99;
-                position: sticky;
-                top: 24px;
                 padding: 32px 32px 24px;
                 border-radius: 16px;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px rgba(0, 0, 0, 0.05);
-            }
-            .nn-section.is-next,
-            .nn-section.is-thereafter {
-                grid-column: 2;
             }
             .nn-updated {
-                grid-column: 2;
                 text-align: right;
                 padding-top: 4px;
             }
@@ -3370,7 +3920,147 @@
 if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
 }
-const data = {
+
+// ─── Dummy data toggle ────────────────────────────────────────────
+// Set to true to replace the real conference schedule with a small,
+// today-anchored dummy schedule. Useful for continuing development
+// after the conference has ended. Edit `buildDummyData()` below to
+// tweak times, tracks, conflicts, etc.
+const USE_DUMMY_DATA = true;
+
+// Override which calendar date the dummy schedule's "Day 1" anchors
+// to. Set to a 'YYYY-MM-DD' string (e.g. '2026-04-30') to pin the
+// dummy days to specific dates; leave null to use the real current
+// date. Day 2 is always Day 1 + 1.
+const DUMMY_BASE_DATE = '2026-04-30';
+
+// Override the "now" the app uses everywhere (Now & Next, current
+// slot highlight, etc.). Set to a 'YYYY-MM-DD HH:MM' string (24h,
+// local time) to simulate a specific moment; leave null for real now.
+// Only takes effect when USE_DUMMY_DATA is true.
+const DUMMY_NOW_OVERRIDE = '2026-04-30 14:25';
+
+function buildDummyData() {
+    // Day label format must match parseDayLabelToDate: "<Weekday> M/D".
+    const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dayLabel = (d) => `${WEEKDAYS[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}`;
+    const fmtTime = (h, m) => {
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hh = ((h + 11) % 12) + 1;
+        return `${hh}:${m.toString().padStart(2,'0')} ${period}`;
+    };
+
+    let today;
+    if (DUMMY_BASE_DATE) {
+        const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(DUMMY_BASE_DATE);
+        if (m) {
+            today = new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+        } else {
+            console.warn('DUMMY_BASE_DATE not in YYYY-MM-DD format; falling back to today.');
+            today = new Date();
+        }
+    } else {
+        today = new Date();
+    }
+    today.setHours(0,0,0,0);
+    const tomorrow = new Date(today.getTime() + 86400000);
+    const day1 = dayLabel(today);
+    const day2 = dayLabel(tomorrow);
+
+    let nextUid = 1000;
+    const session = (day, h, m, durMin, room, track, title, authors = 'Test Author') => ({
+        day, time: fmtTime(h, m), room, type: 'session',
+        Track: track, Title: title, Authors: authors,
+        Abstract: 'Dummy abstract for development.',
+        Affiliation: 'Test Co.',
+        SessionLength: `${durMin}m`, isMedtronic: false,
+        session_id: nextUid, uid: 'd_' + (nextUid++)
+    });
+    const keynote = (day, h, m, durMin, room, title, authors) => ({
+        day, time: fmtTime(h, m), room, type: 'Keynote',
+        Track: 'General', Title: title, Authors: authors,
+        SessionLength: `${durMin}m`,
+        session_id: nextUid, uid: 'd_' + (nextUid++)
+    });
+    const brk = (day, h, m, durMin, title = 'Break') => ({
+        day, time: fmtTime(h, m), room: 'Foyer', type: 'break',
+        Title: title, SessionLength: `${durMin}m`
+    });
+    const meal = (day, h, m, durMin, title) => ({
+        day, time: fmtTime(h, m), room: 'Foyer', type: 'event',
+        Title: title, SessionLength: `${durMin}m`
+    });
+
+    // ── Day 1 (today) ─────────────────────────────────────────────
+    // Realistic schedule: every session sits on a 30-minute grid and
+    // is 30/60/90 minutes long. Parallel rooms generally start at the
+    // same time, with occasional longer talks crossing block edges so
+    // stay-bridges and node markers still get exercised.
+    const d1 = [
+        keynote(day1, 8, 0, 60, 'Main Hall', 'Opening Keynote', 'Keynote Speaker'),
+        // 9:00 block — 6 parallel rooms, mix of 60m and 90m talks.
+        session(day1, 9, 0, 60, 'Room A', 'AI/ML', 'AI Foundations'),
+        session(day1, 9, 0, 60, 'Room B', 'Cybersecurity', 'Threat Modeling 101'),
+        session(day1, 9, 0, 60, 'Room C', 'Healthcare Delivery', 'Care Workflow Patterns'),
+        session(day1, 9, 0, 90, 'Room D', 'Digital SE', 'MBSE Crash Course'),
+        session(day1, 9, 0, 90, 'Room E', 'Reqs, Test & Risk', 'Long Risk Talk'),
+        session(day1, 9, 0, 60, 'Room F', 'Combination Products', 'Combo Quickfire 1'),
+        // 10:00 block — A/B/C/F have a fresh start; D/E continue to 10:30.
+        session(day1, 10, 0, 60, 'Room A', 'Healthcare Delivery', 'Care Pathways'),
+        session(day1, 10, 0, 60, 'Room B', 'Digital SE', 'Digital Thread Basics'),
+        session(day1, 10, 0, 60, 'Room C', 'AI/ML', 'AI Tooling Tour'),
+        session(day1, 10, 0, 60, 'Room F', 'Beyond the System', 'Stakeholders 201'),
+        brk(day1, 10, 30, 30),
+        // 11:00 block — wide parallel set, mix of 60m and 90m.
+        session(day1, 11, 0, 90, 'Room A', 'AI/ML', 'Deep Dive: Long Talk'),
+        session(day1, 11, 0, 60, 'Room B', 'Digital SE', 'MBSE Tooling Tour'),
+        session(day1, 11, 0, 60, 'Room C', 'Healthcare Delivery', 'Panel: Care Integration'),
+        session(day1, 11, 0, 60, 'Room D', 'Cybersecurity', 'Threat Surface Walk'),
+        session(day1, 11, 0, 60, 'Room E', 'Reqs, Test & Risk', 'V&V Strategy'),
+        session(day1, 11, 0, 60, 'Room F', 'Beyond the System', 'Strategy Snippet'),
+        // 12:00 — A still running until 12:30; others fresh.
+        session(day1, 12, 0, 30, 'Room B', 'Combination Products', 'Drug-Device Q&A'),
+        session(day1, 12, 0, 30, 'Room C', 'Reqs, Test & Risk', 'Traceability Lite'),
+        meal(day1, 12, 30, 60, 'Lunch'),
+        // 13:30 block — afternoon wave.
+        session(day1, 13, 30, 60, 'Room A', 'AI/ML', 'Afternoon AI'),
+        session(day1, 13, 30, 60, 'Room B', 'Beyond the System', 'Strategy Workshop'),
+        session(day1, 13, 30, 60, 'Room C', 'Other', 'Lightning Talks'),
+        session(day1, 13, 30, 90, 'Room D', 'Digital SE', 'Long MBSE Workshop'),
+        session(day1, 13, 30, 60, 'Room E', 'Cybersecurity', 'Pen-Test Tales'),
+        session(day1, 13, 30, 60, 'Room F', 'Combination Products', 'Combo Lightning'),
+        // 14:30 block — D continues to 15:00; everyone else fresh.
+        session(day1, 14, 30, 60, 'Room A', 'Reqs, Test & Risk', 'V&V Patterns'),
+        session(day1, 14, 30, 60, 'Room B', 'AI/ML', 'AI for Verification'),
+        session(day1, 14, 30, 60, 'Room C', 'AI/ML', 'AI Ethics Panel'),
+        session(day1, 14, 30, 60, 'Room E', 'Reqs, Test & Risk', 'Quick V&V'),
+        session(day1, 14, 30, 60, 'Room F', 'Beyond the System', 'Late Strategy Hot-Take'),
+        // 15:30 block — fresh wave.
+        session(day1, 15, 30, 60, 'Room A', 'Digital SE', 'Digital Thread Demo'),
+        session(day1, 15, 30, 60, 'Room C', 'Cybersecurity', 'Lessons from a Breach'),
+        session(day1, 15, 30, 90, 'Room D', 'Healthcare Delivery', 'Long Healthcare Talk'),
+        session(day1, 15, 30, 60, 'Room E', 'AI/ML', 'AI Roadmap Discussion'),
+        brk(day1, 16, 30, 30, 'Coffee'),
+        // 17:00 wrap.
+        session(day1, 17, 0, 30, 'Main Hall', 'General', 'Day 1 Wrap'),
+        meal(day1, 18, 0, 90, 'Reception'),
+    ];
+
+    // ── Day 2 (tomorrow) ──────────────────────────────────────────
+    const d2 = [
+        meal(day2, 8, 0, 60, 'Breakfast'),
+        keynote(day2, 9, 0, 60, 'Main Hall', 'Day 2 Keynote', 'Another Speaker'),
+        brk(day2, 10, 0, 30),
+        session(day2, 10, 30, 60, 'Room A', 'AI/ML', 'Day 2 AI Talk'),
+        session(day2, 10, 30, 60, 'Room B', 'Cybersecurity', 'Day 2 Security Talk'),
+        meal(day2, 11, 30, 60, 'Lunch'),
+        session(day2, 12, 30, 30, 'Main Hall', 'General', 'Closing'),
+    ];
+
+    return { [day1]: d1, [day2]: d2 };
+}
+
+const REAL_DATA = {
   "Tuesday 4/28": [
     {"day":"Tuesday 4/28","time":"8:00 AM","room":"Bristol","type":"training","Track":"Training","Title":"SE Fundamentals 200 Tutorial","Abstract":"Building on last year's Fundamental 100 tutorial, this full-day tutorial will consist of four 90-minute classes and exercises focused on Integration Planning, System Design, System Testing, and Change Management. About half the time will be spent in lectures, and half the time the students will work on an example as a team to practice what they are learning. We will supply supporting reference documents for those who want to learn more, as well as example solutions. Limited to 28 students, so register early!","Authors":"Christopher Unger, Joseph Green and John Vantuno","Affiliation":"Practical SE, LLC, GE Healthcare, Medtronic and Eli Lilly and Company","SessionLength":"9h 30m","isMedtronic":false,"session_id":801,"uid":"s_801"},
     {"day":"Tuesday 4/28","time":"1:00 PM","room":"Grand Ballroom - Salons A-D","type":"session","Track":"General","Title":"Conference Kickoff & Introductions Day 1","session_id":700,"uid":"s_700"},
@@ -3458,6 +4148,36 @@ const data = {
     {"day":"Thursday 4/30","time":"11:30 AM","room":"Grand Ballroom","type":"event","Title":"Lunch","SessionLength":"60m"}
   ]
 };
+
+const data = USE_DUMMY_DATA ? buildDummyData() : REAL_DATA;
+
+// When DUMMY_NOW_OVERRIDE is set (and dummy data is on), override
+// the global Date so every `new Date()` returns the simulated
+// moment. Existing-arg constructors are passed through unchanged.
+(function applyDummyNowOverride() {
+    if (!USE_DUMMY_DATA || !DUMMY_NOW_OVERRIDE) return;
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})$/.exec(DUMMY_NOW_OVERRIDE);
+    if (!m) {
+        console.warn('DUMMY_NOW_OVERRIDE must be "YYYY-MM-DD HH:MM" (24h); ignored.');
+        return;
+    }
+    const fakeNow = new Date(
+        parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10),
+        parseInt(m[4],10), parseInt(m[5],10), 0, 0
+    ).getTime();
+    const RealDate = Date;
+    function FakeDate(...args) {
+        if (args.length === 0) return new RealDate(fakeNow);
+        return new RealDate(...args);
+    }
+    FakeDate.prototype = RealDate.prototype;
+    FakeDate.now = () => fakeNow;
+    FakeDate.parse = RealDate.parse;
+    FakeDate.UTC = RealDate.UTC;
+    // eslint-disable-next-line no-global-assign
+    Date = FakeDate;
+    console.info('[dummy] Now overridden to', new Date().toString());
+})();
 
 const trackColors = {
     "general": "#b7bec8",
@@ -3656,13 +4376,26 @@ function isKeynoteSession(session) {
 
 function getSessionAccentColor(session, fallbackTrackName = '') {
     if (isKeynoteSession(session)) return KEYNOTE_COLOR;
+    // Break/meal interlude colors — match the dashed-card styling.
+    if (session) {
+        if (isMealStyleEvent(session)) return '#3aae9d';
+        if (isBreakStyleEvent(session)) return '#6b5b95';
+    }
     return getTrackColor(fallbackTrackName || session?.Track || session?.type || '');
 }
 
 function getRoomsForDay(day) {
     const sessions = data[day] || [];
-    const roomsUsed = new Set(sessions.map(s => s.room));
-    return ROOM_ORDER.filter(r => roomsUsed.has(r));
+    const roomsUsed = new Set(sessions.map(s => s.room).filter(Boolean));
+    // Known rooms first (in canonical ROOM_ORDER), then any unknown
+    // rooms in alphabetical order. ROOM_ORDER is a hint for the
+    // original conference layout — unknown rooms still need to render
+    // when other data sets are loaded.
+    const known = ROOM_ORDER.filter(r => roomsUsed.has(r));
+    const unknown = [...roomsUsed]
+        .filter(r => !ROOM_ORDER.includes(r))
+        .sort((a, b) => a.localeCompare(b));
+    return [...known, ...unknown];
 }
 
 function getAllTracksForDay(day) {
@@ -4179,6 +4912,10 @@ function startStarredNowTicker() {
 function init() {
     const tabsContainer = document.getElementById('dayTabs');
 
+    // Migrate any saved 'starred' view to 'now' — the My Schedule
+    // tab no longer exists; Now & Next is its replacement.
+    if (currentView === 'starred') currentView = 'now';
+
     // "Now & Next" goes first so it's the natural at-a-glance entry during
     // the conference. Pulses green to draw the eye.
     const nowBtn = document.createElement('button');
@@ -4189,7 +4926,7 @@ function init() {
 
     Object.keys(data).forEach((day, i) => {
         const btn = document.createElement('button');
-        const isActive = (currentView === 'starred' || currentView === 'now')
+        const isActive = currentView === 'now'
             ? false
             : (currentView === day || (currentView == null && i === 0));
         btn.className = 'tab-btn' + (isActive ? ' active' : '');
@@ -4197,11 +4934,6 @@ function init() {
         btn.onclick = () => switchDay(day, btn);
         tabsContainer.appendChild(btn);
     });
-    const starBtn = document.createElement('button');
-    starBtn.className = 'tab-btn starred-tab' + (currentView === 'starred' ? ' active' : '');
-    starBtn.innerHTML = 'My Schedule';
-    starBtn.onclick = () => switchDay('starred', starBtn);
-    tabsContainer.appendChild(starBtn);
 
     renderTrackFilters();
     renderSchedule();
@@ -4367,10 +5099,8 @@ function handleStarsImportFromHash() {
     starredSessions = [...valid];
     localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
     showToast(`Imported ${valid.length} session${valid.length === 1 ? '' : 's'}`);
-    // Switch to My Schedule view to show the imported result.
-    const starTab = document.querySelector('.tab-btn.starred-tab');
-    if (starTab) switchDay('starred', starTab);
-    else renderSchedule();
+    // Re-render the unified Now & Next view to reflect the imported stars.
+    renderSchedule();
 }
 
 function renderTrackFilters() {
@@ -4456,7 +5186,7 @@ function toggleTrackFilter(track) {
 // ─── RENDER SCHEDULE ───
 function renderSchedule() {
     searchQuery = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
-    isGlobalSearchMode = currentView !== 'starred' && currentView !== 'now' && searchQuery !== '';
+    isGlobalSearchMode = currentView !== 'now' && searchQuery !== '';
 
     // Keep talk-track chips aligned with current mode (day-only vs all-days search).
     renderTrackFilters();
@@ -5017,13 +5747,17 @@ function formatRelativeMinutes(toDate, fromDate) {
     return `in ${days} day${days === 1 ? '' : 's'}`;
 }
 
-function collectSectionTrackColors(items) {
+function collectSectionTrackColors(items, opts) {
     // Distinct (color, label) pairs for the items in a section. Each
     // becomes a small colored dot in the section header so users can
     // see at a glance which tracks are present. Only counts items the
     // user is actually attending — starred sessions and non-starrable
     // items like keynotes/plenaries. Non-starred parallel sessions are
     // already represented as dots inside the "X other sessions" branch.
+    // When opts.chosenUid is set, only the dot for that session is
+    // filled; the rest render as hollow rings (the user has committed
+    // to one talk, so the others are "could-have-been" tracks).
+    const chosenUid = (opts && opts.chosenUid) || null;
     const seen = new Map();
     (items || []).forEach(item => {
         const s = item.session;
@@ -5039,13 +5773,17 @@ function collectSectionTrackColors(items) {
         if (!trackLabel) return;
         const color = getSessionAccentColor(s, trackLabel);
         if (!color && !isBreak) return;
-        const key = trackLabel + '|' + color + '|' + (isBreak ? 'b' : 's');
-        if (!seen.has(key)) seen.set(key, { color, label: trackLabel, hollow: isBreak });
+        // Hollow when: it's a break (existing behavior), OR a
+        // chosenUid is supplied and this item isn't the chosen one.
+        const isChosen = chosenUid && s.uid === chosenUid;
+        const hollow = isBreak || (chosenUid && !isChosen);
+        const key = trackLabel + '|' + color + '|' + (hollow ? 'h' : 'f');
+        if (!seen.has(key)) seen.set(key, { color, label: trackLabel, hollow });
     });
     return [...seen.values()];
 }
 
-function buildNowNextSectionHeader(title, headerMeta, items) {
+function buildNowNextSectionHeader(title, headerMeta, items, opts) {
     const header = document.createElement('div');
     header.className = 'nn-section-header';
 
@@ -5056,7 +5794,7 @@ function buildNowNextSectionHeader(title, headerMeta, items) {
 
     // Track-color dots for every distinct track present in this
     // section's items. Sit immediately to the right of the label.
-    const tracks = collectSectionTrackColors(items);
+    const tracks = collectSectionTrackColors(items, opts);
     if (tracks.length) {
         const dots = document.createElement('span');
         dots.className = 'nn-section-dots';
@@ -5084,14 +5822,174 @@ function buildNowNextSectionHeader(title, headerMeta, items) {
     return header;
 }
 
-function buildNowNextRow(item, { featured, joinFrom }) {
+// Find the session the user is "in" immediately before `time` —
+// preferring a session whose window contains time-1ms, falling back
+// to the most-recently-ended session on the same day. Used by node
+// markers to render the "where you came from" row even when that
+// session isn't on the starred path (e.g. Lunch).
+function getEffectivePrevItemAt(time, opts) {
+    if (!currentRenderAllItems || !currentRenderAllItems.length) return null;
+    const t = time.getTime();
+    const preferRoom = opts && typeof opts.preferRoom === 'string'
+        ? opts.preferRoom.trim() : '';
+    // 1) Containing window at t-1ms. Prefer the chunk that ENDS
+    //    exactly at `time` (the immediately-preceding session the
+    //    user just left). A still-running session that overlaps t
+    //    isn't where the user is "coming from" at this transition.
+    //    Among items ending at `time`, prefer the one the user was
+    //    actually attending (starred + on path) — otherwise a
+    //    parallel non-starred session in a different room can win
+    //    the tie-break and produce a wrong "Stay in <Room>" verb.
+    let endingHere = null;
+    let containing = null;
+    const isAttended = it => !!(it && it.session && it.session.uid
+        && Array.isArray(starredSessions)
+        && starredSessions.includes(it.session.uid));
+    const matchesPreferredRoom = it => preferRoom
+        && it && it.session
+        && (it.session.room || '').trim() === preferRoom;
+    // Score: starred (+2), matches preferred destination room (+1).
+    // Ties broken by latest start time so we still prefer a fresh
+    // chunk over a long-running session.
+    const scoreCandidate = it => (isAttended(it) ? 2 : 0)
+        + (matchesPreferredRoom(it) ? 1 : 0);
+    for (const it of currentRenderAllItems) {
+        if (!it.win) continue;
+        if (it.win.start.getTime() <= t - 1 && t - 1 < it.win.end.getTime()) {
+            if (it.win.end.getTime() === t) {
+                if (!endingHere) {
+                    endingHere = it;
+                } else {
+                    const curScore = scoreCandidate(endingHere);
+                    const newScore = scoreCandidate(it);
+                    if (newScore > curScore) {
+                        endingHere = it;
+                    } else if (newScore === curScore
+                        && it.win.start.getTime() > endingHere.win.start.getTime()) {
+                        endingHere = it;
+                    }
+                }
+            } else if (!containing || it.win.end.getTime() < containing.win.end.getTime()) {
+                // Among non-ending overlaps, prefer the one ending
+                // soonest (most "about to finish").
+                containing = it;
+            }
+        }
+    }
+    if (endingHere) return endingHere;
+    if (containing) return containing;
+    // 2) Most recently ended at or before t (same day).
+    let best = null;
+    for (const it of currentRenderAllItems) {
+        if (!it.win) continue;
+        const endT = it.win.end.getTime();
+        if (endT > t) continue;
+        if (endT < t - 6 * 60 * 60 * 1000) continue; // within 6h
+        if (!best || endT > best.win.end.getTime()) best = it;
+    }
+    return best;
+}
+
+// Build the inner HTML for a "node marker" — the small icon-style
+// element rendered in the left gutter for any path node. Shape:
+//   time
+//   dot row 1 — single dot in the PRIOR session's track color in
+//               column 0; remaining cells are empty placeholders
+//               so columns align with row 2.
+//   svg       — git-graph-style curve from the prior dot down to
+//               the chosen option's column in row 2.
+//   dot row 2 — every option at this node, chosen filled in its
+//               track color, others as hollow rings.
+// If `prevItem` is null, we resolve one from the full schedule.
+function buildNodeMarkerInnerHtml(items, chosenUid, time, prevItem) {
+    const chosenIdx = chosenUid
+        ? items.findIndex(it => it.session && it.session.uid === chosenUid)
+        : -1;
+
+    // Resolve the immediate predecessor for the prior dot. The
+    // prior dot represents where the user was last on their PATH —
+    // i.e. the chosen session in the previous interval — so always
+    // prefer `prevItem` (the path predecessor) when it's available.
+    // Only fall back to the schedule-wide predecessor when the path
+    // has no prior item (start of day, etc.), since that lets a
+    // break/meal supply a color when there's no starred precursor.
+    let resolvedPrev = null;
+    if (prevItem && prevItem.session) {
+        resolvedPrev = prevItem;
+    } else {
+        resolvedPrev = getEffectivePrevItemAt(time);
+    }
+
+    const cols = Math.max(1, items.length);
+    // Geometry shared with CSS dot/gap sizes (6px dot, 3px gap).
+    const DOT = 6, GAP = 3;
+    const colCenter = (i) => DOT / 2 + i * (DOT + GAP); // 3, 12, 21, ...
+    const rowWidth = cols * DOT + (cols - 1) * GAP;
+    const emptyCell = '<span class="nn-node-dot is-empty" aria-hidden="true"></span>';
+
+    // Time label is now surfaced by the verb body ("At 1:30, Stay in
+    // Salon B"), so the marker is purely visual: prior dot → curve
+    // → options row.
+    let html = '';
+
+    // Row 1: prior session color in column 0; pad to cols.
+    const prevColor = (resolvedPrev && resolvedPrev.session)
+        ? getSessionAccentColor(resolvedPrev.session, resolvedPrev.session.Track)
+        : null;
+    const row1Cells = [];
+    if (prevColor) {
+        row1Cells.push(`<span class="nn-node-dot" style="background:${prevColor}" aria-hidden="true"></span>`);
+    } else {
+        row1Cells.push(emptyCell);
+    }
+    while (row1Cells.length < cols) row1Cells.push(emptyCell);
+    html += `<span class="nn-node-dots">${row1Cells.join('')}</span>`;
+
+    // Connector SVG: cubic curve from (prevX, top) to (chosenX, bottom).
+    // Mimics a git-graph branch/merge: the line literally connects
+    // the prior dot to the chosen dot, so the user sees the path.
+    const SVG_H = 14;
+    const prevX = colCenter(0);
+    const chosenCol = chosenIdx >= 0 ? chosenIdx : 0;
+    const chosenX = colCenter(chosenCol);
+    const chosenColor = chosenIdx >= 0
+        ? getSessionAccentColor(items[chosenIdx].session, items[chosenIdx].session.Track)
+        : 'currentColor';
+    const cy = SVG_H / 2;
+    const dPath = chosenIdx < 0
+        ? ''
+        : `M ${prevX} 0 C ${prevX} ${cy}, ${chosenX} ${cy}, ${chosenX} ${SVG_H}`;
+    html +=
+        `<svg class="nn-node-graph" width="${rowWidth}" height="${SVG_H}" ` +
+        `viewBox="0 0 ${rowWidth} ${SVG_H}" aria-hidden="true">` +
+        (dPath
+            ? `<path d="${dPath}" stroke="${chosenColor}" stroke-width="1.5" ` +
+              `fill="none" stroke-linecap="round"/>`
+            : '') +
+        '</svg>';
+
+    // Row 2: all options at this node.
+    const row2Cells = items.map((it, idx) => {
+        const c = getSessionAccentColor(it.session, it.session.Track);
+        const isChosen = idx === chosenIdx;
+        const cls = isChosen ? 'nn-node-dot' : 'nn-node-dot is-hollow';
+        const style = isChosen
+            ? `background:${c}`
+            : `border-color:${c || 'currentColor'}`;
+        return `<span class="${cls}" style="${style}" aria-hidden="true"></span>`;
+    });
+    html += `<span class="nn-node-dots">${row2Cells.join('')}</span>`;
+
+    return html;
+}
+
+function buildNowNextRow(item, { featured, joinFrom, skipped, hideTime }) {
     const { session, win } = item;
     const now = new Date();
     const trackLabel = isKeynoteSession(session)
         ? 'Keynote'
         : (session.Track || (isSessionStyleEvent(session) ? 'General' : ''));
     const color = getSessionAccentColor(session, trackLabel);
-    const isLive = now >= win.start && now < win.end;
     // Mid-session: caller is committed to a prior session (joinFrom) that
     // ends after this row starts, so the user can only join this one
     // partway through. Skip if joinFrom IS this row.
@@ -5099,9 +5997,26 @@ function buildNowNextRow(item, { featured, joinFrom }) {
         && joinFrom.win && joinFrom.win.end
         && joinFrom.win.end > win.start);
     const joinAtTime = isMidSession ? joinFrom.win.end : null;
+    // "Live" only when the user is actually in this session right
+    // now. If they're committed to a prior joinFrom session that
+    // hasn't ended yet, this row is a *future* mid-session join —
+    // don't show progress bar / "Not here? switch" affordances.
+    const joinNotYet = !!(joinAtTime && now < joinAtTime);
+    const isLive = now >= win.start && now < win.end && !joinNotYet;
+    const isMeal = isMealStyleEvent(session);
+    const isBreak = !isMeal && isBreakStyleEvent(session);
+    const isInterlude = isMeal || isBreak;
 
     const wrap = document.createElement('div');
     wrap.className = 'nn-row-wrap';
+    if (skipped) wrap.classList.add('nn-row-skipped');
+    // Standalone (non-skipped) break/meal: dashed-outline interlude
+    // styling — matches the day-schedule lunch/break cards.
+    if (isInterlude && !skipped) {
+        wrap.classList.add('nn-row-interlude');
+        if (isMeal) wrap.classList.add('nn-row-meal');
+        else wrap.classList.add('nn-row-break');
+    }
     wrap.style.setProperty('--nn-color', color);
 
     const row = document.createElement('button');
@@ -5120,7 +6035,7 @@ function buildNowNextRow(item, { featured, joinFrom }) {
     const main = document.createElement('span');
     main.className = 'nn-row-main';
 
-    if (trackLabel) {
+    if (trackLabel && !isInterlude) {
         const chip = document.createElement('span');
         chip.className = 'nn-row-chip';
         chip.textContent = trackLabel;
@@ -5149,9 +6064,15 @@ function buildNowNextRow(item, { featured, joinFrom }) {
     meta.className = 'nn-row-meta';
 
     let timeStr = '';
-    try {
-        timeStr = win.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    } catch (_) { /* leave blank */ }
+    if (!hideTime) {
+        try {
+            // For mid-session joins, the row's time should reflect when
+            // the user can actually arrive (joinAtTime), not the session's
+            // original start — that's already over and would mislead.
+            const displayTime = isMidSession ? joinAtTime : win.start;
+            timeStr = displayTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        } catch (_) { /* leave blank */ }
+    }
     if (timeStr) {
         const timeEl = document.createElement('span');
         timeEl.className = 'nn-row-time';
@@ -5179,13 +6100,61 @@ function buildNowNextRow(item, { featured, joinFrom }) {
         meta.appendChild(sep);
         const mid = document.createElement('span');
         mid.className = 'nn-row-midsession';
-        const joinStr = joinAtTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const startedStr = win.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        // If the session hasn't actually started yet at the current
+        // time, frame this as a planned future join — saying
+        // "in progress" reads as right-now, which is misleading.
+        // Once the session has actually started, switch to the
+        // present-tense "in progress (started ...)" framing.
+        const hasStarted = now >= win.start;
+        const label = hasStarted
+            ? `in progress (started ${startedStr})`
+            : `starts ${startedStr} · join in progress`;
         mid.innerHTML =
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
             '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
-            `<span>Join at ${joinStr}</span>`;
-        mid.title = `You\u2019re committed elsewhere until ${joinStr} — you\u2019ll join this session in progress.`;
+            `<span>${label}</span>`;
+        mid.title = hasStarted
+            ? `Started at ${startedStr}; you\u2019ll join in progress.`
+            : `Starts at ${startedStr}; you\u2019ll join after it has begun.`;
         meta.appendChild(mid);
+    }
+    // "Leaves at HH:MM" — when the path has the user switching out
+    // of THIS session before its scheduled end (e.g. a 90-min talk
+    // they bail on for a different starred session at the half).
+    if (featured && session.uid && currentRenderPath
+        && Array.isArray(currentRenderPath.intervals)) {
+        const startT = win.start.getTime();
+        const endT = win.end.getTime();
+        let leaveT = null;
+        for (const iv of currentRenderPath.intervals) {
+            const ivT = iv.start.getTime();
+            if (ivT <= startT) continue;
+            if (ivT >= endT) break;
+            // Path moves to a different chosen uid before this
+            // session ends — that's a planned early exit.
+            if (iv.chosen && iv.chosen !== session.uid) {
+                leaveT = ivT;
+                break;
+            }
+        }
+        if (leaveT !== null) {
+            const sep = document.createElement('span');
+            sep.className = 'nn-row-sep';
+            sep.textContent = '·';
+            sep.setAttribute('aria-hidden', 'true');
+            meta.appendChild(sep);
+            const leave = document.createElement('span');
+            leave.className = 'nn-row-midsession';
+            const leaveStr = new Date(leaveT).toLocaleTimeString(
+                [], { hour: 'numeric', minute: '2-digit' });
+            leave.innerHTML =
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                '<path d="M9 5H5v14h4"/><path d="M14 8l4 4-4 4"/><path d="M18 12H10"/></svg>' +
+                `<span>leaving at ${leaveStr}</span>`;
+            leave.title = `You\u2019ll leave this session at ${leaveStr}.`;
+            meta.appendChild(leave);
+        }
     }
     main.appendChild(meta);
     row.appendChild(main);
@@ -5232,11 +6201,78 @@ function buildNowNextRow(item, { featured, joinFrom }) {
         main.appendChild(bar);
     }
 
+    // Stay-through-overlap markers: when the user resolved overlaps
+    // that fired during this session by staying here, surface each
+    // one as a node marker in the row's LEFT gutter — the same
+    // icon-style element used for move nodes between cards. This way
+    // every path node has the same visual handle in the same column.
+    // Stay-through-overlap decisions during this session are now
+    // rendered as inline node rows BETWEEN cards in the timeline,
+    // not attached to the card itself. Cards stay full-width.
+
     row.addEventListener('click', () => {
         openSessionDetails(session, row);
     });
 
+    // Star toggle: visible on hover/focus and always on touch via
+    // long-press. Only for starrable session-style items (skip
+    // breaks/meals). Sits in the row's top-right; clicking it
+    // toggles without opening the detail sheet.
+    if (isStarrableSession(session)) {
+        const isStarred = isStarredItem(item);
+        const starBtn = document.createElement('button');
+        starBtn.type = 'button';
+        starBtn.className = 'nn-row-star' + (isStarred ? ' is-starred' : '');
+        starBtn.innerHTML = isStarred ? '★' : '☆';
+        starBtn.title = isStarred ? 'Remove from schedule' : 'Add to schedule';
+        starBtn.setAttribute('aria-label', starBtn.title);
+        starBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            toggleStar(session.uid, starBtn);
+        });
+        wrap.appendChild(starBtn);
+    }
+
     wrap.appendChild(row);
+
+    // "Not here? Switch session" affordance on the live featured
+    // row: lets the user re-select which talk they're currently in.
+    // We surface this only when the path's interval at `now` has a
+    // real overlap decision (≥2 starred sessions active) — otherwise
+    // there's nothing to switch between, since switching to a
+    // non-starred session is what the star toggle is for.
+    if (featured && isLive && isStarrableSession(session)
+        && currentRenderPath && Array.isArray(currentRenderPath.intervals)) {
+        const nowMs = now.getTime();
+        const ivAtNow = currentRenderPath.intervals.find(iv =>
+            iv.start.getTime() <= nowMs && nowMs < iv.end.getTime());
+        const decisionAtNow = ivAtNow && ivAtNow.decision ? ivAtNow.decision : null;
+        if (decisionAtNow && Array.isArray(decisionAtNow.items)
+            && decisionAtNow.items.length >= 2) {
+            const switchBtn = document.createElement('button');
+            switchBtn.type = 'button';
+            switchBtn.className = 'nn-row-switch';
+            switchBtn.innerHTML =
+                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" ' +
+                'stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
+                'stroke-linejoin="round" aria-hidden="true">' +
+                '<path d="M7 7h11M7 7l3-3M7 7l3 3"/>' +
+                '<path d="M17 17H6m11 0l-3-3m3 3l-3 3"/></svg>' +
+                '<span>Not here? Switch session</span>';
+            switchBtn.title = 'Pick a different session you\u2019re currently attending';
+            switchBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                openConflictPicker(decisionAtNow.items, {
+                    title: 'Which talk are you in?',
+                    desc: 'Pick the session you\u2019re attending right now. The previous choice stays starred but moves to "other sessions" during this overlap.',
+                    fromItem: item,
+                    conflict: decisionAtNow
+                });
+            });
+            wrap.appendChild(switchBtn);
+        }
+    }
+
     return wrap;
 }
 
@@ -5338,64 +6374,125 @@ function partitionFeaturedItems(items, demotedUids) {
 // (Happening Now, Next, Thereafter) using getDemotedUidsAt(refTime).
 let currentRenderDemotedUids = null;
 
-// ─── Conflict detection (sweep-line) ──────────────────────────────
-// A maximal interval where 2+ starred starrable sessions overlap is
-// one "conflict". Members = union of all starred starrable items
-// active at any moment within that interval.
+// Render-scoped path reference. Set during a render pass so row
+// builders can fetch the decisions that were merged into a session
+// (chosen-by-staying), and attach an inline Edit affordance.
+let currentRenderPath = null;
+
+// Render-scoped set of node keys already emitted in this pass.
+// Prevents the same decision/forced-edge from rendering twice when
+// it falls inside multiple overlapping render windows
+// (Now\u2192Next, Next\u2192Thereafter, timeline slot loop).
+let currentRenderEmittedNodeKeys = null;
+
+// Render-scoped full schedule. Lets node-marker rendering find a
+// non-starred session that's active immediately before a node (e.g.
+// the user is in Lunch right before a 2:00pm overlap), so the
+// marker's "where you came from" row can show that session's color
+// even when it isn't on the path.
+let currentRenderAllItems = null;
+function nodeEventKey(ev) {
+    if (!ev) return '';
+    const t = ev.t instanceof Date ? ev.t.getTime() : ev.t;
+    if (ev.kind === 'decision') {
+        return `d|${t}|${(ev.decision && ev.decision.key) || ''}`;
+    }
+    if (ev.kind === 'forced') {
+        const uid = ev.item && ev.item.session && ev.item.session.uid;
+        return `f|${t}|${uid || ''}`;
+    }
+    return `${ev.kind || '?'}|${t}`;
+}
+
+// ─── Path model ───────────────────────────────────────────────────
+// Single source of truth for "what is the user attending at time T?".
+//
+// Treat every distinct start/end timestamp across starred sessions as
+// a NODE on a per-day timeline. Between two consecutive nodes is an
+// INTERVAL. Each interval has an "active" set: every starred session
+// whose [start, end) covers the interval. From there:
+//   - 0 active        → free time during this interval.
+//   - 1 active        → that session is on the path (forced).
+//   - ≥2 active       → decision point: pick one to follow.
+//
+// A "path segment" is the merge of consecutive intervals that share
+// the same chosen UID. The path is the user's actual journey through
+// the day; everything else (demotion, Now/Next/Thereafter, mid-session
+// labels) derives from it.
 function isStarrableSession(s) {
     return !!s && !!s.uid
         && (s.type === 'session' || s.type === 'training' || isSessionStyleEvent(s));
 }
-function computeStarredConflicts(allItems) {
+function computeStarredPath(allItems) {
     const starred = (allItems || []).filter(i =>
         isStarrableSession(i.session) && isStarredItem(i)
     );
-    if (starred.length < 2) return [];
-
-    // Build sorted event list. At equal timestamps, process 'end'
-    // before 'start' so a session ending exactly when another starts
-    // does NOT count as overlap.
-    const events = [];
+    const byDay = {};
     starred.forEach(it => {
-        events.push({ t: it.win.start.getTime(), kind: 'start', it });
-        events.push({ t: it.win.end.getTime(), kind: 'end', it });
+        const d = it.session.day || '';
+        if (!byDay[d]) byDay[d] = [];
+        byDay[d].push(it);
     });
-    events.sort((a, b) => a.t - b.t || (a.kind === 'end' ? -1 : 1));
 
-    const conflicts = [];
-    const active = new Set();
-    let inConflict = false;
-    let conflictStart = null;
-    let members = new Set();
+    const intervals = [];
+    const decisions = [];
 
-    events.forEach(e => {
-        if (e.kind === 'start') active.add(e.it);
-        else active.delete(e.it);
+    Object.keys(byDay).forEach(day => {
+        const items = byDay[day];
+        const tsSet = new Set();
+        items.forEach(it => {
+            tsSet.add(it.win.start.getTime());
+            tsSet.add(it.win.end.getTime());
+        });
+        const nodes = [...tsSet].sort((a, b) => a - b);
 
-        if (active.size >= 2 && !inConflict) {
-            inConflict = true;
-            conflictStart = e.t;
-            members = new Set(active);
-        } else if (active.size >= 2 && inConflict) {
-            active.forEach(it => members.add(it));
-        } else if (active.size < 2 && inConflict) {
-            inConflict = false;
-            const items = Array.from(members);
-            const uids = items.map(it => it.session.uid).sort();
-            const key = uids.join('|');
-            conflicts.push({
-                key,
-                items,
-                uids,
-                start: new Date(conflictStart),
-                end: new Date(e.t),
-                chosen: conflictResolutions[key] || null
+        for (let i = 0; i < nodes.length - 1; i++) {
+            const t0 = nodes[i];
+            const t1 = nodes[i + 1];
+            // Active = items whose [start, end) covers the entire interval.
+            const active = items.filter(it =>
+                it.win.start.getTime() <= t0 && it.win.end.getTime() >= t1
+            );
+            let chosen = null;
+            let decision = null;
+            if (active.length === 1) {
+                chosen = active[0].session.uid;
+            } else if (active.length >= 2) {
+                const uids = active.map(it => it.session.uid).sort();
+                const key = `${t0}|${uids.join('|')}`;
+                const resolved = conflictResolutions[key] || null;
+                decision = {
+                    key,
+                    items: active,
+                    uids,
+                    start: new Date(t0),
+                    end: new Date(t1),
+                    chosen: resolved
+                };
+                chosen = resolved;
+                decisions.push(decision);
+            }
+            intervals.push({
+                start: new Date(t0),
+                end: new Date(t1),
+                day,
+                active,
+                chosen,
+                decision
             });
-            members = new Set();
         }
     });
-    return conflicts;
+
+    return { intervals, decisions };
 }
+
+// Backwards-compatible: returns the decisions array (same shape as
+// before — { key, items, uids, start, end, chosen }) so all existing
+// callers keep working.
+function computeStarredConflicts(allItems) {
+    return computeStarredPath(allItems).decisions;
+}
+
 // Drop resolution entries whose conflict no longer exists (e.g. a
 // participant was unstarred). Returns true if anything changed.
 function pruneStaleConflictResolutions(conflicts) {
@@ -5410,34 +6507,207 @@ function pruneStaleConflictResolutions(conflicts) {
     if (changed) saveConflictResolutions();
     return changed;
 }
-// Returns Set of UIDs to demote at reference time `t`: a starred uid
-// is demoted if there's a resolved conflict whose interval contains
-// `t` and where the uid is NOT the chosen one. This is time-aware so
-// a long session that overlaps a shorter conflict gets demoted only
-// during the overlap, then resumes its featured place afterwards.
-function getDemotedUidsAt(conflicts, t) {
+
+// Returns Set of starred UIDs that are active at time `t` but NOT on
+// the chosen path. Looks up the single interval containing `t` and
+// reads its `chosen`. No fresh-start exemptions, no looking at older
+// decisions — the path already encodes the right answer at every
+// instant.
+function getDemotedUidsAt(path, t) {
     const out = new Set();
-    if (!conflicts || !t) return out;
+    if (!path || !t) return out;
     const tt = t instanceof Date ? t.getTime() : t;
-    conflicts.forEach(c => {
-        if (!c.chosen) return;
-        if (!(c.start.getTime() <= tt && tt < c.end.getTime())) return;
-        c.uids.forEach(u => { if (u !== c.chosen) out.add(u); });
+    const intervals = Array.isArray(path) ? null : path.intervals;
+    if (!intervals) return out;
+    const iv = intervals.find(x =>
+        x.start.getTime() <= tt && tt < x.end.getTime()
+    );
+    if (!iv || !iv.chosen) return out;
+    iv.active.forEach(it => {
+        if (it.session.uid !== iv.chosen) out.add(it.session.uid);
     });
     return out;
 }
-// Find the most relevant resolved/unresolved conflict among a candidate
-// set of items (e.g. [fromItem, ...nextStarred]). Returns null if none.
-// Strategy: prefer the smallest conflict whose UIDs ⊇ the candidates'
-// UIDs (exact or superset). Falls back to any conflict sharing ≥2 UIDs.
+
+// At slot boundary `slotT` (a node), the chosen path session may have
+// started earlier and just continues through this node. Slots only
+// know about items whose actual start == slotT, so a continuing
+// chosen session would otherwise vanish from the slot — leaving only
+// (now-demoted) competitors and producing a phantom "free time" gap.
+// Returns the chosen continuation item (one or zero) so callers can
+// prepend it to the slot's items.
+//
+// Path intervals are bounded by *starred* start/end timestamps, so a
+// non-starred slot's start (e.g. 14:00 Quick V&V while user is in
+// Strategy Workshop 13:15–14:15) won't match any interval's start.
+// Look up the interval *containing* slotT and surface its chosen
+// session if it began before this slot.
+function getContinuingItemsAt(path, slotT) {
+    if (!path || !path.intervals) return [];
+    const t = slotT instanceof Date ? slotT.getTime() : slotT;
+    const iv = path.intervals.find(x =>
+        x.start.getTime() <= t && t < x.end.getTime()
+    );
+    if (!iv || !iv.chosen) return [];
+    const chosen = iv.active.find(it => it.session.uid === iv.chosen);
+    if (!chosen || chosen.win.start.getTime() >= t) return [];
+    return [chosen];
+}
+function withContinuing(items, path, slotT) {
+    const cont = getContinuingItemsAt(path, slotT);
+    if (!cont.length) return items;
+    const have = new Set(items.map(it => it.session && it.session.uid).filter(Boolean));
+    const add = cont.filter(c => !have.has(c.session.uid));
+    return add.length ? [...add, ...items] : items;
+}
+
+// Returns the chosen path item active immediately before the given
+// timestamp (the interval whose end == t). Used to label decision
+// nodes with a room-aware verb (Stay/Switch). Returns null if there
+// is no prior chosen path session.
+function getPrevPathItem(path, t) {
+    if (!path || !path.intervals) return null;
+    const tt = t instanceof Date ? t.getTime() : t;
+    // Walk intervals in reverse to find the latest one ending at or
+    // before tt with a chosen uid.
+    for (let i = path.intervals.length - 1; i >= 0; i--) {
+        const iv = path.intervals[i];
+        if (iv.end.getTime() > tt) continue;
+        if (!iv.chosen) continue;
+        const item = iv.active.find(x => x.session.uid === iv.chosen);
+        if (item) return item;
+    }
+    return null;
+}
+
+// Return an ordered list of "node events" in the time range
+// (lo, hi] (inclusive of hi by default). Each event is one of:
+//   { kind: 'decision', t, decision, prevPathItem }
+//   { kind: 'forced',   t, item,     prevPathItem }
+// "decision" = path interval starting at `t` has 2+ active items
+// (real choice). "forced" = interval starting at `t` has exactly 1
+// active item AND the chosen uid changed from the previous interval
+// (a new session begins on the path). Forced edges with no chosen
+// change (e.g. continuing the same session) are skipped — there's
+// nothing actionable to show. Pass `inclusiveLo: true` for [lo, hi].
+function getPathNodesBetween(path, lo, hi, opts = {}) {
+    const out = [];
+    if (!path || !path.intervals) return out;
+    const loT = lo instanceof Date ? lo.getTime() : lo;
+    const hiT = hi instanceof Date ? hi.getTime() : hi;
+    const inclusiveLo = !!opts.inclusiveLo;
+    const seenDecisionKeys = new Set();
+    for (let i = 0; i < path.intervals.length; i++) {
+        const iv = path.intervals[i];
+        const t = iv.start.getTime();
+        if (inclusiveLo ? t < loT : t <= loT) continue;
+        if (t > hiT) break;
+        // Find the previous chosen path item ending at or before t.
+        const prev = getPrevPathItem(path, iv.start);
+        // Find the chosen item from the IMMEDIATELY prior interval
+        // (if any). This is what matters for "did the chosen uid
+        // change crossing this node" — we don't want to treat a much
+        // earlier Room F talk as the predecessor when the immediately
+        // prior interval is e.g. an unresolved overlap.
+        const immPrev = i > 0 ? path.intervals[i - 1] : null;
+        const immPrevItem = (immPrev && immPrev.chosen)
+            ? immPrev.active.find(x => x.session.uid === immPrev.chosen) || null
+            : null;
+        if (iv.decision) {
+            if (seenDecisionKeys.has(iv.decision.key)) continue;
+            seenDecisionKeys.add(iv.decision.key);
+            // Every decision (stay or switch) renders as an inline
+            // node row between cards. Stays get "Stay in <Room>"
+            // with an Edit affordance so the user can change their
+            // mind even when the chosen session is unchanged.
+            out.push({
+                kind: 'decision',
+                t: iv.start,
+                decision: iv.decision,
+                prevPathItem: prev
+            });
+        } else if (iv.chosen && iv.active.length === 1) {
+            // Forced edge: only annotate if the chosen uid changed
+            // from the IMMEDIATELY prior interval. Continuing the
+            // same session through a node has nothing to say.
+            const immPrevUid = immPrevItem ? immPrevItem.session.uid : null;
+            if (immPrevUid !== iv.chosen) {
+                const item = iv.active[0];
+                out.push({
+                    kind: 'forced',
+                    t: iv.start,
+                    item,
+                    // Use the immediate predecessor for verb/room
+                    // logic so we don't reach back across an
+                    // unresolved overlap and pick a stale Room.
+                    prevPathItem: immPrevItem
+                });
+            }
+        }
+    }
+    return out;
+}
+
+// Decisions that were "merged" into a starred session row because
+// the user chose to stay in (continue attending) this session
+// through an overlap that fired during its window. Returned in
+// chronological order. Each entry is the original decision object.
+//
+// A decision is considered a "stay through overlap" only when the
+// chosen uid in the IMMEDIATELY PRIOR interval is also this item's
+// uid — i.e. the user was already in this session and continued.
+// Switching INTO a session that started earlier (mid-session join)
+// is NOT a stay; that case keeps its standalone node row.
+function getMergedDecisionsForItem(path, item) {
+    const out = [];
+    if (!path || !path.decisions || !path.intervals || !item || !item.win) return out;
+    const uid = item.session && item.session.uid;
+    if (!uid) return out;
+    const startT = item.win.start.getTime();
+    const endT = item.win.end.getTime();
+    path.decisions.forEach(d => {
+        if (d.chosen !== uid) return;
+        const t = d.start.getTime();
+        if (t <= startT || t >= endT) return;
+        // Confirm the user was already in this session in the
+        // immediately prior interval. Find the interval starting at
+        // t (the decision interval) and read its predecessor.
+        const idx = path.intervals.findIndex(iv => iv.start.getTime() === t);
+        if (idx <= 0) return;
+        const prev = path.intervals[idx - 1];
+        if (!prev || prev.chosen !== uid) return;
+        out.push(d);
+    });
+    out.sort((a, b) => a.start - b.start);
+    return out;
+}
+// Find the most relevant decision among a candidate set of items
+// (e.g. [fromItem, ...nextStarred]). With per-start-time decisions,
+// prefer one whose decision timestamp matches the candidates' latest
+// start (i.e. the moment the user is actually deciding). Falls back
+// to the smallest superset, then to any decision sharing >=2 UIDs.
 function findRelevantConflict(items, conflicts) {
     if (!items || !items.length || !conflicts || !conflicts.length) return null;
-    const wantedUids = items
-        .filter(it => it.session && isStarrableSession(it.session))
-        .map(it => it.session.uid);
-    if (wantedUids.length < 2) return null;
+    const wantedItems = items.filter(it => it.session && isStarrableSession(it.session));
+    if (wantedItems.length < 2) return null;
+    const wantedUids = wantedItems.map(it => it.session.uid);
     const wantedSet = new Set(wantedUids);
 
+    // Latest start among the candidates = the decision moment.
+    const decisionT = Math.max(...wantedItems.map(it => it.win.start.getTime()));
+
+    // 1) Exact decision-time match where uids ⊇ wanted.
+    const exact = conflicts.filter(c => {
+        if (c.start.getTime() !== decisionT) return false;
+        const cset = new Set(c.uids);
+        for (const u of wantedSet) if (!cset.has(u)) return false;
+        return true;
+    });
+    if (exact.length) {
+        return exact.sort((a, b) => a.uids.length - b.uids.length)[0];
+    }
+
+    // 2) Smallest superset of wanted UIDs (any decision time).
     const supersets = conflicts.filter(c => {
         const cset = new Set(c.uids);
         for (const u of wantedSet) if (!cset.has(u)) return false;
@@ -5446,6 +6716,7 @@ function findRelevantConflict(items, conflicts) {
     if (supersets.length) {
         return supersets.sort((a, b) => a.uids.length - b.uids.length)[0];
     }
+    // 3) Any decision sharing ≥2 candidate UIDs.
     let best = null, bestN = 0;
     conflicts.forEach(c => {
         const cset = new Set(c.uids);
@@ -5565,7 +6836,15 @@ function buildNowNextList(items, opts = {}) {
     }
 
     featured.forEach(item => {
-        list.appendChild(buildNowNextRow(item, { featured: true, joinFrom: opts.joinFrom || null }));
+        const isBreakItem = item.session
+            && (isBreakStyleEvent(item.session) || isMealStyleEvent(item.session));
+        const skipped = !!(opts.skipBreaks && isBreakItem);
+        list.appendChild(buildNowNextRow(item, {
+            featured: true,
+            joinFrom: opts.joinFrom || null,
+            skipped,
+            hideTime: !!opts.hideRowTime
+        }));
     });
 
     if (others.length) {
@@ -5582,6 +6861,7 @@ function appendNowNextSection(container, sectionClass, header, body, color) {
     section.appendChild(header);
     section.appendChild(body);
     container.appendChild(section);
+    return section;
 }
 
 function pickSectionColor(items) {
@@ -5786,13 +7066,27 @@ function openConflictPicker(items, opts = {}) {
     // the "other sessions" branch in section views during the overlap.
     if (!items || items.length < 2) return;
     const fromItem = opts.fromItem || null;
+    // "Current" / Stay / Switch labels only make sense when the user
+    // is genuinely live in a session right now. Use real-time live
+    // status, not the caller-supplied anchor (which inline decision
+    // rows pass as a generic "earliest item").
+    const nowMs = Date.now();
+    const isLiveItem = it => it.win.start.getTime() <= nowMs
+        && nowMs < it.win.end.getTime();
+    const liveItem = fromItem && isLiveItem(fromItem) ? fromItem : null;
     // Conflict key from passed-in conflict, or derived from items.
-    const starrableUids = items
-        .filter(it => isStarrableSession(it.session))
-        .map(it => it.session.uid)
-        .sort();
+    // Without an explicit conflict, default the decision time to the
+    // earliest item start so the key matches what computeStarredConflicts
+    // produces.
+    const starrableItems = items.filter(it => isStarrableSession(it.session));
+    const starrableUids = starrableItems.map(it => it.session.uid).sort();
+    const decisionTime = starrableItems.length
+        ? Math.min(...starrableItems.map(it => it.win.start.getTime()))
+        : null;
     const conflictKey = (opts.conflict && opts.conflict.key)
-        || (starrableUids.length >= 2 ? starrableUids.join('|') : null);
+        || (starrableUids.length >= 2 && decisionTime !== null
+            ? `${decisionTime}|${starrableUids.join('|')}`
+            : null);
     const decidedUid = conflictKey ? (conflictResolutions[conflictKey] || null) : null;
 
     const overlay = document.createElement('div');
@@ -5826,7 +7120,7 @@ function openConflictPicker(items, opts = {}) {
         const color = getSessionAccentColor(s, trackLabel);
         const starrable = isStarrableSession(s);
         const starred = starrable && isStarredItem(item);
-        const isCurrent = fromItem && item === fromItem;
+        const isCurrent = liveItem && item === liveItem;
         const isDecided = !!decidedUid && s.uid === decidedUid;
 
         const row = document.createElement('button');
@@ -5858,14 +7152,50 @@ function openConflictPicker(items, opts = {}) {
         if (trackLabel) parts.push(trackLabel);
         meta.textContent = parts.join(' · ');
         main.appendChild(meta);
+
+        // Consequence hint: if picking THIS option ends before
+        // another option in the same overlap, the user will auto-
+        // transition to that one mid-session. Surface that so users
+        // can see "Long MBSE 1:30-3:00 → then auto-join AI Ethics
+        // 3:00-3:30" without committing first to find out.
+        if (starrable && items.length >= 2) {
+            const myEnd = item.win.end.getTime();
+            const handoff = items
+                .filter(other => other !== item
+                    && isStarrableSession(other.session)
+                    && other.win.end.getTime() > myEnd
+                    && other.win.start.getTime() < myEnd)
+                .sort((a, b) => a.win.end - b.win.end)[0];
+            if (handoff) {
+                const handoffStart = new Date(myEnd)
+                    .toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                const handoffEnd = handoff.win.end
+                    .toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                const hOrigStart = handoff.win.start.getTime();
+                const handoffMid = hOrigStart < myEnd;
+                const handoffTitle = handoff.session.Title
+                    || handoff.session.title || 'next session';
+                const hint = document.createElement('span');
+                hint.className = 'pick-modal-item-hint';
+                hint.textContent = handoffMid
+                    ? `Then auto-join ${handoffTitle} at ${handoffStart} (in progress until ${handoffEnd})`
+                    : `Then continue to ${handoffTitle} at ${handoffStart}–${handoffEnd}`;
+                main.appendChild(hint);
+            }
+        }
         row.appendChild(main);
 
         const action = document.createElement('span');
         action.className = 'pick-modal-keep';
+        // Action label conveys STATE only (the live row already
+        // carries a "(current)" suffix on its title). "Stay" was
+        // redundant with "Chosen" once a decision is recorded — both
+        // mean "this is the session the user is following" — so we
+        // drop Stay/Switch entirely. Rows are either Locked in,
+        // Chosen, or Choose.
         if (!starrable) action.textContent = 'Locked in';
         else if (isDecided) action.textContent = 'Chosen';
-        else if (isCurrent) action.textContent = 'Stay';
-        else action.textContent = 'Switch';
+        else action.textContent = 'Choose';
         row.appendChild(action);
 
         if (!starrable) {
@@ -6047,16 +7377,62 @@ function renderNowNextView(container) {
     const now = new Date();
     const allItems = collectAllWindowed();
 
-    // Recompute starred conflicts on every render so they stay in sync
-    // with the current star set, then prune any stale resolutions.
-    const conflicts = computeStarredConflicts(allItems);
+    // Compute the path once. All downstream "is X demoted at time T"
+    // questions read the path's interval-at-T.
+    const path = computeStarredPath(allItems);
+    const conflicts = path.decisions;
     pruneStaleConflictResolutions(conflicts);
-    // Demotion is time-aware: each section sets currentRenderDemotedUids
-    // to the losers active at that section's reference time.
-    currentRenderDemotedUids = getDemotedUidsAt(conflicts, now);
+    // Demotion at "now" comes straight from the path.
+    currentRenderDemotedUids = getDemotedUidsAt(path, now);
+    // Make path visible to row builders (for merged-decision chips).
+    currentRenderPath = path;
+    // Fresh per-render dedupe set for path-node events.
+    currentRenderEmittedNodeKeys = new Set();
+    currentRenderAllItems = allItems;
 
     // ─── Happening Now: every session whose window contains `now`.
     const happeningNow = allItems.filter(i => now >= i.win.start && now < i.win.end);
+
+    // ─── "Which talk are you in?" prompt ──────────────────────────
+    // If the path's interval containing `now` is an unresolved
+    // overlap (≥2 starred sessions, no conflictResolutions entry),
+    // surface a prompt ABOVE the Happening Now hero. Without this,
+    // every downstream slot keeps treating the user as in-multiple-
+    // sessions-at-once and node rows multiply. Resolving this single
+    // decision collapses the path everywhere.
+    const ivAtNow = path.intervals.find(iv =>
+        iv.start.getTime() <= now.getTime() && now.getTime() < iv.end.getTime());
+    if (ivAtNow && ivAtNow.decision && !ivAtNow.decision.chosen) {
+        const promptDecision = ivAtNow.decision;
+        const prompt = document.createElement('button');
+        prompt.type = 'button';
+        prompt.className = 'nn-now-prompt';
+        const titleEl = document.createElement('span');
+        titleEl.className = 'nn-now-prompt-title';
+        titleEl.textContent = 'Which talk are you in?';
+        const descEl = document.createElement('span');
+        descEl.className = 'nn-now-prompt-desc';
+        descEl.textContent = `${promptDecision.items.length} starred sessions overlap right now — tell the schedule which one you're attending.`;
+        const chev = document.createElement('span');
+        chev.className = 'nn-now-prompt-chev';
+        chev.setAttribute('aria-hidden', 'true');
+        chev.textContent = '›';
+        prompt.appendChild(titleEl);
+        prompt.appendChild(descEl);
+        prompt.appendChild(chev);
+        prompt.addEventListener('click', () => {
+            const anchor = promptDecision.items
+                .slice()
+                .sort((a, b) => a.win.start - b.win.start)[0];
+            openConflictPicker(promptDecision.items, {
+                title: 'Which talk are you in?',
+                desc: 'Pick the session you’re attending right now. The others stay starred but move to “other sessions” during the overlap.',
+                fromItem: anchor,
+                conflict: promptDecision
+            });
+        });
+        container.appendChild(prompt);
+    }
 
     // ─── Look ahead so we can detect a *run* of consecutive free-only
     // slots and render a single combined free-time chip on the first
@@ -6073,6 +7449,17 @@ function renderNowNextView(container) {
     //      as Happening Next so they see "join in progress".
     //   2. Otherwise advance past the commitment's end so a break
     //      that's already covered by the commitment is skipped.
+    //
+    //   Exception: if the original next group has a starred session
+    //   that *starts fresh* during the commitment window AND isn't
+    //   already a path-loser, that's a real diverge point (e.g.
+    //   you're in a 1:45–2:45 talk and a different starred talk
+    //   begins at 2:15 with no decision recorded yet). Keep that
+    //   group and let the user decide. If the fresh start IS already
+    //   demoted by a resolved decision, the user committed to stay,
+    //   so re-anchor past it — the demoted session will still surface
+    //   as a branch row in the timeline, and as a "join in progress"
+    //   candidate at the real transition (commitEnd).
     {
         const happeningFeatured = partitionFeaturedItems(happeningNow).featured;
         const happeningUids = new Set(
@@ -6081,7 +7468,17 @@ function renderNowNextView(container) {
         const commitEnd = happeningFeatured.length
             ? Math.max(...happeningFeatured.map(i => i.win.end.getTime()))
             : 0;
-        if (commitEnd) {
+        const nextStartT = nextGroup.startDate ? nextGroup.startDate.getTime() : null;
+        const demotedAtNext = nextStartT
+            ? getDemotedUidsAt(path, nextGroup.startDate)
+            : new Set();
+        const originalHasFreshStarred = nextGroup.items.some(it =>
+            isStarrableSession(it.session)
+            && isStarredItem(it)
+            && !happeningUids.has(it.session.uid)
+            && !(it.session.uid && demotedAtNext.has(it.session.uid))
+        );
+        if (commitEnd && !originalHasFreshStarred) {
             // Starred sessions in progress AT commitEnd that aren't
             // already on the Happening Now rail. These are the "join
             // in progress" candidates (e.g. a longer overlapping
@@ -6146,23 +7543,11 @@ function renderNowNextView(container) {
             freeChipMaxEnd: findNextAttendedStart(allItems, now)
         } : {});
 
-        // ── Hero footer: contextual hints + mini day strip ──
-        // The room/then hint requires the user to actually be IN a room
-        // right now — i.e. they have a starred current session. If they
-        // didn't pick anything for this slot (free time), don't suggest
-        // staying or moving from a room they're not in.
+        // ── Hero footer: track current featured row for downstream
+        // logic (decision nodes etc.). The previous "Then: <Room>"
+        // hint is gone — decision-node rows surface the action verb.
         const heroFeatured = partitionFeaturedItems(happeningNow).featured;
         heroPrimary = heroFeatured[0] || null;
-
-        const footer = document.createElement('div');
-        footer.className = 'nn-hero-footer';
-
-        // Room transition hint: stay vs. move. Only meaningful when both
-        // the current and next sessions are on your schedule.
-        const nowHint = buildRoomTransitionHint(heroPrimary, nextGroup.items);
-        if (nowHint) footer.appendChild(nowHint);
-
-        if (footer.children.length) nowBody.appendChild(footer);
     } else {
         // Nothing in the schedule contains "now" — render the gap as a
         // free-time row so it reads like the rest of the timeline. End
@@ -6224,232 +7609,668 @@ function renderNowNextView(container) {
         free.appendChild(row);
         nowBody.appendChild(free);
     }
-    appendNowNextSection(container, 'is-now',
-        buildNowNextSectionHeader('Happening Now', nowMeta, happeningNow),
+    // Resolve the path's chosen uid AT now once, up front: it both
+    // controls track-dot fill in the Happening Now header (only the
+    // attended track is solid) and seeds stay-bridge detection in
+    // the timeline below.
+    let nowChosenUid = null;
+    {
+        const ivAtNowForChosen = path.intervals.find(iv =>
+            iv.start.getTime() <= now.getTime() && now.getTime() < iv.end.getTime());
+        if (ivAtNowForChosen && ivAtNowForChosen.chosen) {
+            nowChosenUid = ivAtNowForChosen.chosen;
+        }
+    }
+    const nowSection = appendNowNextSection(container, 'is-now',
+        buildNowNextSectionHeader('Happening Now', nowMeta, happeningNow,
+            { chosenUid: nowChosenUid }),
         nowBody);
 
-    // ─── Happening Next: next start time after now, plus everything sharing it.
-    let nextMeta = '';
-    if (nextGroup.startDate) {
-        const startLabel = nextGroup.startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        nextMeta = `${startLabel} · ${formatRelativeMinutes(nextGroup.startDate, now)}`;
-    }
+    // ─── Path nodes between Now and the first upcoming slot ──
+    // These are emitted by the slot loop below via `seedSlotT`,
+    // which lets it interleave each between-node with its
+    // continuation section in chronological order. Doing it here
+    // would only render the nodes (no continuation panels), so we
+    // delegate entirely to renderFullDaySchedule.
 
-    // Reference time for Next — demote losers active at this slot.
-    currentRenderDemotedUids = nextGroup.startDate
-        ? getDemotedUidsAt(conflicts, nextGroup.startDate)
-        : new Set();
-
-    // If the Now section is already showing a combined free chip that
-    // covers this slot too, suppress the duplicate here.
-    const suppressNextFreeChip = nowFreeOnly && nextFreeOnly;
-
-    // Compute Thereafter early so we can render a Next→Thereafter
-    // transition hint at the bottom of the Next section.
-    let thereafterCursor = null;
-    if (nextGroup.startDate) {
-        thereafterCursor = new Date(nextGroup.startDate.getTime());
-        if (isAllBreakOrMeal(nextGroup.items)) {
-            const afterBreakStart = findNextStartGroup(allItems, thereafterCursor);
-            if (afterBreakStart.startDate) {
-                thereafterCursor = afterBreakStart.startDate;
-            }
-        }
-    }
-    const thereafter = thereafterCursor ? findNextStartGroup(allItems, thereafterCursor) : { items: [], startDate: null };
-
-    let nextBody;
-    if (nextGroup.items.length) {
-        // Determine what the user is committed to during the Now slot
-        // so we can flag Next rows the user can only join mid-session.
-        // If decision = move to a Next row, that moved-to is the
-        // commitment (and won't get flagged itself).
-        let nowCommitment = heroPrimary;
-        if (heroPrimary && heroPrimary.session.uid) {
-            // If the user resolved a conflict involving heroPrimary in
-            // favor of a Next-row session, that moved-to row becomes
-            // the commitment (and won't get tagged itself).
-            const c = conflicts.find(c =>
-                c.chosen && c.uids.includes(heroPrimary.session.uid)
-                && c.chosen !== heroPrimary.session.uid
-            );
-            if (c) {
-                const moved = partitionFeaturedItems(nextGroup.items).featured
-                    .find(it => it.session.uid === c.chosen);
-                if (moved) nowCommitment = moved;
-            }
-        }
-        nextBody = document.createElement('div');
-        nextBody.className = 'nn-subgroup';
-        nextBody.appendChild(buildNowNextList(nextGroup.items, {
-            suppressFreeChip: suppressNextFreeChip,
-            freeChipMaxEnd: nextGroup.startDate
-                ? findNextAttendedStart(allItems, nextGroup.startDate)
-                : null,
-            joinFrom: nowCommitment
-        }));
-
-        // If "Next" is purely break/meal, also surface what's happening
-        // *after* the break so users can plan. Use the EARLIEST end so a
-        // session starting between the earliest and latest break end is
-        // still surfaced (breaks don't always end together).
-        if (isAllBreakOrMeal(nextGroup.items)) {
-            const breakEnd = new Date(Math.min(...nextGroup.items.map(i => i.win.end.getTime())));
-            // Use breakEnd - 1ms as the cursor so a session starting exactly at
-            // break end is still included.
-            const cursor = new Date(breakEnd.getTime() - 1);
-            const afterBreak = findNextStartGroup(allItems, cursor);
-            if (afterBreak.items.length) {
-                const subHeader = document.createElement('div');
-                subHeader.className = 'nn-after-break-header';
-
-                const left = document.createElement('span');
-                left.className = 'nn-after-break-left';
-                const titleEl = document.createElement('span');
-                titleEl.className = 'nn-after-break-title';
-                titleEl.textContent = 'After the break';
-                left.appendChild(titleEl);
-
-                // Track-color dots for the after-break group, matching
-                // the section-header pattern on Now/Next/Thereafter.
-                const tracks = collectSectionTrackColors(afterBreak.items);
-                if (tracks.length) {
-                    const dots = document.createElement('span');
-                    dots.className = 'nn-section-dots';
-                    tracks.forEach(t => {
-                        const d = document.createElement('span');
-                        d.className = 'nn-section-track-dot';
-                        if (t.hollow) d.classList.add('is-hollow');
-                        if (t.color) {
-                            if (t.hollow) d.style.borderColor = t.color;
-                            else d.style.background = t.color;
-                        }
-                        d.title = t.label;
-                        d.setAttribute('aria-label', t.label);
-                        dots.appendChild(d);
-                    });
-                    left.appendChild(dots);
-                }
-                subHeader.appendChild(left);
-
-                if (afterBreak.startDate) {
-                    const t = afterBreak.startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                    const timeEl = document.createElement('span');
-                    timeEl.className = 'nn-after-break-time';
-                    timeEl.textContent = `${t} · ${formatRelativeMinutes(afterBreak.startDate, now)}`;
-                    subHeader.appendChild(timeEl);
-                }
-                nextBody.appendChild(subHeader);
-                nextBody.appendChild(buildNowNextList(afterBreak.items));
-            }
-        }
-    } else {
-        nextBody = document.createElement('div');
-        nextBody.className = 'nn-empty';
-        nextBody.textContent = 'No more sessions scheduled.';
-    }
-
-    // Next → Thereafter room transition hint. Anchored to the first
-    // starred session of Next (or the after-break group if Next is all
-    // break/meal). Only renders if Thereafter has starred items.
-    {
-        let nextAnchor = null;
-        if (nextGroup.items.length) {
-            if (isAllBreakOrMeal(nextGroup.items)) {
-                // Skip break: anchor against after-break starred session.
-                const cursor = new Date(Math.min(...nextGroup.items.map(i => i.win.end.getTime())) - 1);
-                const afterBreak = findNextStartGroup(allItems, cursor);
-                nextAnchor = partitionFeaturedItems(afterBreak.items).featured[0] || null;
-            } else {
-                nextAnchor = partitionFeaturedItems(nextGroup.items).featured[0] || null;
-            }
-        }
-        const nextHint = buildRoomTransitionHint(nextAnchor, thereafter.items);
-        if (nextHint) {
-            const wrap = document.createElement('div');
-            wrap.className = 'nn-section-hint';
-            wrap.appendChild(nextHint);
-            nextBody.appendChild(wrap);
-        }
-    }
-
-    appendNowNextSection(container, 'is-next',
-        buildNowNextSectionHeader('Happening Next', nextMeta, nextGroup.items),
-        nextBody,
-        pickSectionColor(nextGroup.items));
-
-    // ─── Thereafter section render.
-    if (thereafter.items.length) {
-        const tStart = thereafter.startDate;
-        // Reference time for Thereafter — demote losers active at this slot.
-        currentRenderDemotedUids = getDemotedUidsAt(conflicts, tStart);
-        const tStartLabel = tStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        const sameDay = tStart.toDateString() === now.toDateString();
-        const dayLabel = sameDay
-            ? ''
-            : tStart.toLocaleDateString([], { weekday: 'short' }) + ' ';
-        const tMeta = `${dayLabel}${tStartLabel} · ${formatRelativeMinutes(tStart, now)}`;
-        // If this slot is also part of the free run we already covered
-        // on Now's chip, suppress the duplicate free-time chip here.
-        const thereafterFreeOnly = partitionFeaturedItems(thereafter.items).featured.length === 0;
-        const suppressThereafterFreeChip = nowFreeOnly && thereafterFreeOnly
-            && freeRunEnd && tStart < freeRunEnd;
-        // Carry decisions forward: the user's Next-period commitment is
-        // either the chosen Next anchor or, if they decided to move at
-        // Next, the moved-to Thereafter row (which then won't be tagged).
-        let nextCommitment = null;
-        {
-            let nextAnchorForChain = null;
-            if (nextGroup.items.length) {
-                if (isAllBreakOrMeal(nextGroup.items)) {
-                    const cursor = new Date(Math.min(...nextGroup.items.map(i => i.win.end.getTime())) - 1);
-                    const afterBreak = findNextStartGroup(allItems, cursor);
-                    nextAnchorForChain = partitionFeaturedItems(afterBreak.items).featured[0] || null;
-                } else {
-                    nextAnchorForChain = partitionFeaturedItems(nextGroup.items).featured[0] || null;
-                }
-            }
-            if (nextAnchorForChain) {
-                nextCommitment = nextAnchorForChain;
-                if (nextAnchorForChain.session.uid) {
-                    const c = conflicts.find(c =>
-                        c.chosen && c.uids.includes(nextAnchorForChain.session.uid)
-                        && c.chosen !== nextAnchorForChain.session.uid
-                    );
-                    if (c) {
-                        const moved = partitionFeaturedItems(thereafter.items).featured
-                            .find(it => it.session.uid === c.chosen);
-                        if (moved) nextCommitment = moved;
-                    }
-                }
-            }
-        }
-        appendNowNextSection(container, 'is-thereafter',
-            buildNowNextSectionHeader('Thereafter', tMeta, thereafter.items),
-            buildNowNextList(thereafter.items, {
-                suppressFreeChip: suppressThereafterFreeChip,
-                freeChipMaxEnd: findNextAttendedStart(allItems, tStart),
-                joinFrom: nextCommitment
-            }),
-            pickSectionColor(thereafter.items));
-    }
-
-    // ─── Conflict list (bottom-of-Now&Next affordance) ─────────────
-    // One row per starred-session conflict. Unresolved sit at the top
-    // (the "fix me" nag); resolved rows show an Edit affordance.
-    // Only show conflicts that haven't ended yet — past overlaps are
-    // no longer actionable.
-    const upcomingConflicts = conflicts.filter(c => c.end.getTime() > now.getTime());
-    const conflictListEl = buildConflictListEl(upcomingConflicts);
-    if (conflictListEl) container.appendChild(conflictListEl);
+    // ─── Full schedule below Happening Now ────────────────────────
+    // Single timeline of every future slot. Replaces the old separate
+    // Happening Next + Thereafter sections so there's exactly one
+    // chronological list of upcoming slots, with no overlap or
+    // duplication between hero and timeline.
+    renderFullDaySchedule(container, path, now, allItems, now, new Set(), {
+        seedPrevSection: nowSection,
+        seedChosenUid: nowChosenUid,
+        seedDay: (happeningNow[0] && happeningNow[0].session.day) || null,
+        seedSlotT: now.getTime()
+    });
 
     const updated = document.createElement('div');
     updated.className = 'nn-updated';
     updated.textContent = `Updated ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
     container.appendChild(updated);
     currentRenderDemotedUids = null;
+    currentRenderPath = null;
+    currentRenderEmittedNodeKeys = null;
+    currentRenderAllItems = null;
 }
 
+function buildInlineDecisionRow(decision, opts = {}) {
+    // Move-node row: a node marker in the left gutter (matching the
+    // day-schedule time column) and a verb body on the right.
+    // Unresolved decisions render the body as an orange nag; resolved
+    // ones show "Going to / Staying in <Room>" with an Edit chip.
+    const prevPathItem = opts.prevPathItem || null;
+    const wrap = document.createElement('button');
+    wrap.type = 'button';
+    wrap.className = 'nn-node-row-wrap'
+        + (decision.chosen ? ' is-resolved' : ' is-unresolved');
+
+    const marker = document.createElement('span');
+    marker.className = 'nn-node-marker';
+    marker.innerHTML = buildNodeMarkerInnerHtml(
+        decision.items, decision.chosen, decision.start, prevPathItem);
+    wrap.appendChild(marker);
+
+    const body = document.createElement('span');
+    body.className = 'nn-node-row-body';
+
+    let bodyHtml;
+    if (decision.chosen) {
+        const kept = decision.items.find(it => it.session.uid === decision.chosen);
+        const trackLabel = (kept && kept.session.Track) || '';
+        const roomLabel = (kept && kept.session.room) || '';
+        // True stay: the user was already attending the chosen
+        // session in the immediately prior interval. Compare uids,
+        // not "is the session already running" — those differ when
+        // the user is mid-session-joining a session that started
+        // earlier (that's a switch, not a stay).
+        const prevUid = prevPathItem && prevPathItem.session
+            ? prevPathItem.session.uid : null;
+        const isStaying = prevUid && prevUid === decision.chosen;
+        let verb;
+        if (isStaying) {
+            verb = 'Stay in';
+        } else {
+            // Use the path's immediately-prior chosen item as the
+            // authoritative "from" — that's where the user actually
+            // was. Only fall back to the schedule-wide predecessor
+            // (e.g. Foyer breakfast) when the path has nothing prior.
+            const prevForVerb = prevPathItem
+                || getEffectivePrevItemAt(decision.start, { preferRoom: roomLabel });
+            const toRoom = roomLabel.trim();
+            const fromRoom = (prevForVerb && prevForVerb.session
+                && prevForVerb.session.room || '').trim();
+            if (!fromRoom) verb = 'Head to';
+            else if (fromRoom === toRoom) verb = 'Stay in';
+            else verb = 'Switch to';
+        }
+        const subject = roomLabel
+            ? `<strong>${escapeHtml(roomLabel)}</strong>`
+            : `<strong>${escapeHtml(trackLabel || 'chosen session')}</strong>`;
+        // "join in progress" only applies when the user is newly
+        // switching INTO a session that's already running. Staying
+        // in the session you're already attending isn't a join.
+        const midSession = !isStaying && !!(kept && kept.win
+            && kept.win.start.getTime() < decision.start.getTime());
+        // "leaving early" applies when the prior session the user
+        // was attending continues past this transition — i.e. they
+        // walk out before it ends.
+        const prevPrior = isStaying ? null
+            : (prevPathItem || getEffectivePrevItemAt(decision.start));
+        const leavingEarly = !!(prevPrior && prevPrior.win
+            && prevPrior.win.end.getTime() > decision.start.getTime()
+            && prevPrior !== kept);
+        const notes = [];
+        if (leavingEarly) {
+            const endStr = prevPrior.win.end.toLocaleTimeString(
+                [], { hour: 'numeric', minute: '2-digit' });
+            notes.push(`leaving early (ends ${escapeHtml(endStr)})`);
+        }
+        if (midSession) {
+            const startStr = kept.win.start.toLocaleTimeString(
+                [], { hour: 'numeric', minute: '2-digit' });
+            notes.push(`join in progress (started ${escapeHtml(startStr)})`);
+        }
+        const joinNote = notes.length
+            ? ` <span class="nn-conflict-sub">· ${notes.join(' · ')}</span>`
+            : '';
+        const timeLabel = decision.start.toLocaleTimeString(
+            [], { hour: 'numeric', minute: '2-digit' });
+        bodyHtml =
+            `<span class="nn-node-row-text">At ${escapeHtml(timeLabel)}, ${verb} ${subject}${joinNote}</span>` +
+            '<span class="nn-node-row-edit">Edit</span>';
+    } else {
+        const tracks = decision.items
+            .map(it => (it.session.Track || '').trim())
+            .filter(Boolean);
+        const summary = tracks.length >= 2
+            ? `<strong>${escapeHtml(tracks[0])}</strong> vs <strong>${escapeHtml(tracks[1])}</strong>${tracks.length > 2 ? ` +${tracks.length - 2}` : ''}`
+            : `Choose 1 of ${decision.items.length}`;
+        const timeLabel = decision.start.toLocaleTimeString(
+            [], { hour: 'numeric', minute: '2-digit' });
+        bodyHtml =
+            `<span class="nn-node-row-text">At ${escapeHtml(timeLabel)}, decide: ${summary}</span>` +
+            '<span class="nn-node-row-chev" aria-hidden="true">›</span>';
+    }
+    body.innerHTML = bodyHtml;
+    wrap.appendChild(body);
+
+    wrap.addEventListener('click', () => {
+        const anchor = decision.items.slice().sort((a, b) => a.win.start - b.win.start)[0];
+        openConflictPicker(decision.items, {
+            title: decision.chosen ? 'Edit decision' : 'Resolve overlap',
+            desc: 'Pick the session you’ll attend through this overlap. The others stay starred but move to “other sessions” during it.',
+            fromItem: anchor,
+            conflict: decision
+        });
+    });
+    return wrap;
+}
+
+// Render a forced-edge node row: the path is forced (1 active starred
+// session) but the chosen session changed from the previous interval,
+// so the user still needs to know what to do (stay/switch/head to).
+// Same icon-on-left layout as inline decisions, but non-clickable.
+function buildForcedEdgeRow(item, prevPathItem, t) {
+    // Render forced edges as clickable buttons too: even when there
+    // is only one starred session active at this boundary, the user
+    // may want to switch to a parallel non-starred session, or
+    // confirm a mid-session join. Behaves like a decision row.
+    const wrap = document.createElement('button');
+    wrap.type = 'button';
+    wrap.className = 'nn-node-row-wrap is-forced is-resolved';
+
+    const marker = document.createElement('span');
+    marker.className = 'nn-node-marker';
+    // Forced edges have a single "option" (the chosen item itself).
+    marker.innerHTML = buildNodeMarkerInnerHtml(
+        [item], item.session.uid, t, prevPathItem);
+    wrap.appendChild(marker);
+
+    const roomLabel = item.session.room || '';
+    // Derive "from" room from the user's actual prior position in
+    // the path. The immediately-prior chosen interval (prevPathItem)
+    // is authoritative — that's the session the path says they
+    // were in. Only fall back to the schedule-wide predecessor
+    // (e.g. Foyer breakfast) when the path has nothing prior. When
+    // falling back, prefer a candidate matching the destination
+    // room (room-continuity) over an arbitrary parallel session.
+    const prevForVerb = prevPathItem
+        || getEffectivePrevItemAt(t, { preferRoom: roomLabel });
+    const fromRoom = (prevForVerb && prevForVerb.session
+        && prevForVerb.session.room || '').trim();
+    const toRoom = roomLabel.trim();
+    let verb;
+    if (!fromRoom) verb = 'Head to';
+    else if (fromRoom === toRoom) verb = 'Stay in';
+    else verb = 'Switch to';
+    const midSession = item.win && item.win.start.getTime() < t.getTime();
+    // Leaving early: the prior session continues past this
+    // transition. Skip if the predecessor IS this same item
+    // (continuing, not leaving) or has no end after t.
+    const leavingEarly = !!(prevForVerb && prevForVerb !== item
+        && prevForVerb.win && prevForVerb.win.end.getTime() > t.getTime());
+    const notes = [];
+    if (leavingEarly) {
+        const endStr = prevForVerb.win.end.toLocaleTimeString(
+            [], { hour: 'numeric', minute: '2-digit' });
+        notes.push(`leaving early (ends ${escapeHtml(endStr)})`);
+    }
+    if (midSession) {
+        const startStr = item.win.start.toLocaleTimeString(
+            [], { hour: 'numeric', minute: '2-digit' });
+        notes.push(`join in progress (started ${escapeHtml(startStr)})`);
+    }
+    const joinNote = notes.length
+        ? ` <span class="nn-conflict-sub">· ${notes.join(' · ')}</span>`
+        : '';
+    const subject = roomLabel
+        ? `<strong>${escapeHtml(roomLabel)}</strong>`
+        : `<strong>chosen session</strong>`;
+    const timeLabel = t.toLocaleTimeString(
+        [], { hour: 'numeric', minute: '2-digit' });
+
+    const body = document.createElement('span');
+    body.className = 'nn-node-row-body';
+    body.innerHTML = `<span class="nn-node-row-text">At ${escapeHtml(timeLabel)}, ${verb} ${subject}${joinNote}</span>`
+        + '<span class="nn-node-row-edit">Edit</span>';
+    wrap.appendChild(body);
+
+    // Click to open a picker showing every starrable session active
+    // at this boundary (in-progress and just-starting). Lets the
+    // user switch to another in-progress starred session, or pick a
+    // parallel non-starred one. Picking a non-chosen option auto-
+    // stars it and records the decision.
+    wrap.addEventListener('click', () => {
+        const tt = t.getTime();
+        const candidates = (currentRenderAllItems || []).filter(it =>
+            it.win && isStarrableSession(it.session)
+            && it.win.start.getTime() <= tt && tt < it.win.end.getTime()
+        );
+        if (!candidates.includes(item)) candidates.unshift(item);
+        candidates.sort((a, b) => a.win.start - b.win.start);
+        if (candidates.length < 2) {
+            // Nothing to switch among. Open the session detail
+            // sheet for the forced item instead.
+            openSessionDetails(item.session, wrap);
+            return;
+        }
+        openConflictPicker(candidates, {
+            title: 'Edit session at ' + timeLabel,
+            desc: 'Pick the session you\u2019ll be in at this point. Other starred sessions stay starred but move to "other sessions" during the overlap.',
+            fromItem: item
+        });
+    });
+    return wrap;
+}
+
+// Render an ordered list of node events (decisions + forced edges)
+// inside the given wrapper. Used between sections and between
+// timeline slots.
+function renderPathNodeRows(wrap, nodes) {
+    nodes.forEach(n => {
+        // Pass-level dedupe: a node may fall inside more than one
+        // render window (Now\u2192Next, Next\u2192Thereafter, the timeline
+        // slot loop). Only emit it the first time it's seen.
+        const key = nodeEventKey(n);
+        if (currentRenderEmittedNodeKeys) {
+            if (currentRenderEmittedNodeKeys.has(key)) return;
+            currentRenderEmittedNodeKeys.add(key);
+        }
+        if (n.kind === 'decision') {
+            wrap.appendChild(buildInlineDecisionRow(n.decision, {
+                prevPathItem: n.prevPathItem
+            }));
+        } else if (n.kind === 'forced') {
+            wrap.appendChild(buildForcedEdgeRow(n.item, n.prevPathItem, n.t));
+        }
+    });
+}
+
+function renderFullDaySchedule(container, path, now, allItems, startAfter, skipSlotTimes, opts) {
+    const decisions = path.decisions;
+    const skip = skipSlotTimes instanceof Set ? skipSlotTimes : new Set();
+    const seedPrevSection = (opts && opts.seedPrevSection) || null;
+    const seedChosenUid = (opts && opts.seedChosenUid) || null;
+    const seedDay = (opts && opts.seedDay) || null;
+    // Optional starting timestamp used as the lower bound for the
+    // first slot's "between-nodes" range. Lets renderNowNextView
+    // tell the slot loop "the hero already covers everything up to
+    // `now`, so any nodes/intervals between now and the next slot
+    // need to surface here". Without this, between-nodes that fire
+    // strictly between `now` and the first slot would never render.
+    const seedSlotT = (opts && typeof opts.seedSlotT === 'number')
+        ? opts.seedSlotT : null;
+    // Make path visible to row builders inside this render pass.
+    currentRenderPath = path;
+    currentRenderAllItems = allItems;
+    const days = Object.keys(data);
+    const cutoff = startAfter ? startAfter.getTime() : 0;
+    let bannerRendered = false;
+    days.forEach(day => {
+        const dayItems = allItems.filter(it => it.session.day === day);
+        if (!dayItems.length) return;
+
+        // Skip days that end at or before the cutoff entirely.
+        const dayMaxEnd = Math.max(...dayItems.map(it => it.win.end.getTime()));
+        if (dayMaxEnd <= cutoff) return;
+
+        // Day banner. Deferred so that on the seeded day (the day
+        // the Happening Now hero already announces) we can either
+        // skip the banner entirely OR delay it until after a stay-
+        // bridge has linked the hero to the first slot. For other
+        // days, the banner still appears once at the top of the day.
+        let bannerPending = !(day === seedDay && seedPrevSection);
+        const ensureBanner = () => {
+            if (!bannerPending) return;
+            bannerPending = false;
+            const banner = document.createElement('div');
+            banner.className = 'nn-day-banner';
+            if (!bannerRendered) banner.classList.add('is-first');
+            banner.textContent = day;
+            container.appendChild(banner);
+            bannerRendered = true;
+        };
+
+        // Walk every distinct start time in the day strictly after cutoff.
+        let cursor = new Date(Math.max(cutoff, dayItems.reduce((min, it) =>
+            !min || it.win.start < min ? it.win.start : min, null).getTime() - 1));
+        // Track which chosen uid the previously-rendered slot showed,
+        // so a slot whose only content is the same continuing session
+        // (with no new starred starts and no path nodes) can be
+        // skipped — the previous card already covers it.
+        let lastShownChosenUid = null;
+        // Timestamp of the previously processed slot, used to scoop
+        // up any path nodes (decisions/forced edges) that occur
+        // between slot starts so they don't fall into a gap and
+        // never render.
+        let lastShownSlotT = null;
+        // Section element of the previously appended slot, kept so
+        // that when this slot is a "stay" continuation of the same
+        // session we can flatten its bottom edge to bridge into the
+        // node row + the next slot's card seamlessly.
+        let prevSection = null;
+        // Seed prev-state on the day the Happening Now hero is on,
+        // so a stay-decision firing at the next slot boundary can
+        // bridge directly to the hero rather than re-rendering the
+        // ongoing session as a duplicate first slot card.
+        if (day === seedDay) {
+            if (seedPrevSection) prevSection = seedPrevSection;
+            if (seedChosenUid) lastShownChosenUid = seedChosenUid;
+            if (seedSlotT !== null) lastShownSlotT = seedSlotT;
+        }
+        let safety = 0;
+        while (safety++ < 500) {
+            const group = findNextStartGroup(dayItems, cursor);
+            if (!group.items.length) break;
+
+            // Demotion for this slot — straight from the path.
+            const slotT = group.startDate.getTime();
+            // Skip slots already rendered in the hero.
+            if (skip.has(slotT)) {
+                cursor = new Date(slotT);
+                continue;
+            }
+            currentRenderDemotedUids = getDemotedUidsAt(path, group.startDate);
+
+            // Path nodes that apply at this slot's timestamp. Computed
+            // before the skip check so a continuation slot with a
+            // decision/forced edge still gets its node row.
+            // Use the previous slot's timestamp as the lower bound
+            // so any decisions/forced edges occurring BETWEEN slot
+            // starts (e.g. a starred session ending mid-block while
+            // overlapping starred sessions continue) get surfaced
+            // here too. Without this, such nodes never render.
+            const slotNodes = getPathNodesBetween(
+                path,
+                lastShownSlotT !== null ? lastShownSlotT : (slotT - 1),
+                slotT,
+                { inclusiveLo: true });
+
+            // Path's chosen uid at this slot — the session the user
+            // is attending through the upcoming interval. Path
+            // intervals are bounded only by starred start/end times,
+            // so a non-starred slot (e.g. a 14:30 fresh-start while
+            // the user is mid-talk) won't have an interval starting
+            // exactly at slotT — look up the interval CONTAINING it.
+            const ivAt = path.intervals.find(iv =>
+                iv.start.getTime() <= slotT && slotT < iv.end.getTime()
+            );
+            const chosenAt = ivAt && ivAt.chosen ? ivAt.chosen : null;
+
+            // Is this slot purely a continuation of the previous one?
+            // Yes if: same chosen uid as last shown AND no featured
+            // Pure-continuation = same chosen uid as the prior slot,
+            // no fresh featured items starting here, AND no path
+            // nodes (stay decisions, forced edges) to surface at
+            // this timestamp. If there ARE nodes, we want the node
+            // to sit chronologically BETWEEN two card instances of
+            // the continuing session — so we re-render the card.
+            const freshFeatured = partitionFeaturedItems(group.items).featured;
+            const isPureContinuation = chosenAt
+                && chosenAt === lastShownChosenUid
+                && freshFeatured.length === 0
+                && slotNodes.length === 0;
+
+            if (isPureContinuation) {
+                cursor = new Date(slotT);
+                continue;
+            }
+
+            // Break/meal absorbed by a chosen session: if the only
+            // items freshly starting at this slot are breaks or
+            // meals AND the chosen path session covers this slot
+            // (started earlier, continues past slotT), the user
+            // opted to stay in the session through the break — so
+            // hide the break entirely.
+            const onlyBreaksFresh = group.items.length > 0
+                && group.items.every(it => it.session
+                    && (isBreakStyleEvent(it.session) || isMealStyleEvent(it.session)));
+            if (onlyBreaksFresh && chosenAt) {
+                const chosenItem = ivAt && ivAt.active
+                    && ivAt.active.find(it => it.session.uid === chosenAt);
+                const chosenStartsBefore = chosenItem && chosenItem.win
+                    && chosenItem.win.start.getTime() < slotT;
+                const chosenEndsAfter = chosenItem && chosenItem.win
+                    && chosenItem.win.end.getTime() > slotT;
+                if (chosenStartsBefore && chosenEndsAfter && slotNodes.length === 0) {
+                    cursor = new Date(slotT);
+                    continue;
+                }
+            }
+
+            // If the chosen path session started earlier and continues
+            // through this node, surface it so the slot doesn't read
+            // as free time.
+            const slotItems = withContinuing(group.items, path, group.startDate);
+
+            const slotEnd = Math.max(...slotItems.map(i => i.win.end.getTime()));
+            const isPast = slotEnd <= now.getTime();
+            const isCurrent = group.startDate.getTime() <= now.getTime() && now.getTime() < slotEnd;
+            const sectionClass = 'is-day-slot'
+                + (isPast ? ' is-past' : '')
+                + (isCurrent ? ' is-current' : '');
+
+            const time = group.startDate.toLocaleTimeString(
+                [], { hour: 'numeric', minute: '2-digit' });
+            // If the chosen path session strictly covers this slot
+            // (started earlier, ends later), any break/meal items in
+            // this slot are being skipped — render them muted.
+            const chosenItemAt = ivAt && ivAt.active && chosenAt
+                ? ivAt.active.find(it => it.session.uid === chosenAt)
+                : null;
+            const chosenCoversSlot = !!(chosenItemAt && chosenItemAt.win
+                && chosenItemAt.win.start.getTime() < slotT
+                && chosenItemAt.win.end.getTime() > slotT);
+            const header = buildNowNextSectionHeader(time, '', slotItems);
+            const body = buildNowNextList(slotItems, {
+                freeChipMaxEnd: findNextAttendedStart(dayItems, group.startDate),
+                skipBreaks: chosenCoversSlot,
+                hideRowTime: true
+            });
+
+            // Render any path nodes (decisions or forced edges) at
+            // this slot's timestamp BEFORE the slot section so they
+            // sit visually between the previous slot and this one.
+            // Detect a "stay bridge": same chosen session before and
+            // after, with a stay-decision node in between. When so,
+            // the prev card and the bridge merge into one continuous
+            // panel, and the slot's "bottom bun" drops the duplicate
+            // session row but KEEPS the parallel "other sessions"
+            // list (those change per slot).
+            const isStayBridge = !!(prevSection
+                && lastShownChosenUid
+                && chosenAt === lastShownChosenUid
+                && slotNodes.some(n => n.kind === 'decision'
+                    && n.decision.chosen === lastShownChosenUid
+                    && n.decision.start.getTime() === slotT));
+
+            // Split nodes into "between" (occurring strictly before
+            // this slot's start, i.e. at intermediate path-only
+            // boundaries like a 3:00 handoff before a 3:30 slot)
+            // and "at-slot" (firing exactly at slotT). Between-nodes
+            // interleave with continuation cards for their intervals
+            // before we get to the slot's own node + section.
+            const betweenNodes = slotNodes.filter(n =>
+                n.t.getTime() < slotT);
+            const atSlotNodes = slotNodes.filter(n =>
+                n.t.getTime() >= slotT);
+
+            const interludeIntervals = lastShownSlotT === null
+                ? []
+                : (path.intervals || []).filter(iv => {
+                    const ivStart = iv.start.getTime();
+                    const ivEnd = iv.end.getTime();
+                    return iv.day === day
+                        && iv.chosen
+                        && ivStart > lastShownSlotT
+                        && ivStart < slotT
+                        && ivEnd <= slotT;
+                });
+
+            // Emit each between-node followed by the interlude
+            // interval starting at its time (if any).
+            betweenNodes.forEach(n => {
+                // Stay-bridge if the prior section's chosen session
+                // is the same as this node's chosen session — i.e.
+                // the user is staying in the same talk through this
+                // mid-block decision/forced edge. Same look as the
+                // at-slot stay-bridge: flush bun above + below.
+                const nodeChosen = n.kind === 'decision'
+                    ? (n.decision && n.decision.chosen)
+                    : (n.item && n.item.session && n.item.session.uid);
+                const isBetweenStayBridge = !!(prevSection
+                    && lastShownChosenUid
+                    && nodeChosen
+                    && nodeChosen === lastShownChosenUid);
+                ensureBanner();
+                const nWrap = document.createElement('div');
+                nWrap.className = 'nn-decision-node'
+                    + (isBetweenStayBridge ? ' nn-stay-bridge' : '');
+                renderPathNodeRows(nWrap, [n]);
+                if (!nWrap.childElementCount) return;
+                container.appendChild(nWrap);
+                if (isBetweenStayBridge && prevSection) {
+                    prevSection.classList.add('nn-stay-flat-bottom');
+                }
+
+                const iv = interludeIntervals.find(x =>
+                    x.start.getTime() === n.t.getTime());
+                if (!iv) return;
+                const chosenItem = iv.active.find(
+                    x => x.session.uid === iv.chosen);
+                if (!chosenItem) return;
+                const prevIvIdx = path.intervals.indexOf(iv);
+                const prevIv = prevIvIdx > 0
+                    ? path.intervals[prevIvIdx - 1] : null;
+                const joinFromItem = (prevIv && prevIv.chosen)
+                    ? prevIv.active.find(x => x.session.uid === prevIv.chosen)
+                    : null;
+                const ivTime = iv.start.toLocaleTimeString(
+                    [], { hour: 'numeric', minute: '2-digit' });
+                ensureBanner();
+                const ivHeader = buildNowNextSectionHeader(
+                    ivTime, '', [chosenItem]);
+                const ivBody = buildNowNextList([chosenItem], {
+                    freeChipMaxEnd: findNextAttendedStart(dayItems, iv.start),
+                    skipBreaks: true,
+                    suppressFreeChip: true,
+                    joinFrom: joinFromItem,
+                    hideRowTime: true
+                });
+                const ivSection = document.createElement('section');
+                ivSection.className = 'nn-section is-day-slot'
+                    + (isBetweenStayBridge ? ' nn-stay-flat-top' : '')
+                    + (iv.end.getTime() <= now.getTime() ? ' is-past' : '')
+                    + (iv.start.getTime() <= now.getTime()
+                        && now.getTime() < iv.end.getTime() ? ' is-current' : '');
+                const ivColor = pickSectionColor([chosenItem]);
+                if (ivColor) ivSection.style.setProperty('--nn-section-color', ivColor);
+                ivSection.appendChild(ivHeader);
+                ivSection.appendChild(ivBody);
+                container.appendChild(ivSection);
+                lastShownChosenUid = iv.chosen;
+                prevSection = ivSection;
+            });
+
+            let nodeWrap = null;
+            if (atSlotNodes.length) {
+                if (!isStayBridge) ensureBanner();
+                nodeWrap = document.createElement('div');
+                nodeWrap.className = 'nn-decision-node'
+                    + (isStayBridge ? ' nn-stay-bridge' : '');
+                renderPathNodeRows(nodeWrap, atSlotNodes);
+                if (!nodeWrap.childElementCount) nodeWrap = null;
+                else container.appendChild(nodeWrap);
+            }
+
+            // For a stay-bridge slot, drop the chosen session from
+            // slotItems so the bottom bun only renders parallel
+            // others. If nothing else remains, skip the section.
+            let renderItems = slotItems;
+            if (isStayBridge && chosenAt) {
+                renderItems = slotItems.filter(it =>
+                    !it.session || it.session.uid !== chosenAt);
+                if (!renderItems.length) {
+                    lastShownChosenUid = chosenAt;
+                    cursor = new Date(group.startDate.getTime());
+                    continue;
+                }
+            }
+            const renderHeader = isStayBridge
+                ? buildNowNextSectionHeader(time, '', renderItems)
+                : header;
+            // In a stay-bridge slot the user is still inside the
+            // chosen session — they are NOT free — so suppress the
+            // synthetic "Free time" chip that buildNowNextList would
+            // otherwise emit when `featured` is empty.
+            const renderBody = isStayBridge
+                ? buildNowNextList(renderItems, {
+                    freeChipMaxEnd: findNextAttendedStart(dayItems, group.startDate),
+                    suppressFreeChip: true,
+                    skipBreaks: true,
+                    hideRowTime: true
+                })
+                : body;
+
+            // Non-bridge slots get a normal day banner before them
+            // (a no-op if the bridge path above already triggered it,
+            // or if we're on the seeded day where the banner is
+            // suppressed entirely).
+            if (!isStayBridge) ensureBanner();
+
+            // Slot-as-interlude: every item in this slot is a break
+            // or meal AND we aren't skipping them. The whole slot
+            // section becomes the dashed lunch/break card — no white
+            // chrome around it.
+            const sectionIsInterlude = !chosenCoversSlot
+                && renderItems.length > 0
+                && renderItems.every(it => it.session
+                    && (isBreakStyleEvent(it.session) || isMealStyleEvent(it.session)));
+            const sectionInterludeKind = sectionIsInterlude
+                ? (renderItems.some(it => isMealStyleEvent(it.session)) ? 'meal' : 'break')
+                : null;
+
+            const section = document.createElement('section');
+            section.className = `nn-section ${sectionClass}`
+                + (isStayBridge ? ' nn-stay-flat-top' : '')
+                + (sectionIsInterlude ? ` nn-section-interlude nn-section-${sectionInterludeKind}` : '');
+            const sectColor = pickSectionColor(renderItems);
+            if (sectColor) section.style.setProperty('--nn-section-color', sectColor);
+            section.appendChild(renderHeader);
+            section.appendChild(renderBody);
+            container.appendChild(section);
+
+            if (isStayBridge && prevSection) {
+                prevSection.classList.add('nn-stay-flat-bottom');
+            }
+
+            // Update the carry-forward chosen uid for the next slot.
+            lastShownChosenUid = chosenAt;
+            lastShownSlotT = slotT;
+            prevSection = section;
+
+            cursor = new Date(group.startDate.getTime());
+        }
+        // After the slot loop, emit any path nodes that occur after
+        // the last rendered slot (e.g. a starred session ending and
+        // handing off to other in-progress starred sessions when no
+        // fresh slot starts at that boundary).
+        if (lastShownSlotT !== null) {
+            const trailingHi = Math.max(...dayItems.map(it => it.win.end.getTime()));
+            const trailingNodes = getPathNodesBetween(
+                path, lastShownSlotT, trailingHi);
+            if (trailingNodes.length) {
+                const nodeWrap = document.createElement('div');
+                nodeWrap.className = 'nn-decision-node';
+                renderPathNodeRows(nodeWrap, trailingNodes);
+                if (nodeWrap.childElementCount) container.appendChild(nodeWrap);
+            }
+        }
+    });
+    currentRenderDemotedUids = null;
+}
 function renderMobileDayList(day, container) {
     const sessions = data[day] || [];
     const dayTimes = sessions.map(s => s.time);
@@ -7929,7 +9750,8 @@ function formatUltraCompactDayLabel(dayLabel) {
 
 function toggleStar(uid, starEl) {
     const idx = starredSessions.indexOf(uid);
-    if (idx > -1) {
+    const wasStarred = idx > -1;
+    if (wasStarred) {
         starredSessions.splice(idx, 1);
         starEl.classList.remove('active');
         starEl.innerHTML = '☆';
@@ -7941,6 +9763,31 @@ function toggleStar(uid, starEl) {
         starEl.title = 'Remove from schedule';
     }
     localStorage.setItem('incose_2026_stars', JSON.stringify(starredSessions));
+    // Either direction (add OR remove) can change the conflict key
+    // for an overlap that contains the toggled uid. If the user has
+    // already resolved a sibling overlap at the same start time in
+    // favor of a session that's still starred, carry that
+    // resolution forward to the new key so the system doesn't lose
+    // track of the choice.
+    try {
+        const newConflicts = computeStarredConflicts(collectAllWindowed());
+        let mutated = false;
+        newConflicts.forEach(c => {
+            if (c.chosen) return; // already resolved at the new key
+            const tStr = String(c.start.getTime());
+            for (const oldKey of Object.keys(conflictResolutions)) {
+                if (!oldKey.startsWith(tStr + '|')) continue;
+                if (oldKey === c.key) continue;
+                const chosenUid = conflictResolutions[oldKey];
+                if (c.uids.includes(chosenUid)) {
+                    conflictResolutions[c.key] = chosenUid;
+                    mutated = true;
+                    break;
+                }
+            }
+        });
+        if (mutated) saveConflictResolutions();
+    } catch (_) { /* best-effort migration */ }
     if (currentView === 'starred' || currentView === 'now') renderSchedule();
 }
 
