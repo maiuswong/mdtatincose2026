@@ -1,0 +1,3780 @@
+:root {
+    --primary: #1a73e8;
+    --bg: #e9ecf0;
+    --column-bg-solid: #f1f3f6;
+    --card-bg: #ffffff;
+    --text-main: #1a1c1e;
+    --text-secondary: #5c6070;
+    --border: #e0e3e8;
+    --medtronic-blue: #007bff;
+    --star-color: #f59e0b;
+    --header-height: 56px;
+    --time-col-width: 64px;
+    --desktop-col-width: 236px;
+    --slot-height: 28px;
+    --starred-day-sticky-height: 30px;
+    --popover-width: 360px;
+    --desktop-room-sticky-top: 100px;
+    --scroll-indicator-reserve: 28px;
+    --page-gutter: 16px;
+    --nn-marker-col-width: 52px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+    font-family: 'Google Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    font-size: 13px;
+    min-height: 100vh;
+}
+
+html,
+body {
+    overscroll-behavior: none;
+}
+
+@media (max-width: 700px) {
+    body.modal-open {
+        overflow: hidden;
+        touch-action: none;
+    }
+}
+
+/* ─── HEADER ─── */
+#headerStickyStack {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: var(--bg);
+}
+
+header {
+    position: relative;
+    background: #e9ecf0;
+    border-bottom: none;
+    box-shadow: none;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--page-gutter);
+    gap: 1rem;
+}
+header h1 { font-size: 1.05rem; font-weight: 700; white-space: nowrap; }
+.header-right { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; flex-wrap: nowrap; min-width: 0; }
+
+/* Adaptive compact top bar for widths where controls begin to wrap */
+body.topbar-compact header {
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 6px var(--page-gutter);
+    gap: 6px;
+    height: auto;
+}
+body.topbar-compact header h1 {
+    width: auto;
+    font-size: 0.96rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+body.topbar-compact .header-right {
+    width: auto;
+    min-width: 0;
+    flex: 1;
+    gap: 6px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+}
+body.topbar-compact #searchBar {
+    width: 140px;
+    min-width: 140px;
+    font-size: 11px;
+    padding: 5px 10px;
+}
+body.topbar-compact .tabs {
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    width: auto;
+}
+body.topbar-compact .tabs::-webkit-scrollbar {
+    display: none;
+}
+body.topbar-compact .tabs .tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 16px;
+}
+body.topbar-compact .track-filters {
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    white-space: nowrap;
+    padding: 6px var(--page-gutter);
+}
+body.topbar-compact .track-filters::-webkit-scrollbar {
+    display: none;
+}
+body.topbar-compact .filter-label,
+body.topbar-compact .track-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* ─── TABS ─── */
+.tabs { display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; min-width: 0; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+    padding: 5px 14px;
+    border: none;
+    background: #f0f2f5;
+    cursor: pointer;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Google Sans', sans-serif;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+}
+.tab-btn:hover { background: #e8eaed; color: var(--primary); }
+.tab-btn:active { background: #d5dbe5; transform: scale(0.95); transition: transform 0.08s, background 0.08s; }
+.tab-btn.active { background: var(--primary); color: white; }
+.tab-btn.active:active { filter: brightness(0.88); transform: scale(0.95); }
+.tab-btn.starred-tab { color: #d29e00; background: #fff4e6; }
+.tab-btn.starred-tab:hover { background: #ffe8cc; color: #b37a00; }
+.tab-btn.starred-tab:active { background: #ffd59e; transform: scale(0.95); }
+.tab-btn.starred-tab.active { background: var(--star-color); color: white; }
+.tab-btn.starred-tab.active:active { filter: brightness(0.88); transform: scale(0.95); }
+
+.tab-btn.now-tab {
+    color: #0b5a36;
+    background: #e1f5ec;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.tab-btn.now-tab::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #16a34a;
+    box-shadow: 0 0 0 0 rgba(22,163,74,0.6);
+    animation: nowPulse 1.6s ease-out infinite;
+}
+.tab-btn.now-tab:hover { background: #c9ecd8; color: #074a2c; }
+.tab-btn.now-tab:active { background: #b3e3c7; transform: scale(0.95); }
+.tab-btn.now-tab.active { background: #16a34a; color: #fff; }
+.tab-btn.now-tab.active::before { background: #fff; box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+.tab-btn.now-tab.active:active { filter: brightness(0.92); transform: scale(0.95); }
+
+/* ─── SEARCH ─── */
+#searchBar {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    background: #dfe6ee;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 12px;
+    width: 180px;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+#searchBar:focus { background: #ffffff; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.18); }
+
+/* ─── TRACK FILTER ─── */
+.track-filters {
+    position: relative;
+    z-index: 1;
+    background: #e9ecf0;
+    padding: 8px var(--page-gutter);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.filter-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-right: 4px; }
+.track-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: #ffffff;
+    transition: all 0.12s;
+    color: var(--text-secondary);
+}
+.filter-label,
+.track-chip {
+    font-family: 'Google Sans', sans-serif;
+}
+.track-chip .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.track-chip:active { filter: brightness(0.88); transform: scale(0.93); transition: transform 0.08s, filter 0.08s; }
+.track-chip.active { color: var(--text-main); }
+.track-chip.inactive { opacity: 0.4; }
+
+/* ─── GRID WRAPPER ─── */
+.grid-outer {
+    padding: 0;
+}
+
+.grid-outer.scroll-indicator-active {
+    padding-top: var(--scroll-indicator-reserve);
+}
+
+.schedule-shell {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0 var(--page-gutter) 1rem;
+    padding-bottom: 1rem;
+    position: relative;
+}
+
+#scheduleContainer.starred-view {
+    padding: 0 var(--page-gutter) 28px;
+}
+
+#scheduleContainer.search-results-view {
+    padding-right: var(--page-gutter);
+    padding-bottom: 28px;
+}
+
+#scheduleContainer.search-results-view .time-rows,
+#scheduleContainer.search-results-view .time-row,
+#scheduleContainer.search-results-view .mobile-time-group,
+#scheduleContainer.search-results-view .mobile-time-stack,
+#scheduleContainer.search-results-view .mobile-card-wrap,
+#scheduleContainer.search-results-view .session-card,
+#scheduleContainer.search-results-view .event-card {
+    width: 100%;
+}
+
+.schedule-canvas {
+    min-width: max-content;
+}
+
+/* ─── STICKY ROOM HEADER ROW ─── */
+.room-header-row {
+    display: grid;
+    position: fixed;
+    top: var(--desktop-room-sticky-top);
+    z-index: 230;
+    background: var(--bg);
+    padding-top: 0;
+    padding-bottom: 2px;
+    gap: 0 8px;
+    box-shadow: 0 -1px 0 var(--bg);
+    visibility: hidden;
+}
+.room-header-cell {
+    background: white;
+    border: none;
+    border-radius: 4px;
+    padding: 7px 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3f4d63;
+    letter-spacing: 0.005em;
+    text-transform: none;
+    line-height: 1.25;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+}
+.room-header-cell.active-room { color: var(--primary); background: #eef4ff; box-shadow: 0 1px 6px rgba(26, 115, 232, 0.18); }
+
+.schedule-grid {
+    display: grid;
+    position: relative;
+    gap: 2px 8px;
+    align-items: stretch;
+    padding-bottom: 14px;
+}
+
+.room-column-bg {
+    background: rgba(255, 255, 255, 0.38);
+    border: none;
+    border-radius: 10px;
+    min-height: 100%;
+}
+
+.timeline-slot-label {
+    display: flex;
+    align-items: center;
+    align-self: start;
+    justify-content: flex-end;
+    padding-top: 0;
+    padding-right: 8px;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+    background: var(--bg);
+    transform: translateY(calc(-50% - 1px));
+    z-index: 2;
+}
+
+/* First timeline divider is intentionally pushed down; match the first label to that offset. */
+.timeline-slot-label[data-slot="1"] {
+    transform: translateY(calc(-50% + 7px));
+}
+
+.timeline-divider {
+    grid-column: 2 / -1;
+    height: 1px;
+    background: rgba(26, 28, 30, 0.08);
+    align-self: start;
+    margin-top: -1px;
+    z-index: 1;
+}
+
+.timeline-divider.first-slot-divider {
+    margin-top: 7px;
+}
+
+.timeline-break-indicator {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: var(--time-col-width) 1fr;
+    align-items: center;
+    margin: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.timeline-break-label {
+    justify-self: end;
+    margin-right: 8px;
+    width: calc(var(--time-col-width) - 14px);
+    padding: 1px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    color: #6b778d;
+    background: var(--bg);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.08;
+    white-space: normal;
+    text-transform: uppercase;
+    text-align: right;
+    overflow: visible;
+}
+
+.timeline-break-label .to-line {
+    opacity: 0.9;
+}
+
+.timeline-break-line {
+    align-self: center;
+    height: 8px;
+    margin: 0 8px 0 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'%3E%3Cpath d='M0 6.5 L6 1.5 L12 6.5 L18 1.5 L24 6.5' fill='none' stroke='%236b778d' stroke-width='1.0' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.45'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 24px 8px;
+    background-position: left center;
+}
+
+.schedule-item {
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    justify-self: stretch;
+    width: 100%;
+    padding: 3px;
+}
+
+.schedule-item .session-card,
+.schedule-item .event-card {
+    width: 100%;
+    max-width: none;
+}
+
+.schedule-item.ad-span-item {
+    justify-self: stretch;
+    width: 100%;
+}
+
+.schedule-item.ad-span-item .session-card,
+.schedule-item.ad-span-item .session-title {
+    width: 100%;
+    max-width: none;
+}
+
+.schedule-item.overlay-item {
+    z-index: 8;
+}
+
+.schedule-item.track-faded .session-card,
+.schedule-item.track-faded .event-card {
+    opacity: 0.22;
+    filter: saturate(0.55);
+    transition: opacity 0.16s ease, filter 0.16s ease;
+}
+
+/* ─── TIME ROWS ─── */
+.time-rows { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+
+.time-row {
+    display: grid;
+    align-items: stretch;
+    gap: 8px;
+}
+.time-col {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-top: 12px;
+    padding-right: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ─── FULL-WIDTH EVENTS (breaks, plenary) ─── */
+.full-width-cell {
+    grid-column: 2 / -1; /* span all room columns */
+}
+.event-card {
+    background: rgba(255, 255, 255, 0.60);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.event-card.plenary,
+.event-card.break-card {
+    border: none;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: none;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 14px;
+}
+
+.event-card.break-card {
+    background: var(--column-bg-solid);
+}
+
+.event-card.meal-card {
+    background: #e7f5f2;
+    border: none;
+    color: #3aae9d;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: none;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%233aae9d' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.4'/%3E%3C/svg%3E");
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 14px;
+}
+
+/* Banquet — separately ticketed evening event (muted bluish lavender) */
+.event-card.banquet-card {
+    background: #e6ddf0;
+    border: none;
+    color: #6b5b95;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: none;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%236b5b95' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.45'/%3E%3C/svg%3E");
+    justify-content: center;
+    align-items: center;
+    padding: 0 12px;
+    text-align: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ticket-required {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b5b95;
+    opacity: 0.85;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.ticket-required svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+/* Per-column break number cell in desktop timetable */
+.event-card.break-col {
+    background: var(--column-bg-solid);
+    border: none;
+    color: #4a5568;
+    box-shadow: none;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+    justify-content: center;
+    align-items: center;
+    padding: 0 8px;
+    text-align: center;
+}
+
+/* Per-column meal number cell in desktop timetable */
+.event-card.meal-col {
+    background: #e7f5f2;
+    border: none;
+    color: #3aae9d;
+    box-shadow: none;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%233aae9d' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.4'/%3E%3C/svg%3E");
+    justify-content: center;
+    align-items: center;
+    padding: 0 8px;
+    text-align: center;
+}
+
+.break-col-line {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #4a5568;
+    opacity: 0.62;
+    white-space: nowrap;
+}
+
+.meal-col-line {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #3aae9d;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+/* Banquet column variant — muted bluish lavender */
+.event-card.banquet-col {
+    background: #e6ddf0;
+    border: none;
+    color: #6b5b95;
+    box-shadow: none;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%236b5b95' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.45'/%3E%3C/svg%3E");
+    justify-content: center;
+    align-items: center;
+    padding: 0 8px;
+    text-align: center;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.banquet-col-line {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #6b5b95;
+    white-space: nowrap;
+}
+
+/* Frosted style for plenary cards in My Schedule (starred) view */
+#scheduleContainer.starred-view .event-card.plenary {
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+#scheduleContainer.starred-view .event-card.break-card {
+    background: var(--column-bg-solid);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+    box-shadow: none;
+    color: #4a5568;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 14px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    min-height: 44px;
+}
+
+#scheduleContainer.starred-view .event-card.meal-card {
+    background: #e7f5f2;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%233aae9d' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.4'/%3E%3C/svg%3E");
+    box-shadow: none;
+    color: #3aae9d;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 14px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    min-height: 44px;
+}
+
+#scheduleContainer.starred-view .event-card.banquet-card {
+    background: #e6ddf0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%236b5b95' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.45'/%3E%3C/svg%3E");
+    box-shadow: none;
+    color: #6b5b95;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    text-align: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 44px;
+}
+
+/* ─── SESSION CARDS ─── */
+.session-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    height: 100%;
+    overflow: hidden;
+    transition: box-shadow 0.18s, transform 0.18s;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 3px 8px rgba(15, 23, 42, 0.07);
+}
+.session-card:hover {
+    box-shadow:
+        0 4px 12px rgba(15, 23, 42, 0.10),
+        0 1px 3px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+}
+.session-card:active {
+    transform: scale(0.975);
+    box-shadow:
+        0 1px 4px rgba(15, 23, 42, 0.08);
+    filter: brightness(0.93);
+    transition: transform 0.08s, box-shadow 0.08s, filter 0.08s;
+}
+/* When the star button is being pressed/hovered, don't apply the parent card's
+   :active scale/filter — otherwise the card shrinks under the cursor on mousedown
+   and the mouseup lands outside the star, making the click target the card. */
+.session-card:has(.star-btn:active),
+.session-card:has(.star-btn:hover),
+.session-card.medtronic-highlight:has(.star-btn:active),
+.session-card.medtronic-highlight:has(.star-btn:hover) {
+    transform: none !important;
+    filter: none !important;
+}
+.session-card.medtronic-highlight {
+    box-shadow:
+        0 0 0 2.5px rgba(0, 123, 255, 0.72),
+        0 3px 12px rgba(0, 123, 255, 0.22);
+}
+.session-card.medtronic-highlight:hover {
+    box-shadow:
+        0 0 0 2.5px rgba(0, 123, 255, 0.85),
+        0 6px 18px rgba(0, 123, 255, 0.28);
+}
+.session-card.medtronic-highlight:active {
+    transform: scale(0.975);
+    filter: brightness(0.93);
+    transition: transform 0.08s, filter 0.08s;
+}
+.session-card.filtered-out { display: none; }
+.session-card.search-hidden { display: none; }
+.session-card.has-details::after { content: none; }
+
+.track-stripe {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    border-radius: 4px;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+    padding-right: 22px;
+}
+
+.card-top.has-room {
+    flex-wrap: wrap;
+}
+
+.card-top.has-room .room-name-mobile {
+    flex: 0 0 100%;
+    margin-bottom: 3px;
+    padding-right: 22px;
+}
+
+.card-top.has-room .track-badge {
+    min-width: 0;
+}
+.track-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    opacity: 0.85;
+    flex: 1;
+}
+.star-btn {
+    font-size: 16px;
+    color: #d0d4dc;
+    cursor: pointer;
+    transition: color 0.15s, transform 0.15s;
+    line-height: 1;
+    flex-shrink: 0;
+    padding: 6px;
+    background: none;
+    border: none;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    margin-right: 0;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+}
+.star-btn:hover { transform: scale(1.2); }
+.star-btn:active { transform: scale(0.85); filter: brightness(0.8); transition: transform 0.08s, filter 0.08s; }
+.star-btn.active { color: var(--star-color); }
+
+/* ─── OVERLAP INDICATORS (My Schedule) ───
+   Same-start overlaps are wrapped in a soft container with track-color
+   dots above the stacked sessions — reads as "here are your N picks at
+   this time," not as an error. */
+.overlap-group {
+    position: relative;
+    border: none;
+    border-radius: 12px;
+    background: #fcfcfd;
+    padding: 10px 10px 12px;
+}
+.overlap-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 10px;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1;
+}
+.overlap-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.overlap-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+.overlap-group-label {
+    color: #6b7280;
+    letter-spacing: 0.01em;
+}
+.overlap-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+/* Boundary chip surfaced inside an .overlap-group when one of the cluster
+   members starts or ends at a time that's not the cluster's own start/end —
+   i.e. an internal transition point where the attendee may want to
+   reconsider which session to be in. */
+.cluster-boundary-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.35;
+    padding: 2px 0;
+}
+/* Only stack into a column when there are MORE than 3 segments. With
+   3 or fewer, keep them inline (separated by a bullet) so a small
+   cluster reads as one tidy line. */
+.cluster-boundary-chip:not(:has(> .cluster-boundary-seg:nth-child(4))) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+}
+.cluster-boundary-chip .cluster-boundary-seg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+.cluster-boundary-chip .cluster-boundary-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+/* Inner time-rows inside a cluster: pulled left so the time-col aligns
+   with the day's rail (outside the cluster's bg), while content sits
+   in the cluster's content column. Each inner row's .time-col is its
+   own sticky element, so boundary times push each other out exactly
+   like the outer day's time-col labels. */
+.overlap-group .overlap-group-items {
+    gap: 8px;
+}
+.overlap-group .cluster-time-row {
+    display: grid;
+    align-items: stretch;
+    margin-left: calc(-1 * (var(--time-col-width) + 8px + 10px));
+    width: calc(100% + var(--time-col-width) + 8px + 10px);
+    column-gap: 18px;  /* outer time-row gap (8) + cluster padding-left (10) */
+}
+.overlap-group .cluster-time-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.overlap-others {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.10);
+    font-family: 'Google Sans', sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #8a8a8a;
+}
+.overlap-others-label {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #a8a8a8;
+}
+.overlap-others-list {
+    color: #6f6f6f;
+}
+.overlap-others-list .overlap-peer + .overlap-peer::before {
+    content: " · ";
+    color: #c4c4c4;
+}
+.overlap-peer-title {
+    font-weight: 500;
+    color: #4a4a4a;
+}
+.overlap-peer-room {
+    color: #9a9a9a;
+}
+
+/* My Schedule edit-mode toolbar — overlays at the same y as the sticky day heading. */
+.starred-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0;
+    min-height: var(--starred-day-sticky-height);
+    box-sizing: border-box;
+    font-family: 'Google Sans', sans-serif;
+    position: sticky;
+    top: var(--desktop-room-sticky-top, 0px);
+    z-index: 70;
+    background: transparent;
+    margin-bottom: calc(-1 * var(--starred-day-sticky-height));
+    pointer-events: none;
+}
+.starred-toolbar > * {
+    pointer-events: auto;
+}
+.starred-edit-status {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.starred-edit-actions {
+    display: inline-flex;
+    gap: 6px;
+}
+.starred-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    border: none;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Google Sans', sans-serif;
+    background: #f0f2f5;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.3;
+}
+.starred-edit-btn:hover { background: #e8eaed; color: var(--primary); }
+.starred-edit-btn:active {
+    background: #d5dbe5;
+    transform: scale(0.95);
+    transition: transform 0.08s, background 0.08s;
+}
+.starred-edit-btn.starred-edit-remove {
+    background: #fdecea;
+    color: #c0392b;
+}
+.starred-edit-btn.starred-edit-remove:hover {
+    background: #f9d6d2;
+    color: #a4291c;
+}
+.starred-edit-btn.starred-edit-remove:active {
+    background: #f0bdb6;
+    transform: scale(0.95);
+}
+.starred-edit-btn.starred-edit-remove:disabled {
+    background: #f0f2f5;
+    color: var(--text-secondary);
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.starred-edit-btn.starred-edit-share {
+    background: #eef4ff;
+    color: var(--primary);
+}
+.starred-edit-btn.starred-edit-share:hover {
+    background: #dbe7ff;
+    color: #1a4fb8;
+}
+.starred-edit-btn.starred-edit-share:active {
+    background: #c7d8fc;
+    transform: scale(0.95);
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(20, 24, 32, 0.94);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Google Sans', sans-serif;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 300;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Share modal */
+.share-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.32);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 260;
+    padding: 16px;
+}
+.share-modal.show { display: flex; }
+.share-modal-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 22px 18px;
+    width: min(380px, 100%);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.24);
+    font-family: 'Google Sans', sans-serif;
+    text-align: center;
+}
+.share-modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text-main);
+}
+.share-modal-desc {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin-bottom: 16px;
+}
+.share-modal-qr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    margin: 0 auto 14px;
+    width: 252px;
+    height: 252px;
+    box-sizing: border-box;
+}
+.share-modal-qr svg, .share-modal-qr img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    shape-rendering: crispEdges;
+}
+.share-modal-qr.qr-loading {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+.share-modal-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+}
+.share-modal-count strong { color: var(--text-main); font-weight: 600; }
+.share-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Pick-one-keep-one conflict resolver modal. Lives on top of
+   the Now & Next view; opened from the overlap hint. */
+.pick-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.32);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 270;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+.pick-modal.show { opacity: 1; pointer-events: auto; }
+.pick-modal-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px;
+    width: min(460px, 100%);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.24);
+    font-family: 'Google Sans', sans-serif;
+}
+.pick-modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+.pick-modal-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin-bottom: 16px;
+}
+.pick-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.pick-modal-item {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, transform 0.08s;
+    background: #fff;
+    box-sizing: border-box;
+}
+.pick-modal-item:hover {
+    border-color: color-mix(in srgb, var(--text-main) 40%, transparent);
+    background: rgba(0, 0, 0, 0.02);
+}
+.pick-modal-item:active { transform: scale(0.99); }
+.pick-modal-item:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+.pick-modal-item.is-starred {
+    border-color: color-mix(in srgb, var(--text-main) 35%, var(--border));
+}
+.pick-modal-item.is-decided {
+    border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+    background: color-mix(in srgb, var(--primary) 5%, #fff);
+}
+.pick-modal-item.is-decided .pick-modal-keep {
+    color: var(--primary);
+}
+.pick-modal-item.is-fixed {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+.pick-modal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    flex: 0 0 auto;
+}
+.pick-modal-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+.pick-modal-item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pick-modal-item-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pick-modal-item-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.35;
+    white-space: normal;
+    opacity: 0.85;
+}
+.pick-modal-keep {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+.pick-modal-item.is-fixed .pick-modal-keep {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.pick-modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+.pick-modal-clear {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.pick-modal-clear:hover {
+    color: var(--text-main);
+    background: rgba(0, 0, 0, 0.04);
+    border-color: color-mix(in srgb, var(--text-main) 30%, transparent);
+}
+.pick-modal-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.12s, border-color 0.12s;
+}
+.pick-modal-cancel:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: color-mix(in srgb, var(--text-main) 30%, transparent);
+}
+
+/* Edit entry point: quiet text link, no chip styling. */
+.starred-edit-link {
+    background: none;
+    border: none;
+    padding: 4px 2px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Google Sans', sans-serif;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.12s, transform 0.08s;
+    line-height: 1.3;
+}
+.starred-edit-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.starred-edit-link:active {
+    transform: scale(0.95);
+}
+
+/* In My Schedule, star is just a visual indicator (no interaction).
+   Edit mode lets the whole card be tapped for selection. */
+#scheduleContainer.starred-view .star-btn {
+    cursor: default;
+    pointer-events: none;
+}
+#scheduleContainer.starred-view.edit-mode .session-card,
+#scheduleContainer.starred-view.edit-mode .event-card.plenary {
+    cursor: pointer;
+}
+#scheduleContainer.starred-view.edit-mode .star-btn {
+    color: var(--text-secondary);
+}
+#scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal .session-card,
+#scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal .event-card {
+    outline: 2px solid #c0392b;
+    outline-offset: -2px;
+}
+#scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal {
+    opacity: 0.55;
+}
+#scheduleContainer.starred-view.edit-mode .mobile-card-wrap.marked-for-removal .star-btn {
+    color: #c0392b;
+}
+
+.session-title {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.35;
+    margin-bottom: 4px;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: block;
+    overflow: visible;
+    word-break: break-word;
+}
+
+.session-card.has-inline-keynote-abstract .session-title {
+    flex: 0 0 auto;
+    margin-bottom: 2px;
+}
+
+.keynote-abstract {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #2f3f57;
+    font-weight: 500;
+    white-space: pre-line;
+    display: -webkit-box;
+    line-clamp: 8;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+    gap: 4px;
+}
+
+.session-authors {
+    font-size: 10px;
+    color: var(--text-secondary);
+    flex: 1;
+    line-height: 1.3;
+    min-width: 0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.transfer-row {
+    margin: 0;
+    display: flex;
+    width: 100%;
+}
+
+/* Quiet default: a single line of inline text. No frame. */
+.transfer-chip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 11px;
+    line-height: 1.3;
+    padding: 4px 4px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.transfer-chip .transfer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--text-secondary);
+}
+
+.transfer-chip .transfer-room {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 0;
+}
+
+.transfer-chip .transfer-room-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.transfer-chip .transfer-room-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    position: relative;
+    top: -0.5px;
+}
+
+/* Multi-room (3+) variant: rooms stack as a list on their own row. */
+.transfer-chip.multi .transfer-room-list {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 2px 0 0 22px;
+    padding: 0;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.transfer-chip.multi .transfer-room-list .transfer-room-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.transfer-chip .transfer-prep {
+    color: var(--text-secondary);
+    font-weight: 400;
+    flex-shrink: 0;
+    margin-right: -4px;
+}
+
+.transfer-chip .transfer-meta {
+    color: var(--text-secondary);
+    font-weight: 400;
+    flex-shrink: 0;
+}
+
+.transfer-chip .transfer-meta::before {
+    content: '·';
+    margin-right: 8px;
+    color: var(--text-secondary);
+    opacity: 0.55;
+}
+
+.transfer-chip.multi .transfer-meta::before {
+    content: none;
+}
+.transfer-chip.multi .transfer-meta::after {
+    content: ':';
+}
+
+/* Overlap: same quiet style as a regular transfer; only the "mid-session" word is red. */
+.transfer-chip.is-overlap .mid-session-mark {
+    color: #c0392b;
+    font-weight: 600;
+}
+
+.transfer-chip.is-return {
+    display: none;
+}
+
+/* Group free-time + transfer rows into one visual unit. */
+.transition-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+}
+.transition-block > .free-row + .transfer-row {
+    margin-top: -6px;
+}
+
+/* Free-time row: looks like a break-card but distinct (cooler tone, lighter background). */
+.free-row {
+    margin: 0;
+    display: flex;
+    width: 100%;
+}
+.free-chip {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: 11px;
+    line-height: 1.3;
+    padding: 4px 4px;
+    border: none;
+    background: transparent;
+    color: #4f6280;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.free-chip .free-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 14px;
+    height: 13px;
+    color: #6f8099;
+}
+.free-chip .free-icon svg {
+    width: 13px;
+    height: 13px;
+    display: block;
+}
+.free-chip .free-amount {
+    font-weight: 600;
+    color: #4f6280;
+    flex-shrink: 0;
+}
+.free-chip .free-window {
+    color: #6f8099;
+    font-weight: 500;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.free-chip .free-window::before {
+    content: '·';
+    margin-right: 8px;
+    color: #6f8099;
+    opacity: 0.55;
+}
+
+.duration-tag {
+    font-size: 10px;
+    font-weight: 700;
+    background: #f0f2f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    margin-right: -4px;
+}
+
+.abstract-panel {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #3a3d44;
+}
+.abstract-panel.show { display: block; }
+
+.details-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.24);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    z-index: 240;
+}
+
+.details-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.details-panel {
+    position: fixed;
+    width: min(var(--popover-width), calc(100vw - 32px));
+    max-height: min(72vh, 640px);
+    overflow: hidden;
+    background: #fff;
+    border: none;
+    border-radius: 18px;
+    box-shadow:
+        0 8px 32px rgba(15, 23, 42, 0.16),
+        0 2px 8px rgba(15, 23, 42, 0.08),
+        0 0 0 1px rgba(15, 23, 42, 0.04);
+    padding: 18px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 250;
+}
+
+.details-panel.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.details-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.details-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 0;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: transparent;
+}
+
+.details-title {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 700;
+    padding-right: 32px;
+    margin-bottom: 12px;
+}
+
+.details-scroll-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.details-scroll-wrap::before,
+.details-scroll-wrap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 6px;
+    height: 24px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    z-index: 2;
+}
+
+.details-scroll-wrap::before {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0));
+}
+
+.details-scroll-wrap::after {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0));
+}
+
+.details-panel.has-scroll-top .details-scroll-wrap::before,
+.details-panel.has-scroll-bottom .details-scroll-wrap::after {
+    opacity: 1;
+}
+
+.details-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 6px;
+    margin-right: -6px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.details-scroll::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.details-meta {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #394150;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.details-meta strong {
+    color: var(--text-main);
+}
+
+.details-abstract {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #293241;
+    border-top: 1px solid #e8ebf0;
+    padding-top: 14px;
+    white-space: pre-line;
+}
+
+/* ─── MOBILE: track-based list view ─── */
+@media (max-width: 700px) {
+    body.topbar-compact header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        height: auto;
+        padding: 8px var(--page-gutter) 6px;
+        gap: 4px;
+    }
+    body.topbar-compact header h1 {
+        width: 100%;
+        font-size: 1rem;
+        line-height: 1.2;
+        flex: initial;
+    }
+    body.topbar-compact .header-right {
+        width: 100%;
+        flex: 1 1 100%;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+    body.topbar-compact #searchBar {
+        width: 100%;
+        min-width: 0;
+    }
+    body.topbar-compact .tabs {
+        width: 100%;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+    :root { --time-col-width: 52px; --page-gutter: 12px; }
+    header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        height: auto;
+        padding: 12px var(--page-gutter) 10px;
+        gap: 8px;
+    }
+    header h1 {
+        width: 100%;
+        font-size: 1rem;
+        line-height: 1.35;
+        padding: 4px 0 2px;
+        margin-bottom: 2px;
+    }
+    .header-right {
+        justify-content: flex-start;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    #searchBar { width: 100%; }
+    .tabs {
+        flex-wrap: nowrap;
+        overflow-x: visible;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        gap: 6px;
+        width: 100%;
+    }
+    .tabs .tab-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 5px 10px;
+        font-size: 10px;
+        border-radius: 999px;
+        background: #fff;
+    }
+    .tabs .tab-btn.starred-tab {
+        margin-left: auto;
+    }
+    .tabs .tab-btn.active {
+        background: #dbe7ff;
+        color: #1f3f7a;
+        border: none;
+    }
+    .tabs .tab-btn.starred-tab.active {
+        background: var(--star-color);
+        color: #ffffff;
+    }
+    .medtronic-legend { display: none; }
+
+    .track-filters {
+        padding: 6px var(--page-gutter);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        white-space: nowrap;
+    }
+    .track-filters::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    .filter-label,
+    .track-chip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .room-header-row { display: none; }
+
+    .schedule-shell {
+        overflow-x: visible;
+        padding: 0;
+    }
+
+    .schedule-canvas {
+        min-width: 0;
+    }
+
+    /* On mobile, room name appears in the card header */
+    .card-top { flex-wrap: wrap; }
+    .room-name-mobile {
+        font-size: 11px;
+        font-weight: 600;
+        color: #4a5a72;
+        width: 100%;
+        margin-bottom: 3px;
+        text-transform: none;
+        letter-spacing: 0.01em;
+        line-height: 1.2;
+        border-radius: 3px;
+    }
+
+    .time-row { grid-template-columns: var(--time-col-width) 1fr !important; }
+    .full-width-cell { grid-column: 2 / -1; }
+
+    /* stack room-columns vertically inside each time slot */
+    .sessions-in-row { display: flex; flex-direction: column; gap: 6px; }
+
+    .mobile-day-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 var(--page-gutter) 48px;
+    }
+
+    #scheduleContainer.starred-view {
+        padding: 0 var(--page-gutter) 44px;
+    }
+
+    /* Avoid double-padding: container already insets 8px, so inner list should not add more. */
+    #scheduleContainer.starred-view .mobile-day-list {
+        padding-left: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+    }
+
+    .day-heading {
+        padding: 12px 8px 4px;
+    }
+
+    /* Mobile My Schedule: sticky day row that gets pushed by the next day. */
+    #scheduleContainer.starred-view .day-heading {
+        position: sticky;
+        top: var(--mobile-time-sticky-top, 0px);
+        z-index: 60;
+        background: var(--bg);
+        min-height: var(--starred-day-sticky-height);
+        padding-top: 8px;
+        padding-left: 0;
+        padding-right: 0;
+        padding-bottom: 8px;
+        margin-bottom: 2px;
+    }
+
+    .mobile-time-group {
+        display: grid;
+        grid-template-columns: var(--time-col-width) 1fr;
+        gap: 8px;
+        align-items: start;
+    }
+
+    /* Mobile: use native sticky time labels so each time is pushed out by the next one. */
+    .mobile-time-group .time-col,
+    .cluster-time-row .time-col {
+        position: sticky;
+        top: var(--mobile-time-sticky-top, 0px);
+        z-index: 14;
+        align-self: start;
+        background: var(--bg);
+        padding-top: 0;
+        padding-bottom: 2px;
+    }
+    /* Empty outer time-col (cluster-bearing row): yields its sticky
+       slot to the cluster's inner labels so the previous row's time
+       stays sticky until the first inner label scrolls into view. */
+    .mobile-time-group .time-col.time-col-empty {
+        position: static;
+        background: transparent;
+    }
+
+    #scheduleContainer.starred-view .mobile-time-group .time-col,
+    #scheduleContainer.starred-view .cluster-time-row .time-col {
+        top: calc(var(--mobile-time-sticky-top, 0px) + var(--starred-day-sticky-height));
+    }
+
+    .mobile-time-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .mobile-card-wrap {
+        min-height: auto;
+        width: 100%;
+        padding: 3px 0;
+    }
+
+    .mobile-card-wrap .session-card,
+    .mobile-card-wrap .event-card {
+        height: auto;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .session-title {
+        max-height: calc(1.35em * 5);
+    }
+
+    .session-authors {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .session-card.wide-title-card .session-title {
+        max-height: calc(1.35em * 8);
+    }
+
+    .details-panel {
+        left: max(12px, calc(env(safe-area-inset-left) + 8px)) !important;
+        right: max(12px, calc(env(safe-area-inset-right) + 8px)) !important;
+        bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+        top: auto !important;
+        width: auto;
+        max-height: min(76vh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 28px));
+        border-radius: 28px 28px 24px 24px;
+        transform: translateY(24px);
+    }
+
+    /* Frosted plenary cards in mobile stacked view */
+    .event-card.plenary {
+        background: rgba(255, 255, 255, 0.62);
+        box-shadow: none;
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+    }
+
+    /* Keep true breaks dashed on mobile */
+    .event-card.break-card {
+        background: var(--column-bg-solid);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%234a5568' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.35'/%3E%3C/svg%3E");
+        box-shadow: none;
+        color: #4a5568;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 14px;
+    }
+
+    /* Meal cards dashed with blue on mobile */
+    .event-card.meal-card {
+        background: #e7f5f2;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%233aae9d' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.4'/%3E%3C/svg%3E");
+        box-shadow: none;
+        color: #3aae9d;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 14px;
+    }
+
+    /* Banquet card on mobile — muted bluish lavender, ticketed */
+    .event-card.banquet-card {
+        background: #e6ddf0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%236b5b95' stroke-width='3.0' stroke-dasharray='6%2C4' stroke-opacity='0.45'/%3E%3C/svg%3E");
+        box-shadow: none;
+        color: #6b5b95;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 12px;
+        text-align: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+}
+
+/* ─── COMPACT TIMETABLE HEADER (Fold inner screen range) ─── */
+@media (min-width: 701px) and (max-width: 800px) {
+    header {
+        flex-wrap: nowrap;
+        align-items: center;
+        padding: 6px var(--page-gutter);
+        gap: 6px;
+        height: auto;
+    }
+    header h1 {
+        width: auto;
+        font-size: 0.96rem;
+        line-height: 1.15;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+    .header-right {
+        width: auto;
+        min-width: 0;
+        flex: 1;
+        gap: 6px;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+    }
+    #searchBar {
+        width: 140px;
+        min-width: 140px;
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+    .tabs {
+        flex-wrap: nowrap;
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        width: auto;
+    }
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .tabs .tab-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        font-size: 10px;
+        padding: 4px 10px;
+        border-radius: 16px;
+    }
+    .track-filters {
+        flex-wrap: nowrap;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        white-space: nowrap;
+        padding: 6px var(--page-gutter);
+    }
+    .track-filters::-webkit-scrollbar {
+        display: none;
+    }
+    .filter-label,
+    .track-chip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+}
+
+/* ─── STARRED VIEW ─── */
+.day-heading {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 12px 8px 4px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+#scheduleContainer.starred-view .starred-day-section {
+    position: relative;
+    isolation: isolate;
+    background: var(--bg);
+}
+
+/* Solid 1px border on My Schedule cards. With box-sizing: border-box the
+   border is rendered inside the card's box, so the visible card edge is
+   exactly the section boundary — no shadow extending below to bleed past
+   sticky turnover. Border is visible at all times. */
+#scheduleContainer.starred-view .session-card {
+    border: 1px solid var(--border);
+    box-shadow: none;
+}
+
+#scheduleContainer.starred-view .day-heading::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    width: 100vw;
+    height: 100%;
+    background: var(--bg);
+    pointer-events: none;
+    z-index: -1;
+}
+
+@media (min-width: 701px) {
+    /* Desktop: extend day-heading's full-width background 2px above its top edge
+       so that when the heading enters the sticky lane, it covers the previous day's
+       last 2px of content that would otherwise sit visible in the gap between
+       page-header and the still-transitioning heading. */
+    #scheduleContainer.starred-view .day-heading::before {
+        top: -2px;
+        height: calc(100% + 2px);
+    }
+
+    /* Desktop My Schedule: keep day label pinned at top. */
+    #scheduleContainer.starred-view .day-heading {
+        position: sticky;
+        top: var(--desktop-room-sticky-top);
+        z-index: 60;
+        background: var(--bg);
+        min-height: var(--starred-day-sticky-height);
+        padding-top: 8px;
+        padding-left: 0;
+        padding-right: 0;
+        padding-bottom: 8px;
+        margin-bottom: 2px;
+    }
+
+    /* Desktop My Schedule: native sticky time labels that push each other out. */
+    #scheduleContainer.starred-view .time-row .time-col {
+        position: sticky;
+        top: calc(var(--desktop-room-sticky-top) + var(--starred-day-sticky-height));
+        z-index: 14;
+        align-self: start;
+        background: var(--bg);
+        padding-top: 0;
+        padding-bottom: 2px;
+    }
+    #scheduleContainer.starred-view .time-row .time-col.time-col-empty {
+        position: static;
+        background: transparent;
+    }
+}
+
+.no-results {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* ─── LEGEND ─── */
+.medtronic-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--medtronic-blue);
+    font-weight: 600;
+    padding: 3px 10px;
+    border: 1.5px solid var(--medtronic-blue);
+    border-radius: 12px;
+    background: #f0f6ff;
+}
+.medtronic-legend::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--medtronic-blue);
+}
+
+.scroll-indicator-row {
+    position: sticky;
+    top: 0;
+    z-index: 195;
+    isolation: isolate;
+    height: 0;
+    overflow: visible;
+    padding: 0;
+    pointer-events: none;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+}
+
+.scroll-indicator-inner {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 8px;
+    min-height: var(--scroll-indicator-reserve);
+}
+
+.scroll-indicator-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 36px;
+    background: transparent;
+    z-index: 1;
+}
+
+.scroll-indicator-row.is-starred::before {
+    /* My Schedule: right side is empty so full width is fine */
+    width: 100%;
+    background: var(--bg);
+    height: 36px;
+}
+
+.scroll-indicator-row.active {
+    background: transparent;
+    opacity: 1;
+}
+
+.scroll-indicator-row.starred-floating {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: auto;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 210;
+    opacity: 1;
+}
+
+.scroll-indicator-day-label {
+    display: none;
+    position: relative;
+    z-index: 2;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Google Sans', sans-serif;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.scroll-indicator-row.active .scroll-indicator-day-label.show {
+    display: inline;
+}
+
+.scroll-date-time-indicator {
+    display: inline-block;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    width: var(--time-col-width);
+    max-width: var(--time-col-width);
+    padding: 0 8px 0 0;
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: right;
+    transform: translateY(-4px);
+}
+
+.scroll-date-time-indicator.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scroll-date-time-indicator.starred-floating-pill {
+    width: 208px;
+    max-width: 208px;
+    padding: 8px 12px;
+    margin-top: 2px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(31, 37, 48, 0.96), rgba(16, 20, 28, 0.94));
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 20px rgba(9, 12, 18, 0.34), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    backdrop-filter: blur(6px);
+    color: #ffffff;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.scroll-date-time-indicator.starred-floating-pill.show {
+    transform: none;
+}
+
+.scroll-date-time-indicator.starred-floating-pill .scroll-indicator-time-wrap {
+    height: 16px;
+    line-height: 16px;
+}
+
+.scroll-indicator-time-wrap {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    height: 14px;
+    line-height: 14px;
+    overflow: hidden;
+}
+
+.scroll-date-time-indicator.two-line .scroll-indicator-time-wrap {
+    height: auto;
+    line-height: 1.15;
+    overflow: visible;
+}
+
+.scroll-date-time-indicator.two-line {
+    width: var(--time-col-width);
+    max-width: var(--time-col-width);
+    padding: 0 8px 0 0;
+    font-family: 'Google Sans', sans-serif;
+    letter-spacing: 0.03em;
+}
+
+.scroll-date-time-indicator.two-line .scroll-indicator-time {
+    white-space: pre-line;
+    display: block;
+    width: 100%;
+    text-align: right;
+    line-height: 1.1;
+}
+
+.scroll-indicator-time {
+    display: block;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.scroll-indicator-time.current {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.scroll-indicator-time.next {
+    position: absolute;
+    inset: 0;
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.scroll-date-time-indicator.time-push .scroll-indicator-time.current {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.scroll-date-time-indicator.time-push .scroll-indicator-time.next {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ─── My Schedule: highlight the currently in-progress session ─── */
+.mobile-time-group.is-current .session-card,
+.mobile-time-group.is-current .event-card,
+.schedule-item.is-current .session-card,
+.schedule-item.is-current .event-card,
+.overlap-group.is-current {
+    box-shadow: 0 0 0 2px var(--primary), 0 6px 18px rgba(26, 115, 232, 0.18);
+}
+.mobile-time-group.is-current .time-col {
+    color: var(--primary);
+    font-weight: 700;
+}
+.now-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+    padding: 1px 7px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--primary);
+    border-radius: 999px;
+    vertical-align: middle;
+}
+.now-pill::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.7);
+    animation: nowPulse 1.6s ease-out infinite;
+}
+@keyframes nowPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+    70%  { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+
+/* "Jump to now" floating button on My Schedule */
+.jump-to-now-btn {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font: 600 0.85rem/1 'Google Sans', system-ui, sans-serif;
+    box-shadow: 0 6px 18px rgba(26, 115, 232, 0.35);
+    cursor: pointer;
+}
+.jump-to-now-btn.show { display: inline-flex; }
+.jump-to-now-btn:hover { filter: brightness(1.05); }
+.jump-to-now-btn .arrow { font-size: 1rem; line-height: 1; }
+/* ─── Now & Next view ───
+   Both mobile and desktop use the same panel-based design:
+     • Sections are card panels (rounded, bordered, light shadow).
+     • Now is the hero — large title, horizontal progress bar.
+     • Next + Thereafter are compact list panels. Each row gets a
+       3px left color tab (track color) instead of a connecting
+       rail.
+   Desktop only changes the layout (Now sticky on the left, Next
+   and Thereafter stacked on the right) and bumps a few sizes. */
+#scheduleContainer.now-next-view {
+    padding: 16px var(--page-gutter) 24px var(--page-gutter);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    font-feature-settings: "ss01", "cv11";
+    --nn-stack-gap: 14px;
+}
+.nn-section {
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 18px 10px;
+    position: relative;
+}
+/* Interlude slot: the entire slot section IS the dashed
+   lunch/break card. No white chrome around it; the inner
+   row drops its own dashed wrapper since the section now
+   carries it. */
+.nn-section.nn-section-interlude {
+    --interlude-color: #6b5b95;
+    background: transparent;
+    border: 2px dashed var(--interlude-color);
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: none;
+}
+.nn-section.nn-section-meal {
+    --interlude-color: #3aae9d;
+}
+.nn-section.nn-section-interlude.nn-section-interlude .nn-section-header,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-section-title,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-section-time,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-row-title,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-row-meta,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-row-time,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-row-sep,
+.nn-section.nn-section-interlude.nn-section-interlude .nn-row-room {
+    color: var(--interlude-color);
+}
+.nn-section.nn-section-interlude .nn-row-wrap.nn-row-interlude {
+    border: none;
+    padding: 0;
+}
+/* "Which talk are you in?" prompt: amber call-to-action
+   rendered above the Happening Now hero whenever the path's
+   interval at `now` is an unresolved overlap (≥2 starred
+   sessions, no resolution recorded). Resolving this single
+   decision collapses downstream node multiplication. */
+.nn-now-prompt {
+    all: unset;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 2px;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(254, 243, 199, 0.6);
+    border: 1px solid rgba(234, 88, 12, 0.45);
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.nn-now-prompt:hover {
+    background: rgba(254, 243, 199, 0.9);
+}
+.nn-now-prompt:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+.nn-now-prompt-title {
+    grid-column: 1;
+    grid-row: 1;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #92400e;
+}
+.nn-now-prompt-desc {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+.nn-now-prompt-chev {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-size: 1.3rem;
+    color: #92400e;
+    opacity: 0.75;
+}
+.nn-section.is-now {
+    padding: 22px 20px 12px;
+}
+
+/* "Stay" bridge: a stay decision fires DURING an ongoing
+   session. The previous slot's card (top bun) flattens its
+   bottom; the bridge node row attaches directly under it;
+   the next slot's card (bottom bun) flattens its top and
+   drops the duplicated chosen-session row, keeping ONLY the
+   parallel "other sessions" list (which differs per slot).
+   Doubled selectors bump specificity above is-day-slot. */
+.nn-section.nn-stay-flat-bottom,
+.nn-section.is-day-slot.nn-stay-flat-bottom,
+.nn-section.is-now.nn-stay-flat-bottom {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 0;
+    padding-bottom: 4px;
+}
+.nn-section.nn-stay-flat-top,
+.nn-section.is-day-slot.nn-stay-flat-top {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: 0;
+    margin-top: calc(-1 * var(--nn-stack-gap, 14px));
+    padding-top: 12px;
+}
+.nn-section.is-day-slot.nn-stay-flat-top .nn-section-header {
+    padding-bottom: 6px;
+}
+.nn-decision-node.nn-stay-bridge {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-top: 1px dashed var(--border);
+    border-bottom: 1px dashed var(--border);
+    border-radius: 0;
+    margin: calc(-1 * var(--nn-stack-gap, 14px)) 0 0 0;
+    padding: 8px 18px;
+}
+/* Inside a stay-bridge the inline node row drops its own
+   dashed border so the bridge reads as a single continuous
+   panel of the same color. */
+.nn-decision-node.nn-stay-bridge .nn-node-row-wrap {
+    border-color: transparent;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+}
+.nn-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0 10px 0;
+}
+.nn-section-title {
+    font-family: 'Google Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+.nn-section.is-now .nn-section-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+}
+.nn-section-title .nn-dot {
+    flex: 0 0 auto;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--nn-section-color, var(--primary));
+    margin-right: 10px;
+}
+.nn-section.is-now .nn-section-title .nn-dot {
+    background: #5C8DFF;
+    animation: nnNowPulse 1.8s ease-out infinite;
+}
+@keyframes nnNowPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(92, 141, 255, 0.45); }
+    70%  { box-shadow: 0 0 0 8px rgba(92, 141, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(92, 141, 255, 0); }
+}
+/* Per-track color dots, sit to the right of the section label.
+   One dot per distinct track represented in the section's items. */
+.nn-section-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+.nn-section-track-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    flex: 0 0 auto;
+}
+.nn-section-track-dot.is-hollow {
+    background: transparent;
+    border: 1.5px solid var(--text-secondary);
+    box-sizing: border-box;
+}
+.nn-section.is-now .nn-section-track-dot {
+    width: 10px;
+    height: 10px;
+}
+.nn-section-time {
+    margin-left: auto;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.nn-section.is-now .nn-section-time {
+    color: var(--text-main);
+    font-size: 0.82rem;
+}
+.nn-empty {
+    padding: 18px 16px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+}
+.nn-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: relative;
+}
+.nn-card-list .mobile-card-wrap {
+    width: 100%;
+}
+.nn-section.is-now .nn-card-list {
+    gap: 8px;
+}
+
+/* ── Row ─────────────────────────────────────────────────────── */
+.nn-row-wrap {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+/* Star toggle on Now/Next rows. Hidden by default; revealed
+   on row hover/focus, on touch via :active/long-press, and
+   always visible when the session is already starred so users
+   always know it's in their schedule. */
+.nn-row-star {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.nn-row-wrap:hover .nn-row-star,
+.nn-row-wrap:focus-within .nn-row-star,
+.nn-row-star:focus-visible,
+.nn-row-star.is-starred {
+    opacity: 1;
+}
+.nn-row-star.is-starred {
+    color: #f5b301;
+}
+.nn-row-star:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #f5b301;
+}
+@media (hover: none) {
+    /* Touch devices have no hover; show the star at low
+       opacity always, full opacity when starred. */
+    .nn-row-star { opacity: 0.55; }
+    .nn-row-star.is-starred { opacity: 1; }
+}
+/* "Not here? Switch session" affordance on the live featured
+   row. Sits below the row so it never crowds the title; lets
+   users re-pick which session they're actually attending. */
+.nn-row-switch {
+    align-self: flex-start;
+    margin: 6px 0 0 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px dashed var(--border-color, rgba(0, 0, 0, 0.2));
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease,
+        background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.nn-row-switch:hover,
+.nn-row-switch:focus-visible {
+    color: var(--text-primary, #111);
+    border-color: var(--text-primary, #111);
+    background: rgba(0, 0, 0, 0.04);
+}
+.nn-row-switch svg { flex: none; }
+/* Skipped break/meal: dimmed but otherwise intact. The
+   user is staying in their session through it; the row
+   remains visible (and tappable) so they know they CAN
+   still step out if they want. */
+.nn-row-wrap.nn-row-skipped {
+    opacity: 0.55;
+}
+/* Standalone break/meal: no card chrome, dashed outline,
+   text and stroke share an interlude-specific accent
+   color (purple for breaks, teal for meals). Matches the
+   day-schedule lunch/break cards. */
+.nn-row-wrap.nn-row-interlude {
+    --interlude-color: #6b5b95;
+    background: transparent;
+    border: 1px dashed var(--interlude-color);
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+.nn-row-wrap.nn-row-meal {
+    --interlude-color: #3aae9d;
+}
+.nn-row-wrap.nn-row-interlude .nn-row {
+    background: transparent;
+}
+.nn-row-wrap.nn-row-interlude .nn-row-stripe {
+    display: none;
+}
+.nn-row-wrap.nn-row-interlude .nn-row-title,
+.nn-row-wrap.nn-row-interlude .nn-row-meta,
+.nn-row-wrap.nn-row-interlude .nn-row-time,
+.nn-row-wrap.nn-row-interlude .nn-row-sep,
+.nn-row-wrap.nn-row-interlude .nn-row-room {
+    color: var(--interlude-color);
+}
+.nn-row-wrap.nn-row-interlude .nn-row-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.nn-row {
+    all: unset;
+    display: block;
+    cursor: pointer;
+    font-family: 'Google Sans', sans-serif;
+    color: var(--text-main);
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    padding: 10px 0;
+    border-radius: 6px;
+}
+/* Hover background sits in a pseudo-element that's inset from
+   the row's left/right edges so the darkening doesn't touch the
+   card's interior padding \u2014 a small breathing gap on hover
+   without shifting any content. */
+.nn-row::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: -10px;
+    right: -10px;
+    border-radius: 8px;
+    background: transparent;
+    transition: background 0.18s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+.nn-row:hover::before {
+    background: rgba(0, 0, 0, 0.04);
+}
+.nn-row > * {
+    position: relative;
+    z-index: 1;
+}
+.nn-row:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+    border-radius: 6px;
+}
+
+/* Col 1: Time. Leads the meta line. Tabular numerics, slightly
+   heavier than the rest so it pops as the row's anchor. */
+.nn-row-time {
+    font-weight: 600;
+    color: var(--text-main);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    flex-shrink: 0;
+}
+
+/* Title + meta line. */
+.nn-row-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.nn-row-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.005em;
+}
+.nn-row-meta {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.3;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+}
+.nn-row-room {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+.nn-row-sep {
+    color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+}
+/* Mid-session indicator: subtle clock + "Join at HH:MM" pill,
+   shown when the user is committed to a prior session that runs
+   into this one. Quiet by default — the meta line should still
+   read time · room first. */
+.nn-row-midsession {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-style: italic;
+    white-space: nowrap;
+    min-width: 0;
+}
+.nn-row-midsession svg {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    opacity: 0.85;
+}
+/* Track kicker: small label above the title in the row's accent
+   color. Replaces the inline chip — keeps the meta line clean
+   and the track always visible without competing for width. */
+.nn-row-chip {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--chip-color, var(--text-secondary));
+    margin-bottom: 2px;
+}
+
+/* Live indicator: pushed to the right end of the meta line so the
+   title above gets full width. */
+.nn-row-live-col {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+.nn-inline-progress {
+    display: inline-block;
+    width: 50px;
+    height: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--nn-color, var(--primary)) 18%, transparent);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.nn-inline-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--nn-color, var(--primary));
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+.nn-row-remaining {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Legacy hooks kept for backwards compat. */
+.nn-row-stripe { display: none; }
+.nn-row-detail { display: none; }
+
+/* Featured rows: starred + non-starrable (breaks/meals/plenaries).
+   Slightly heavier title weight; structure stays identical so the
+   time column lines up across all rows. */
+.nn-row-featured .nn-row-title {
+    font-weight: 600;
+    white-space: normal;
+    letter-spacing: -0.008em;
+}
+
+/* Now hero: scale up. Larger type, larger progress bar, more
+   vertical breathing room. */
+.nn-section.is-now .nn-row {
+    padding: 14px 0;
+}
+.nn-section.is-now .nn-row + .nn-row {
+    border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.nn-section.is-now .nn-row-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+.nn-section.is-now .nn-row-title {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: normal;
+    letter-spacing: -0.012em;
+}
+.nn-section.is-now .nn-row-meta {
+    font-size: 13px;
+}
+.nn-section.is-now .nn-row-chip {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+.nn-section.is-now .nn-row-featured .nn-row-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.22;
+    letter-spacing: -0.018em;
+}
+.nn-section.is-now .nn-row-featured .nn-row-meta {
+    font-size: 13.5px;
+    margin-top: 3px;
+}
+.nn-section.is-now .nn-inline-progress {
+    width: 64px;
+    height: 5px;
+}
+.nn-section.is-now .nn-row-remaining {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* Full-width progress strip: only appears on the Now hero
+   featured row. Sits below the meta line and spans the full
+   width of the row body — no clipping risk. */
+.nn-row-progressbar {
+    display: none;
+}
+.nn-section.is-now .nn-row-featured .nn-row-progressbar {
+    display: block;
+    width: 100%;
+    height: 4px;
+    margin-top: 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--nn-color, var(--primary)) 16%, transparent);
+    overflow: hidden;
+}
+.nn-section.is-now .nn-row-featured .nn-row-progressbar > span {
+    display: block;
+    height: 100%;
+    background: var(--nn-color, var(--primary));
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+
+/* Speakers / authors line: muted subtitle below the title on
+   featured rows. Single line, ellipsis on overflow. */
+.nn-row-authors {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.3;
+    letter-spacing: 0.005em;
+    margin-top: 2px;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.nn-section.is-now .nn-row-featured .nn-row-authors {
+    font-size: 14px;
+    white-space: normal;
+}
+
+/* Now hero footer: contextual hints + day-at-a-glance strip.
+   Sits below the live row, separated by a hairline. */
+.nn-hero-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+/* Inter-section transition hint (Next \u2192 Thereafter). Same look
+   as the hero footer hint but scoped per-section. */
+.nn-section-hint {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.nn-hero-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    line-height: 1.35;
+    color: var(--text-main);
+}
+.nn-hint-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    display: block;
+    margin-top: 1px;
+}
+/* Track-color dots for the overlap/multi-room hint variant. */
+.nn-hint-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    line-height: 1.35;
+    height: 1.35em;
+}
+.nn-hint-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+/* Inline dot used inside text spans (e.g. "Then: → ● Room").
+   vertical-align: middle aligns it to the actual text x-height
+   rather than the line-box top, so it reads visually centered
+   with the room name. */
+.nn-hint-dot-inline {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin: -2px 8px 0 0;
+}
+.nn-hint-dot-inline.is-hollow {
+    background: transparent;
+    border: 1.5px solid currentColor;
+    box-sizing: border-box;
+}
+.nn-hint-lead {
+    flex: 0 0 auto;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    color: var(--text-main);
+}
+.nn-hero-hint.is-overlap { color: var(--text-main); }
+/* Clickable overlap hint: button reset so it matches the static
+   hint exactly, plus a subtle chevron and hover/focus affordance. */
+button.nn-hero-hint {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 6px;
+    transition: color 0.12s;
+    -webkit-tap-highlight-color: transparent;
+}
+button.nn-hero-hint:hover .nn-hint-chev,
+button.nn-hero-hint:focus-visible .nn-hint-chev {
+    opacity: 1;
+    transform: translateX(2px);
+}
+button.nn-hero-hint:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+}
+.nn-hero-hint .nn-hint-text { flex: 1; min-width: 0; }
+.nn-hero-hint .nn-hint-chev {
+    margin-left: 6px;
+    font-size: 18px;
+    line-height: 1.2;
+    color: var(--text-secondary);
+    opacity: 0.5;
+    flex: 0 0 auto;
+    transition: opacity 0.12s, transform 0.12s;
+}
+.nn-hero-hint .nn-hint-edit {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    opacity: 0.55;
+    flex: 0 0 auto;
+    transition: opacity 0.12s, color 0.12s;
+}
+button.nn-hero-hint:hover .nn-hint-edit,
+button.nn-hero-hint:focus-visible .nn-hint-edit {
+    opacity: 0.9;
+    color: var(--text-main);
+}
+.nn-hero-hint.is-decided.is-stay .nn-hint-icon { color: #6b9a7c; }
+.nn-hero-hint.is-decided.is-move .nn-hint-icon { color: color-mix(in srgb, var(--text-secondary) 80%, var(--primary)); }
+.nn-hero-hint.is-stay { color: var(--text-main); }
+.nn-hero-hint.is-stay .nn-hint-icon { color: #6b9a7c; }
+.nn-hero-hint.is-move { color: var(--text-main); }
+.nn-hero-hint.is-move .nn-hint-icon { color: color-mix(in srgb, var(--text-secondary) 80%, var(--primary)); }
+.nn-hero-hint strong { font-weight: 700; letter-spacing: -0.005em; }
+
+/* Free-time row: structurally a session card but with "Free time"
+   as the title (the most important fact). Duration + window read
+   as the meta line below, exactly like a session's time · room.
+   No background or border — it inherits the row's rhythm. */
+.nn-free-row {
+    cursor: default;
+}
+.nn-free-row:hover::before {
+    background: transparent;
+}
+.nn-free-title {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+}
+.nn-free-cup {
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.nn-section.is-now .nn-free-cup {
+    width: 20px;
+    height: 20px;
+}
+
+.nn-after-break-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0 8px;
+    margin-top: 8px;
+}
+.nn-after-break-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.nn-after-break-title {
+    font-family: 'Google Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+}
+.nn-after-break-time {
+    margin-left: auto;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── "Other sessions running" branch ────────────────────────── */
+.nn-branch-wrap {
+    display: flex;
+    flex-direction: column;
+}
+.nn-branch-row {
+    border-left: none !important;
+    padding: 10px 0 !important;
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+}
+.nn-branch-stripe-col {
+    display: none;
+}
+.nn-branch-ring {
+    display: none;
+}
+.nn-branch-main {
+    flex: 1;
+    min-width: 0;
+    padding: 0 !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 14px;
+}
+.nn-branch-label {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+}
+.nn-branch-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
+}
+.nn-branch-dot {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.nn-branch-chev {
+    font-family: 'Google Sans', sans-serif;
+    color: var(--text-secondary);
+    transition: transform 0.18s ease;
+    padding: 0 4px;
+    line-height: 0;
+    display: inline-flex;
+    align-items: center;
+    transform-origin: center;
+}
+.nn-branch-wrap.open .nn-branch-chev {
+    transform: rotate(180deg);
+}
+.nn-branch-detail {
+    display: none;
+    padding: 4px 0 0 0;
+}
+.nn-branch-wrap.open .nn-branch-detail {
+    display: block;
+}
+.nn-branch-detail .nn-row {
+    opacity: 0.92;
+}
+
+.nn-updated {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    padding: 6px 0 0;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Full-schedule timeline below the hero sections.
+   Day banner separates each day; each slot is a slim section. */
+.nn-day-banner {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    padding: 22px 4px 8px;
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.nn-day-banner:first-child {
+    border-top: none;
+    margin-top: 0;
+}
+.nn-section.is-day-slot {
+    padding: 12px 16px 6px;
+    border-radius: 12px;
+    box-shadow: none;
+}
+.nn-section.is-day-slot.is-past {
+    opacity: 0.55;
+}
+.nn-section.is-day-slot.is-current {
+    box-shadow: 0 0 0 2px rgba(92, 141, 255, 0.45);
+}
+.nn-section.is-day-slot .nn-section-header {
+    padding-bottom: 6px;
+}
+.nn-section.is-day-slot .nn-section-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: none;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-main);
+    font-weight: 600;
+}
+.nn-section.is-day-slot .nn-section-title .nn-dot {
+    display: none;
+}
+
+.nn-conflict-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    margin-top: 4px;
+    background: var(--surface-1, #f8fafc);
+    border: 1px solid var(--border-default, rgba(15, 23, 42, 0.08));
+    border-radius: 14px;
+}
+.nn-conflict-heading {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+}
+.nn-conflict-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--border-default, rgba(15, 23, 42, 0.08));
+    border-radius: 10px;
+    padding: 8px 12px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+}
+.nn-conflict-row:hover {
+    background: rgba(99, 102, 241, 0.04);
+    border-color: rgba(99, 102, 241, 0.25);
+}
+.nn-conflict-row.is-unresolved {
+    border-color: rgba(234, 88, 12, 0.45);
+    background: rgba(254, 243, 199, 0.45);
+}
+.nn-conflict-row.is-unresolved:hover {
+    background: rgba(254, 243, 199, 0.75);
+}
+.nn-conflict-dots {
+    display: inline-flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.nn-conflict-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.nn-conflict-dot.is-hollow {
+    background: transparent;
+    border: 1.5px solid currentColor;
+    box-sizing: border-box;
+}
+.nn-conflict-text strong {
+    font-weight: 600;
+}
+.nn-conflict-time {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+.nn-conflict-sub {
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+.nn-conflict-edit {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    opacity: 0.55;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+.nn-conflict-chev {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* Inline per-slot decision rows. Live inside the slot body,
+   reusing the conflict-row palette but slimmer and full-width. */
+.nn-inline-decisions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+/* Decision node: a standalone row rendered BETWEEN slot
+   sections, marking the timestamp at which the user chose
+   (or needs to choose) which session to follow. Default is
+   a borderless inline row (verb body carries the weight).
+   The .nn-stay-bridge variant overrides geometry to merge
+   with the section above/below into one continuous panel. */
+.nn-decision-node {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+}
+/* Bridge variant: white sandwich panel with dashed top/
+   bottom hairlines. Declared after the base rule so the
+   background-color reliably wins regardless of which
+   neighbor (.is-now hero or .is-day-slot) sits above. */
+.nn-decision-node.nn-stay-bridge {
+    background-color: #ffffff;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-top: 1px dashed var(--border);
+    border-bottom: 1px dashed var(--border);
+    border-radius: 0;
+    margin: calc(-1 * var(--nn-stack-gap, 14px)) 0 0 0;
+    padding: 8px 18px;
+}
+.nn-decision-node.nn-stay-bridge .nn-node-row-wrap {
+    border-color: transparent;
+    background-color: transparent;
+    padding-left: 0;
+    padding-right: 0;
+}
+.nn-inline-decision {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    transition: background 0.12s, border-color 0.12s;
+}
+.nn-inline-decision.is-unresolved {
+    background: rgba(254, 243, 199, 0.5);
+    border: 1px solid rgba(234, 88, 12, 0.45);
+}
+.nn-inline-decision.is-unresolved:hover {
+    background: rgba(254, 243, 199, 0.8);
+}
+.nn-inline-decision.is-resolved {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-secondary);
+}
+.nn-inline-decision.is-resolved:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+.nn-inline-decision.is-forced {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-secondary);
+    cursor: default;
+}
+.nn-inline-decision .nn-conflict-text {
+    font-size: 0.82rem;
+}
+
+/* Node marker: small icon-style gutter element rendered on
+   the LEFT of session rows (for stay-through-overlap nodes)
+   and on the LEFT of standalone decision/forced rows (for
+   move nodes). Mirrors the day-schedule's time-gutter layout
+   so every path node has the same visual handle: time / row
+   of all options / arrow / row showing where the path goes. */
+.nn-node-marker {
+    box-sizing: border-box;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 2px 4px;
+    border-radius: 6px;
+    background: transparent;
+    border: 0;
+    cursor: default;
+    font: inherit;
+    color: inherit;
+    line-height: 1;
+}
+button.nn-node-marker {
+    cursor: pointer;
+    transition: background 0.12s;
+}
+button.nn-node-marker:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+button.nn-node-marker:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+.nn-node-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 2px;
+}
+.nn-node-dots {
+    display: inline-flex;
+    gap: 3px;
+    line-height: 1;
+}
+.nn-node-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+.nn-node-dot.is-hollow {
+    background: transparent;
+    border: 1px solid currentColor;
+}
+.nn-node-dot.is-empty {
+    background: transparent;
+    border: none;
+    visibility: hidden;
+}
+.nn-node-graph {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+/* Stay-merged marker stack (deprecated visual: kept for any
+   old callers, but no rules — markers now render inline
+   between cards via .nn-node-row-wrap). */
+.nn-node-marker-stack {
+    display: none;
+}
+
+/* Inline path-node row (decision or forced edge). Lives in
+   the timeline BETWEEN session cards. Marker on the left,
+   verb body on the right; full-width within its container. */
+/* Default (non-sandwiched) path-node row: borderless, tight
+   vertical padding. The marker on the left and the verb body
+   on the right carry the visual weight; the row itself is a
+   quiet inline element rather than a framed card. The Edit
+   chip inside gets its own subtle border to remain tappable. */
+.nn-node-row-wrap {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 2px 12px;
+    border-radius: 8px;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+}
+.nn-node-row-wrap > .nn-node-marker {
+    flex: 0 0 auto;
+}
+button.nn-node-row-wrap {
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.12s;
+}
+button.nn-node-row-wrap:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+button.nn-node-row-wrap:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+.nn-node-row-body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.86rem;
+    line-height: 1.3;
+    color: var(--text-secondary);
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.nn-node-row-body strong {
+    font-weight: 600;
+    color: var(--text-main);
+}
+.nn-node-row-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nn-node-row-edit,
+.nn-node-row-chev {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+/* Subtle frame on the Edit chip so it still reads as an
+   actionable affordance now that the surrounding row no
+   longer has its own border. */
+.nn-node-row-edit {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    line-height: 1.2;
+}
+.nn-node-row-chev {
+    font-size: 1.1rem;
+    opacity: 0.7;
+}
+.nn-node-row-wrap.is-unresolved .nn-node-row-body {
+    color: #92400e;
+    font-weight: 600;
+}
+.nn-node-row-wrap.is-unresolved {
+    background: rgba(254, 243, 199, 0.45);
+}
+.nn-node-row-wrap.is-unresolved:hover {
+    background: rgba(254, 243, 199, 0.75);
+}
+.nn-node-row-wrap.is-forced {
+    /* Forced edges are now clickable buttons; inherit
+       hover/cursor from .nn-node-row-wrap base rule. */
+    cursor: pointer;
+}
+
+@media (max-width: 480px) {
+    #scheduleContainer.now-next-view {
+        padding: 14px 12px 22px;
+        gap: 12px;
+        --nn-stack-gap: 12px;
+    }
+    .nn-section { padding: 16px 16px 8px; border-radius: 12px; }
+    .nn-section.is-now { padding: 20px 16px 16px; }
+    .nn-section.is-now .nn-row-featured .nn-row-title { font-size: 20px; }
+    /* Match bridge horizontal padding to mobile section
+       padding so the inner content lines up edge-to-edge
+       with the buns above and below. */
+    .nn-decision-node.nn-stay-bridge { padding-left: 16px; padding-right: 16px; }
+}
+@media (max-width: 360px) {
+    .nn-section.is-now .nn-row-featured .nn-row-title { font-size: 19px; }
+    .nn-section-title { font-size: 0.72rem; }
+}
+
+/* ─── Desktop layout ───
+   Vertical stack: hero sections on top, full-schedule timeline
+   below. No grid — everything flows in a single column with a
+   comfortable max-width. */
+@media (min-width: 720px) {
+    #scheduleContainer.now-next-view {
+        padding: 32px var(--page-gutter) 40px;
+        max-width: 880px;
+        margin: 0 auto;
+        gap: 16px;
+        --nn-stack-gap: 16px;
+    }
+    .nn-section.is-now {
+        padding: 32px 32px 24px;
+        border-radius: 16px;
+    }
+    .nn-updated {
+        text-align: right;
+        padding-top: 4px;
+    }
+    .nn-section.is-now .nn-section-header {
+        padding: 0 0 18px 0;
+    }
+    .nn-section.is-now .nn-section-title {
+        font-size: 0.82rem;
+        letter-spacing: 0.12em;
+    }
+    .nn-section.is-now .nn-row-featured .nn-row-title {
+        font-size: 26px;
+    }
+    .nn-section.is-now .nn-row-featured .nn-row-meta {
+        font-size: 14.5px;
+    }
+    .nn-section.is-now .nn-inline-progress {
+        width: 80px;
+        height: 6px;
+    }
+    .nn-section.is-now .nn-row-featured .nn-row-authors {
+        font-size: 15px;
+    }
+    .nn-hero-footer {
+        margin-top: 18px;
+        padding-top: 18px;
+        gap: 16px;
+    }
+    .nn-hero-hint {
+        font-size: 14.5px;
+    }
+}

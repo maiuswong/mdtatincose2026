@@ -1,5 +1,5 @@
 /* Service Worker for INCOSE HWGC 2026 Schedule PWA */
-const VERSION = 'v1.0.1';
+const VERSION = 'v1.0.2';
 const CACHE_NAME = `hwgc2026-${VERSION}`;
 
 // Resolve URLs relative to the SW's scope so this works on GitHub Pages
@@ -10,6 +10,9 @@ const asScoped = (path) => new URL(path, SCOPE).toString();
 const PRECACHE_URLS = [
   './',
   './index.html',
+  './styles.css',
+  './schedule-data.js',
+  './app.js',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/icon-maskable.svg',
