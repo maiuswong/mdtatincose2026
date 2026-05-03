@@ -48,8 +48,10 @@ function buildDummyData() {
     }
     today.setHours(0,0,0,0);
     const tomorrow = new Date(today.getTime() + 86400000);
+    const dayAfter = new Date(today.getTime() + 2 * 86400000);
     const day1 = dayLabel(today);
     const day2 = dayLabel(tomorrow);
+    const day3 = dayLabel(dayAfter);
 
     let nextUid = 1000;
     const session = (day, h, m, durMin, room, track, title, authors = 'Test Author') => ({
@@ -131,17 +133,95 @@ function buildDummyData() {
     ];
 
     // ── Day 2 (tomorrow) ──────────────────────────────────────────
+    // Full day, same 30-minute grid and N/2N/3N block sizing as Day 1.
     const d2 = [
         meal(day2, 8, 0, 60, 'Breakfast'),
         keynote(day2, 9, 0, 60, 'Main Hall', 'Day 2 Keynote', 'Another Speaker'),
-        brk(day2, 10, 0, 30),
-        session(day2, 10, 30, 60, 'Room A', 'AI/ML', 'Day 2 AI Talk'),
-        session(day2, 10, 30, 60, 'Room B', 'Cybersecurity', 'Day 2 Security Talk'),
-        meal(day2, 11, 30, 60, 'Lunch'),
-        session(day2, 12, 30, 30, 'Main Hall', 'General', 'Closing'),
+        // 10:00 block — wide parallel set, mix of 60m and 90m.
+        session(day2, 10, 0, 60, 'Room A', 'AI/ML', 'AI Tooling Day 2'),
+        session(day2, 10, 0, 60, 'Room B', 'Cybersecurity', 'Threat Intel for Devices'),
+        session(day2, 10, 0, 60, 'Room C', 'Healthcare Delivery', 'Care Coordination Patterns'),
+        session(day2, 10, 0, 90, 'Room D', 'Digital SE', 'MBSE Workshop Part 1'),
+        session(day2, 10, 0, 60, 'Room E', 'Reqs, Test & Risk', 'Hazard Analyses That Live'),
+        session(day2, 10, 0, 60, 'Room F', 'Beyond the System', 'Stakeholder Trust'),
+        // 11:00 — A/B/C/E/F fresh; D continues to 11:30.
+        session(day2, 11, 0, 60, 'Room A', 'AI/ML', 'Prompting in Regulated Work'),
+        session(day2, 11, 0, 60, 'Room B', 'Cybersecurity', 'SBOM Triage'),
+        session(day2, 11, 0, 60, 'Room C', 'Combination Products', 'Auto-Injector Field Notes'),
+        session(day2, 11, 0, 60, 'Room E', 'Reqs, Test & Risk', 'Coverage Metrics'),
+        session(day2, 11, 0, 60, 'Room F', 'Beyond the System', 'Mentorship in Practice'),
+        // 12:00 — short fillers before lunch.
+        session(day2, 12, 0, 30, 'Room B', 'Other', 'Lightning Q&A'),
+        session(day2, 12, 0, 30, 'Room C', 'Reqs, Test & Risk', 'V&V Quickfire'),
+        meal(day2, 12, 30, 60, 'Lunch'),
+        // 13:30 block — afternoon wave, mirrors Day 1.
+        session(day2, 13, 30, 60, 'Room A', 'AI/ML', 'Synthetic Data for V&V'),
+        session(day2, 13, 30, 60, 'Room B', 'Beyond the System', 'Engineering Resilient Teams'),
+        session(day2, 13, 30, 60, 'Room C', 'Other', 'Career Reflections'),
+        session(day2, 13, 30, 90, 'Room D', 'Digital SE', 'Digital Thread Demo (Long)'),
+        session(day2, 13, 30, 60, 'Room E', 'Cybersecurity', 'Pen-Test War Stories'),
+        session(day2, 13, 30, 60, 'Room F', 'Combination Products', 'Drug-Device Interfaces'),
+        // 14:30 block — D continues to 15:00; everyone else fresh.
+        session(day2, 14, 30, 60, 'Room A', 'Reqs, Test & Risk', 'Risk-Based V&V'),
+        session(day2, 14, 30, 60, 'Room B', 'AI/ML', 'AI for Verification 2'),
+        session(day2, 14, 30, 60, 'Room C', 'Healthcare Delivery', 'Connected Care Roundtable'),
+        session(day2, 14, 30, 60, 'Room E', 'Reqs, Test & Risk', 'Usability On a Budget'),
+        session(day2, 14, 30, 60, 'Room F', 'Beyond the System', 'Cross-Industry Lessons'),
+        // 15:30 block — fresh wave.
+        session(day2, 15, 30, 60, 'Room A', 'Digital SE', 'Open Standards Update'),
+        session(day2, 15, 30, 60, 'Room C', 'Cybersecurity', 'Secure Update Mechanisms'),
+        session(day2, 15, 30, 90, 'Room D', 'Healthcare Delivery', 'Long Healthcare Panel'),
+        session(day2, 15, 30, 60, 'Room E', 'AI/ML', 'AI Governance Q&A'),
+        brk(day2, 16, 30, 30, 'Coffee'),
+        // 17:00 wrap.
+        session(day2, 17, 0, 30, 'Main Hall', 'General', 'Day 2 Wrap'),
+        meal(day2, 18, 0, 90, 'Sponsor Reception'),
     ];
 
-    return { [day1]: d1, [day2]: d2 };
+    // ── Day 3 (day after tomorrow) ────────────────────────────────
+    // Full day, same grid as Days 1 and 2.
+    const d3 = [
+        meal(day3, 8, 0, 60, 'Breakfast'),
+        keynote(day3, 9, 0, 90, 'Main Hall', 'Day 3 Keynote', 'Closing Speaker'),
+        brk(day3, 10, 30, 30),
+        // 11:00 block — wide parallel set.
+        session(day3, 11, 0, 60, 'Room A', 'AI/ML', 'Foundation Models for CDS'),
+        session(day3, 11, 0, 60, 'Room B', 'Cybersecurity', 'Vulnerability Disclosure Workflows'),
+        session(day3, 11, 0, 60, 'Room C', 'Beyond the System', 'Mentoring Systems Thinkers'),
+        session(day3, 11, 0, 90, 'Room D', 'Digital SE', 'SysML v2 Toolchain Bridges'),
+        session(day3, 11, 0, 60, 'Room E', 'Reqs, Test & Risk', 'Quality Metrics That Matter'),
+        session(day3, 11, 0, 60, 'Room F', 'Combination Products', 'Connected Drug Delivery'),
+        // 12:00 — A/B/C/E/F fresh; D continues to 12:30.
+        session(day3, 12, 0, 30, 'Room A', 'AI/ML', 'AI Governance Inside Eng'),
+        session(day3, 12, 0, 30, 'Room B', 'Cybersecurity', 'Pen-Testing Connected Devices'),
+        session(day3, 12, 0, 30, 'Room C', 'Digital SE', 'MBSE Adoption Anti-Patterns'),
+        session(day3, 12, 0, 30, 'Room E', 'Reqs, Test & Risk', 'Traceability Without Tears'),
+        session(day3, 12, 0, 30, 'Room F', 'Beyond the System', 'Strategy Hot-Take'),
+        meal(day3, 12, 30, 60, 'Lunch'),
+        // 13:30 block — afternoon wave.
+        session(day3, 13, 30, 60, 'Room A', 'AI/ML', 'Continuous Learning Systems'),
+        session(day3, 13, 30, 60, 'Room B', 'Cybersecurity', 'Implantable Update Security'),
+        session(day3, 13, 30, 60, 'Room C', 'Beyond the System', 'Lessons from Aerospace'),
+        session(day3, 13, 30, 90, 'Room D', 'Healthcare Delivery', 'PGHD Pipeline (Long)'),
+        session(day3, 13, 30, 60, 'Room E', 'Reqs, Test & Risk', 'Risk Mgmt for SaMD'),
+        session(day3, 13, 30, 60, 'Room F', 'Combination Products', 'Drug-Device Roundtable'),
+        // 14:30 block — D continues to 15:00; others fresh.
+        session(day3, 14, 30, 60, 'Room A', 'AI/ML', 'Explainability for Clinical AI'),
+        session(day3, 14, 30, 60, 'Room B', 'Digital SE', 'Sim-Based V&V at Scale'),
+        session(day3, 14, 30, 60, 'Room C', 'Healthcare Delivery', 'Rural Care Engineering'),
+        session(day3, 14, 30, 60, 'Room E', 'Reqs, Test & Risk', 'Formative Usability'),
+        session(day3, 14, 30, 60, 'Room F', 'Other', 'Lightning Wrap-Up Talks'),
+        // 15:30 block — fresh wave.
+        session(day3, 15, 30, 60, 'Room A', 'AI/ML', 'AI in Hospital Workflows'),
+        session(day3, 15, 30, 60, 'Room C', 'Cybersecurity', 'Closing Cyber Q&A'),
+        session(day3, 15, 30, 90, 'Room D', 'Beyond the System', 'Resilient Teams (Long)'),
+        session(day3, 15, 30, 60, 'Room E', 'Digital SE', 'Open Standards Wrap'),
+        brk(day3, 16, 30, 30, 'Coffee'),
+        // 17:00 closing.
+        session(day3, 17, 0, 60, 'Main Hall', 'General', 'Closing Ceremony & Awards'),
+    ];
+
+    return { [day1]: d1, [day2]: d2, [day3]: d3 };
 }
 
 // REAL_DATA is loaded from schedule-data.js (must be included before this script)
@@ -176,13 +256,18 @@ const data = USE_DUMMY_DATA ? buildDummyData() : REAL_DATA;
     console.info('[dummy] Now overridden to', new Date().toString());
 })();
 
+// Neon track palette. Saturated, distinct hues for at-a-glance track
+// recognition on small dots and stripes. Avoids any yellow/lime range
+// because high-luminance hues lose contrast on white surfaces (text
+// and small dots become hard to read). Beyond the System (formerly
+// yellow) shifts to a vivid neon-cyan instead.
 const trackColors = {
     "general": "#b7bec8",
     "sponsor": "#42c5f5",
     "training": "#f542e3",
     "ai/ml": "#FF2A54",
     "cybersecurity": "#FF7300",
-    "beyond the system": "#FFC800",
+    "beyond the system": "#00E5FF",        // neon cyan (replaces yellow)
     "healthcare delivery": "#D923FF",
     "reqs, test & risk": "#1976D2",
     "other": "#7A00FF",
@@ -191,7 +276,7 @@ const trackColors = {
     "digital se": "#00BFA5"
 };
 
-const KEYNOTE_COLOR = '#5C8DFF';
+const KEYNOTE_COLOR = '#3949AB';           // Indigo 600 — distinct from any track
 
 // ─── ROOM ORDER (consistent columns) ───
 const ROOM_ORDER = [
@@ -373,10 +458,13 @@ function isKeynoteSession(session) {
 
 function getSessionAccentColor(session, fallbackTrackName = '') {
     if (isKeynoteSession(session)) return KEYNOTE_COLOR;
-    // Break/meal interlude colors — match the dashed-card styling.
+    // Break/meal interlude colors — match the deep accent used by
+    // the Now/Next interlude card text/border in styles.css so the
+    // section dot, the colored text, and any inline interlude rows
+    // all read as the same family.
     if (session) {
-        if (isMealStyleEvent(session)) return '#3aae9d';
-        if (isBreakStyleEvent(session)) return '#6b5b95';
+        if (isMealStyleEvent(session)) return '#1f6b5e';
+        if (isBreakStyleEvent(session)) return '#4a3f6b';
     }
     return getTrackColor(fallbackTrackName || session?.Track || session?.type || '');
 }
@@ -1842,13 +1930,31 @@ function getEffectivePrevItemAt(time, opts) {
     const isAttended = it => !!(it && it.session && it.session.uid
         && Array.isArray(starredSessions)
         && starredSessions.includes(it.session.uid));
+    // A non-attended regular session (type === 'session' and not
+    // starred) is unlikely to be "where the user came from": they
+    // didn't choose to attend it and it isn't on their path. Treat
+    // such items as low-confidence anchors so they lose to genuine
+    // path anchors like breaks, meals, events, keynotes, training,
+    // and starred sessions when both end at the same instant. This
+    // prevents bugs like "Stay in Main Hall" right after Breakfast
+    // when the user only starred a keynote in that room — the
+    // intermediate non-starred Kickoff session would otherwise be
+    // picked as the prior item due to the preferRoom bias.
+    const isUnattendedRegularSession = it => it && it.session
+        && it.session.type === 'session' && !isAttended(it);
     const matchesPreferredRoom = it => preferRoom
         && it && it.session
         && (it.session.room || '').trim() === preferRoom;
-    // Score: starred (+2), matches preferred destination room (+1).
-    // Ties broken by latest start time so we still prefer a fresh
-    // chunk over a long-running session.
-    const scoreCandidate = it => (isAttended(it) ? 2 : 0)
+    // Score: starred (+4), is a break/meal/event/keynote/training
+    // anchor i.e. NOT an unattended regular session (+2), matches
+    // preferred destination room (+1). Ties broken by latest start
+    // time so we still prefer a fresh chunk over a long-running
+    // session. The +4/+2 spacing ensures a starred item beats a
+    // non-starred-but-anchor-type item, which beats an unattended
+    // session even when only the unattended session matches the
+    // preferred room.
+    const scoreCandidate = it => (isAttended(it) ? 4 : 0)
+        + (isUnattendedRegularSession(it) ? 0 : 2)
         + (matchesPreferredRoom(it) ? 1 : 0);
     for (const it of currentRenderAllItems) {
         if (!it.win) continue;
@@ -1873,8 +1979,35 @@ function getEffectivePrevItemAt(time, opts) {
             }
         }
     }
-    if (endingHere) return endingHere;
-    if (containing) return containing;
+    // Helper: search for the most recently ended anchor before t,
+    // optionally skipping unattended regular sessions. Returns null
+    // if nothing is found within the 6h horizon.
+    const findRecentEnded = (skipUnattendedRegular) => {
+        let result = null;
+        for (const it of currentRenderAllItems) {
+            if (!it.win) continue;
+            const endT = it.win.end.getTime();
+            if (endT > t) continue;
+            if (endT < t - 6 * 60 * 60 * 1000) continue; // within 6h
+            if (skipUnattendedRegular && isUnattendedRegularSession(it)) continue;
+            if (!result || endT > result.win.end.getTime()) result = it;
+        }
+        return result;
+    };
+    // Prefer endingHere/containing — but if the best one we found is
+    // an unattended regular session (low-confidence anchor), and a
+    // recently-ended anchor (break/meal/event/keynote/training/
+    // starred) is available, prefer that. This keeps "from breakfast
+    // → head to keynote" working when an unstarred kickoff session
+    // happens to occupy the destination room in between.
+    const primary = endingHere || containing;
+    if (primary) {
+        if (isUnattendedRegularSession(primary)) {
+            const better = findRecentEnded(true);
+            if (better) return better;
+        }
+        return primary;
+    }
     // 2) Most recently ended at or before t (same day).
     let best = null;
     for (const it of currentRenderAllItems) {
@@ -1982,6 +2115,10 @@ function sampleOklchStops(startHex, endHex, stopCount = 5) {
 }
 
 function buildNodeMarkerInnerHtml(items, chosenUid, time, prevItem) {
+    // Sort options (row 2) alphabetically by track/room so the dot
+    // ordering is stable and consistent with the "X other sessions"
+    // dot preview elsewhere on the page.
+    items = (items || []).slice().sort(compareItemsByTrackRoom);
     const chosenIdx = chosenUid
         ? items.findIndex(it => it.session && it.session.uid === chosenUid)
         : -1;
@@ -2000,44 +2137,136 @@ function buildNodeMarkerInnerHtml(items, chosenUid, time, prevItem) {
         resolvedPrev = getEffectivePrevItemAt(time);
     }
 
-    const cols = Math.max(1, items.length);
+    // Row 1 ("from") items: every starred session active in the path
+    // interval immediately before this node, so the user sees ALL
+    // ongoing starred sessions at the handoff — not just the one they
+    // were following. Falls back to the single resolvedPrev (e.g. a
+    // break/meal at start-of-day) when the path has nothing prior.
+    let prevItems = getPrevPathActiveItems(currentRenderPath, time);
+    // Detect the "transitioning from a break/free time" case: the
+    // path interval immediately before this node had no starred
+    // sessions, so resolvedPrev (typically a break or non-starred
+    // continuing session) is what the user was actually attending.
+    // Make sure prevItems reflects that single attended item so
+    // row 1 / the top stub / the connector curve all agree on the
+    // same color and column. Otherwise we get inconsistencies like
+    // a stub in one color and an empty row 1, or vice versa.
+    const noStarredPrior = prevItems.length === 0;
+    if (noStarredPrior && resolvedPrev && resolvedPrev.session) {
+        prevItems = [resolvedPrev];
+    }
+    prevItems = prevItems.slice().sort(compareItemsByTrackRoom);
+
+    // The "chosen" prior — the single session the user was actually
+    // attending in the prior interval — is what the connector curve
+    // and top stub anchor on. When there are starred items prior,
+    // it is the path's chosen uid (resolvedPrev). When the prior
+    // interval was a break/free time, resolvedPrev IS that break and
+    // is the only item in prevItems, so the same logic finds it.
+    const prevChosenUid = (resolvedPrev && resolvedPrev.session
+        && resolvedPrev.session.uid) || null;
+    let prevChosenIdx = prevChosenUid
+        ? prevItems.findIndex(it => it.session && it.session.uid === prevChosenUid)
+        : -1;
+    // Defensive: if the resolved prev item isn't represented in
+    // prevItems (e.g. break overlaps a starred path interval that
+    // ended before this node) but we DO have prior items, anchor
+    // the stub/curve on the first one rather than dropping the
+    // stub entirely. Keeps the visuals consistent across the
+    // break↔session boundary.
+    if (prevChosenIdx < 0 && prevItems.length) {
+        prevChosenIdx = 0;
+    }
+
+    // Column count = the wider row. Used as the SVG/container width
+    // so the marker reserves enough horizontal space for the longer
+    // row. Each row is then horizontally centered within that width
+    // by the marker's flexbox `align-items: center`, and the SVG
+    // line endpoints are computed against the same centered layout
+    // so the curve always lands on the actual dots in each row.
+    const cols = Math.max(1, items.length, prevItems.length);
     // Geometry shared with CSS dot/gap sizes (6px dot, 3px gap).
     const DOT = 6, GAP = 3;
-    const colCenter = (i) => DOT / 2 + i * (DOT + GAP); // 3, 12, 21, ...
     const rowWidth = cols * DOT + (cols - 1) * GAP;
-    const emptyCell = '<span class="nn-node-dot is-empty" aria-hidden="true"></span>';
+    // x-center of the i-th dot in a row that has `n` total dots,
+    // centered within `rowWidth`. With n=cols this collapses to the
+    // original left-anchored layout (3, 12, 21, …).
+    const colCenterIn = (i, n) => {
+        const naturalW = n * DOT + (n - 1) * GAP;
+        const leftPad = (rowWidth - naturalW) / 2;
+        return leftPad + DOT / 2 + i * (DOT + GAP);
+    };
 
     // Time label is now surfaced by the verb body ("At 1:30, Stay in
-    // Salon B"), so the marker is purely visual: prior dot → curve
+    // Salon B"), so the marker is purely visual: prior dots → curve
     // → options row.
     let html = '';
 
-    // Row 1: prior session color in column 0; pad to cols.
-    const prevColor = (resolvedPrev && resolvedPrev.session)
-        ? getSessionAccentColor(resolvedPrev.session, resolvedPrev.session.Track)
+    // Geometry for the connector curve and top/bottom stubs.
+    // Stubs visually attach the marker to the white card above/below
+    // by extending the chosen-dot x positions vertically into the
+    // gap on either side of the marker. The stubs are absolutely
+    // positioned in CSS just outside the marker's top/bottom edges,
+    // so they do not affect marker layout. STUB_H is intentionally
+    // generous to cover the row-wrap padding + card-list gap +
+    // any extra inset created when the right-hand verb body wraps
+    // and the marker (vertically centered) ends up shorter than
+    // the row-wrap on mobile.
+    const SVG_H = 14;
+    const STUB_H = 10;
+    // The "from" color drives the top stub and the start of the
+    // connector gradient. Source it from the prior chosen item in
+    // prevItems so it always matches the dot in row 1 — this keeps
+    // colors consistent across break↔session transitions where
+    // resolvedPrev (a break) and the path's prior items can differ.
+    const prevAnchorItem = (prevChosenIdx >= 0 && prevItems[prevChosenIdx])
+        || resolvedPrev
+        || null;
+    const prevColor = (prevAnchorItem && prevAnchorItem.session)
+        ? getSessionAccentColor(prevAnchorItem.session, prevAnchorItem.session.Track)
         : null;
-    const row1Cells = [];
-    if (prevColor) {
-        row1Cells.push(`<span class="nn-node-dot" style="background:${prevColor}" aria-hidden="true"></span>`);
-    } else {
-        row1Cells.push(emptyCell);
+    const prevCol = prevChosenIdx >= 0 ? prevChosenIdx : 0;
+    const prevX = colCenterIn(prevCol, Math.max(1, prevItems.length));
+    const chosenCol = chosenIdx >= 0 ? chosenIdx : 0;
+    const chosenX = colCenterIn(chosenCol, Math.max(1, items.length));
+    const chosenColor = chosenIdx >= 0
+        ? getSessionAccentColor(items[chosenIdx].session, items[chosenIdx].session.Track)
+        : 'currentColor';
+
+    // Top stub: vertical line at prev-chosen x, drawn ABOVE row 1 to
+    // attach into the card sitting above this marker. Render whenever
+    // there is a prior item to anchor on (any prevItems entry counts),
+    // so break→session transitions still get a stub matching row 1.
+    if (prevItems.length && prevColor) {
+        html +=
+            `<svg class="nn-node-stub nn-node-stub-top" width="${rowWidth}" height="${STUB_H}" ` +
+            `viewBox="0 0 ${rowWidth} ${STUB_H}" aria-hidden="true">` +
+                `<line x1="${prevX}" y1="0" x2="${prevX}" y2="${STUB_H}" ` +
+                `stroke="${prevColor}" stroke-width="1.5" stroke-linecap="round"/>` +
+            `</svg>`;
     }
-    while (row1Cells.length < cols) row1Cells.push(emptyCell);
+
+    // Row 1: every starred session active in the prior interval. The
+    // chosen-prev (the one the user was attending) is a filled dot;
+    // the others (starred but not attending in the prior interval)
+    // are open rings. No padding cells — flexbox centers the row.
+    const row1Cells = prevItems.map(it => {
+        const c = getSessionAccentColor(it.session, it.session.Track);
+        const isChosenPrev = prevChosenUid && it.session
+            && it.session.uid === prevChosenUid;
+        if (isChosenPrev) {
+            return `<span class="nn-node-dot" style="background:${c}" aria-hidden="true"></span>`;
+        }
+        return `<span class="nn-node-dot is-hollow" style="border-color:${c || 'currentColor'}" aria-hidden="true"></span>`;
+    });
     html += `<span class="nn-node-dots">${row1Cells.join('')}</span>`;
 
     // Connector SVG: cubic curve from (prevX, top) to (chosenX, bottom).
     // Mimics a git-graph branch/merge: the line literally connects
-    // the prior dot to the chosen dot, so the user sees the path.
-    // Stroke is a linear gradient from the prior session's accent
-    // (top) to the chosen session's accent (bottom) so the line
-    // visually expresses the handoff between the two.
-    const SVG_H = 14;
-    const prevX = colCenter(0);
-    const chosenCol = chosenIdx >= 0 ? chosenIdx : 0;
-    const chosenX = colCenter(chosenCol);
-    const chosenColor = chosenIdx >= 0
-        ? getSessionAccentColor(items[chosenIdx].session, items[chosenIdx].session.Track)
-        : 'currentColor';
+    // the prior chosen dot to the chosen dot in row 2, so the user
+    // sees the path. Stroke is a linear gradient from the prior
+    // session's accent (top) to the chosen session's accent (bottom)
+    // so the line visually expresses the handoff.
     // Fall back to the next color if there's no prior color, so the
     // line still renders sensibly at start-of-day / first node.
     const startColor = prevColor || chosenColor;
@@ -2071,7 +2300,10 @@ function buildNodeMarkerInnerHtml(items, chosenUid, time, prevItem) {
             : '') +
         '</svg>';
 
-    // Row 2: all options at this node.
+    // Row 2: all options at this node. No padding — flexbox centers
+    // the row within the marker's reserved width, and the SVG line's
+    // chosenX was computed against this same centered layout so the
+    // curve lands precisely on the chosen dot.
     const row2Cells = items.map((it, idx) => {
         const c = getSessionAccentColor(it.session, it.session.Track);
         const isChosen = idx === chosenIdx;
@@ -2082,6 +2314,17 @@ function buildNodeMarkerInnerHtml(items, chosenUid, time, prevItem) {
         return `<span class="${cls}" style="${style}" aria-hidden="true"></span>`;
     });
     html += `<span class="nn-node-dots">${row2Cells.join('')}</span>`;
+
+    // Bottom stub: vertical line at chosen x, drawn BELOW row 2 to
+    // attach into the card sitting below this marker.
+    if (chosenIdx >= 0) {
+        html +=
+            `<svg class="nn-node-stub nn-node-stub-bottom" width="${rowWidth}" height="${STUB_H}" ` +
+            `viewBox="0 0 ${rowWidth} ${STUB_H}" aria-hidden="true">` +
+                `<line x1="${chosenX}" y1="0" x2="${chosenX}" y2="${STUB_H}" ` +
+                `stroke="${chosenColor}" stroke-width="1.5" stroke-linecap="round"/>` +
+            `</svg>`;
+    }
 
     return html;
 }
@@ -2182,8 +2425,27 @@ function buildNowNextRow(item, { featured, joinFrom, skipped, hideTime }) {
         timeEl.textContent = timeStr;
         meta.appendChild(timeEl);
     }
+    // Duration — show the session's scheduled length right after
+    // the start time so attendees know how long the talk runs.
+    // SessionLength in the data is already in a friendly form
+    // ("30m", "60m", "1h 30m"), so display it as-is.
+    const durationStr = session && session.SessionLength
+        ? String(session.SessionLength).trim() : '';
+    if (durationStr) {
+        if (meta.childNodes.length > 0) {
+            const sep = document.createElement('span');
+            sep.className = 'nn-row-sep';
+            sep.textContent = '·';
+            sep.setAttribute('aria-hidden', 'true');
+            meta.appendChild(sep);
+        }
+        const durEl = document.createElement('span');
+        durEl.className = 'nn-row-duration';
+        durEl.textContent = durationStr;
+        meta.appendChild(durEl);
+    }
     if (session.room) {
-        if (timeStr) {
+        if (meta.childNodes.length > 0) {
             const sep = document.createElement('span');
             sep.className = 'nn-row-sep';
             sep.textContent = '·';
@@ -2379,10 +2641,53 @@ function buildNowNextRow(item, { featured, joinFrom, skipped, hideTime }) {
     return wrap;
 }
 
+// Track/room alphabetical comparator. Used to keep "X other sessions"
+// dots+expanded list and the node-marker dot rows in a consistent,
+// predictable order across views. Items missing a track or room sort
+// last alphabetically (empty strings → end via a sentinel).
+function compareItemsByTrackRoom(a, b) {
+    const sa = (a && a.session) || {};
+    const sb = (b && b.session) || {};
+    const ta = (isKeynoteSession(sa) ? 'Keynote' : (sa.Track || '')).trim();
+    const tb = (isKeynoteSession(sb) ? 'Keynote' : (sb.Track || '')).trim();
+    const tA = ta || '\uFFFF';
+    const tB = tb || '\uFFFF';
+    if (tA !== tB) return tA.localeCompare(tB);
+    const ra = (sa.room || '').trim() || '\uFFFF';
+    const rb = (sb.room || '').trim() || '\uFFFF';
+    return ra.localeCompare(rb);
+}
+
+// Returns the active starred items from the path interval immediately
+// before `t` (the interval whose end ≤ t, latest such). Includes the
+// chosen one. Used to render the "from" row of a node marker so all
+// starred sessions running just before the transition are visible.
+// Only considers intervals on the SAME calendar day — see
+// getPrevPathItem for why this matters across day boundaries.
+function getPrevPathActiveItems(path, t) {
+    if (!path || !path.intervals) return [];
+    const tt = t instanceof Date ? t.getTime() : t;
+    const tDate = t instanceof Date ? t : new Date(tt);
+    const tKey = `${tDate.getFullYear()}-${tDate.getMonth()}-${tDate.getDate()}`;
+    for (let i = path.intervals.length - 1; i >= 0; i--) {
+        const iv = path.intervals[i];
+        if (iv.end.getTime() > tt) continue;
+        const ivDate = iv.start instanceof Date ? iv.start : new Date(iv.start);
+        const ivKey = `${ivDate.getFullYear()}-${ivDate.getMonth()}-${ivDate.getDate()}`;
+        if (ivKey !== tKey) return [];
+        return Array.isArray(iv.active) ? iv.active.slice() : [];
+    }
+    return [];
+}
+
 function buildOtherSessionsBranch(others) {
     // A single timeline node representing the parallel non-starred
     // concurrent sessions. Hollow "branch" dot (ring) on the rail signals
     // these are off your path. Tap to expand into the full list of rows.
+    //
+    // Sort once by track/room alphabetical so the dot preview and the
+    // expanded detail list always present items in the same order.
+    const sortedOthers = others.slice().sort(compareItemsByTrackRoom);
     const wrap = document.createElement('div');
     wrap.className = 'nn-row-wrap nn-branch-wrap';
 
@@ -2407,22 +2712,38 @@ function buildOtherSessionsBranch(others) {
     main.appendChild(label);
 
     // Track dots preview — unique track colors at this time slot.
+    // Three-state convention used everywhere:
+    //   • starred & attending  → filled circle (n/a here: the
+    //     attended session lives on the path, not in "others")
+    //   • starred & not attending → open ring (a starred session
+    //     demoted into "other" at this slot)
+    //   • not starred → small filled dot
     const seen = new Set();
     const dotsRow = document.createElement('span');
     dotsRow.className = 'nn-branch-dots';
-    others.forEach(item => {
+    sortedOthers.forEach(item => {
         const s = item.session;
         const trackLabel = isKeynoteSession(s)
             ? 'Keynote'
             : (s.Track || (isSessionStyleEvent(s) ? 'General' : ''));
         const color = getSessionAccentColor(s, trackLabel);
-        const key = trackLabel + '|' + color;
+        const starred = isStarredItem(item);
+        const key = trackLabel + '|' + color + '|' + (starred ? 's' : 'u');
         if (seen.has(key)) return;
         seen.add(key);
         const d = document.createElement('span');
-        d.className = 'nn-branch-dot';
-        d.style.background = color;
-        d.title = trackLabel;
+        if (starred) {
+            // Starred but not attending → open ring.
+            d.className = 'nn-branch-dot nn-branch-dot-starred-off';
+            d.style.background = 'transparent';
+            d.style.borderColor = color;
+            d.title = `${trackLabel} (starred, not attending)`;
+        } else {
+            // Not starred → small filled dot in track color.
+            d.className = 'nn-branch-dot nn-branch-dot-unstarred';
+            d.style.background = color;
+            d.title = trackLabel;
+        }
         dotsRow.appendChild(d);
     });
     main.appendChild(dotsRow);
@@ -2436,7 +2757,7 @@ function buildOtherSessionsBranch(others) {
 
     const detail = document.createElement('div');
     detail.className = 'nn-branch-detail';
-    others.forEach(item => {
+    sortedOthers.forEach(item => {
         detail.appendChild(buildNowNextRow(item, { featured: false }));
     });
 
@@ -2668,15 +2989,31 @@ function withContinuing(items, path, slotT) {
 // timestamp (the interval whose end == t). Used to label decision
 // nodes with a room-aware verb (Stay/Switch). Returns null if there
 // is no prior chosen path session.
+//
+// IMPORTANT: only considers intervals on the SAME calendar day as
+// `t`. Path intervals span multiple days, so without this guard
+// the day-1 last starred session would be picked as the "prev"
+// for the day-2 first starred session, producing nonsensical
+// verbs like "Stay in Main Hall" for breakfast → day-2 keynote
+// when both keynotes happen to be in the same room across days.
 function getPrevPathItem(path, t) {
     if (!path || !path.intervals) return null;
     const tt = t instanceof Date ? t.getTime() : t;
+    const tDay = (() => {
+        const d = t instanceof Date ? t : new Date(tt);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    })();
+    const ivDayKey = (iv) => {
+        const d = iv.start instanceof Date ? iv.start : new Date(iv.start);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    };
     // Walk intervals in reverse to find the latest one ending at or
-    // before tt with a chosen uid.
+    // before tt with a chosen uid AND on the same calendar day.
     for (let i = path.intervals.length - 1; i >= 0; i--) {
         const iv = path.intervals[i];
         if (iv.end.getTime() > tt) continue;
         if (!iv.chosen) continue;
+        if (ivDayKey(iv) !== tDay) continue;
         const item = iv.active.find(x => x.session.uid === iv.chosen);
         if (item) return item;
     }
@@ -2712,7 +3049,20 @@ function getPathNodesBetween(path, lo, hi, opts = {}) {
         // change crossing this node" — we don't want to treat a much
         // earlier Room F talk as the predecessor when the immediately
         // prior interval is e.g. an unresolved overlap.
-        const immPrev = i > 0 ? path.intervals[i - 1] : null;
+        // Only consider it when it's on the SAME day; otherwise the
+        // last starred session of the previous day leaks through and
+        // the verb logic falsely concludes "Stay in <Room>" if both
+        // happen to share a room across days.
+        const sameDay = (a, b) => {
+            const da = a instanceof Date ? a : new Date(a);
+            const db = b instanceof Date ? b : new Date(b);
+            return da.getFullYear() === db.getFullYear()
+                && da.getMonth() === db.getMonth()
+                && da.getDate() === db.getDate();
+        };
+        const immPrev = (i > 0 && sameDay(path.intervals[i - 1].start, iv.start))
+            ? path.intervals[i - 1]
+            : null;
         const immPrevItem = (immPrev && immPrev.chosen)
             ? immPrev.active.find(x => x.session.uid === immPrev.chosen) || null
             : null;
@@ -3876,13 +4226,22 @@ function buildInlineDecisionRow(decision, opts = {}) {
 // so the user still needs to know what to do (stay/switch/head to).
 // Same icon-on-left layout as inline decisions, but non-clickable.
 function buildForcedEdgeRow(item, prevPathItem, t) {
-    // Render forced edges as clickable buttons too: even when there
-    // is only one starred session active at this boundary, the user
-    // may want to switch to a parallel non-starred session, or
-    // confirm a mid-session join. Behaves like a decision row.
-    const wrap = document.createElement('button');
-    wrap.type = 'button';
-    wrap.className = 'nn-node-row-wrap is-forced is-resolved';
+    // Forced edges are only interactive when there's actually
+    // something to choose between — i.e. at least one other
+    // starrable session is active at this boundary. When the
+    // chosen item is the only option, the row is non-interactive
+    // and we omit the Edit affordance (nothing to edit).
+    const tt = t.getTime();
+    const candidates = (currentRenderAllItems || []).filter(it =>
+        it.win && isStarrableSession(it.session)
+        && it.win.start.getTime() <= tt && tt < it.win.end.getTime()
+    );
+    if (!candidates.includes(item)) candidates.unshift(item);
+    const hasAlternatives = candidates.length >= 2;
+    const wrap = document.createElement(hasAlternatives ? 'button' : 'div');
+    if (hasAlternatives) wrap.type = 'button';
+    wrap.className = 'nn-node-row-wrap is-forced is-resolved'
+        + (hasAlternatives ? '' : ' is-noninteractive');
 
     const marker = document.createElement('span');
     marker.className = 'nn-node-marker';
@@ -3937,7 +4296,7 @@ function buildForcedEdgeRow(item, prevPathItem, t) {
     const body = document.createElement('span');
     body.className = 'nn-node-row-body';
     body.innerHTML = `<span class="nn-node-row-text">At ${escapeHtml(timeLabel)}, ${verb} ${subject}${joinNote}</span>`
-        + '<span class="nn-node-row-edit">Edit</span>';
+        + (hasAlternatives ? '<span class="nn-node-row-edit">Edit</span>' : '');
     wrap.appendChild(body);
 
     // Click to open a picker showing every starrable session active
@@ -3945,26 +4304,16 @@ function buildForcedEdgeRow(item, prevPathItem, t) {
     // user switch to another in-progress starred session, or pick a
     // parallel non-starred one. Picking a non-chosen option auto-
     // stars it and records the decision.
-    wrap.addEventListener('click', () => {
-        const tt = t.getTime();
-        const candidates = (currentRenderAllItems || []).filter(it =>
-            it.win && isStarrableSession(it.session)
-            && it.win.start.getTime() <= tt && tt < it.win.end.getTime()
-        );
-        if (!candidates.includes(item)) candidates.unshift(item);
-        candidates.sort((a, b) => a.win.start - b.win.start);
-        if (candidates.length < 2) {
-            // Nothing to switch among. Open the session detail
-            // sheet for the forced item instead.
-            openSessionDetails(item.session, wrap);
-            return;
-        }
-        openConflictPicker(candidates, {
-            title: 'Edit session at ' + timeLabel,
-            desc: 'Pick the session you\u2019ll be in at this point. Other starred sessions stay starred but move to "other sessions" during the overlap.',
-            fromItem: item
+    if (hasAlternatives) {
+        wrap.addEventListener('click', () => {
+            const sorted = candidates.slice().sort((a, b) => a.win.start - b.win.start);
+            openConflictPicker(sorted, {
+                title: 'Edit session at ' + timeLabel,
+                desc: 'Pick the session you\u2019ll be in at this point. Other starred sessions stay starred but move to "other sessions" during the overlap.',
+                fromItem: item
+            });
         });
-    });
+    }
     return wrap;
 }
 

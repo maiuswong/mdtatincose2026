@@ -2473,20 +2473,29 @@ body.topbar-compact .track-chip {
     padding: 18px 18px 10px;
     position: relative;
 }
-/* Interlude slot: the entire slot section IS the dashed
-   lunch/break card. No white chrome around it; the inner
-   row drops its own dashed wrapper since the section now
-   carries it. */
+/* Interlude slot: when the entire Now/Next slot is a break/meal
+   (no surrounding sessions), the whole .nn-section takes on the
+   interlude treatment. We want it to feel like a first-class
+   timeline element — a deliberate "downtime" card — not a
+   barely-there afterthought.
+   Color strategy:
+   • --interlude-color is the deep accent used for text/border/dots
+     (must read clearly on a light background — hence the dark hue).
+   • --interlude-bg is a much lighter wash for the card surface so
+     the text contrast against it is high while the card still feels
+     like a tinted island, not a white box. */
 .nn-section.nn-section-interlude {
-    --interlude-color: #6b5b95;
-    background: transparent;
-    border: 2px dashed var(--interlude-color);
-    border-radius: 10px;
-    padding: 12px 16px;
+    --interlude-color: #4a3f6b;     /* deep purple — readable on light */
+    --interlude-bg: #efeaf5;        /* very pale lavender wash */
+    background: var(--interlude-bg);
+    border: 1px solid color-mix(in srgb, var(--interlude-color) 35%, transparent);
+    border-radius: 14px;
+    padding: 18px 18px 10px;
     box-shadow: none;
 }
 .nn-section.nn-section-meal {
-    --interlude-color: #3aae9d;
+    --interlude-color: #1f6b5e;     /* deep teal — readable on light */
+    --interlude-bg: #e6f4f1;        /* very pale teal wash */
 }
 .nn-section.nn-section-interlude.nn-section-interlude .nn-section-header,
 .nn-section.nn-section-interlude.nn-section-interlude .nn-section-title,
@@ -2500,6 +2509,7 @@ body.topbar-compact .track-chip {
 }
 .nn-section.nn-section-interlude .nn-row-wrap.nn-row-interlude {
     border: none;
+    background: transparent;
     padding: 0;
 }
 /* "Which talk are you in?" prompt: amber call-to-action
@@ -2639,13 +2649,17 @@ body.topbar-compact .track-chip {
     100% { box-shadow: 0 0 0 0 rgba(92, 141, 255, 0); }
 }
 /* Per-track color dots, sit to the right of the section label.
-   One dot per distinct track represented in the section's items. */
+   One dot per distinct track represented in the section's items.
+   Tiny upward nudge to optically align dots with the cap-height
+   of the uppercase section label. Half a pixel is enough — a full
+   pixel makes them look too high. */
 .nn-section-dots {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     flex-wrap: wrap;
     min-width: 0;
+    transform: translateY(-0.5px);
 }
 .nn-section-track-dot {
     width: 9px;
@@ -2781,19 +2795,25 @@ body.topbar-compact .track-chip {
 .nn-row-wrap.nn-row-skipped {
     opacity: 0.55;
 }
-/* Standalone break/meal: no card chrome, dashed outline,
-   text and stroke share an interlude-specific accent
-   color (purple for breaks, teal for meals). Matches the
-   day-schedule lunch/break cards. */
+/* Standalone break/meal in Now/Next view. Sessions in this view
+   sit on the section's white surface as flat rows — so the old
+   "transparent + dashed outline" treatment for breaks read as a
+   jarring foreign element. Use a softer approach instead: a
+   barely-tinted background that picks up the interlude accent
+   hue, the title and meta in the accent color, no border. The
+   row still stands apart from sessions but reads as part of the
+   same surface family. */
 .nn-row-wrap.nn-row-interlude {
-    --interlude-color: #6b5b95;
-    background: transparent;
-    border: 1px dashed var(--interlude-color);
+    --interlude-color: #4a3f6b;
+    --interlude-bg: #efeaf5;
+    background: var(--interlude-bg);
+    border: 0;
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 14px;
 }
 .nn-row-wrap.nn-row-meal {
-    --interlude-color: #3aae9d;
+    --interlude-color: #1f6b5e;
+    --interlude-bg: #e6f4f1;
 }
 .nn-row-wrap.nn-row-interlude .nn-row {
     background: transparent;
@@ -2898,6 +2918,11 @@ body.topbar-compact .track-chip {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+}
+.nn-row-duration {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .nn-row-sep {
     color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
@@ -3302,6 +3327,20 @@ button.nn-hero-hint:focus-visible .nn-hint-edit {
     width: 6px;
     height: 6px;
     border-radius: 50%;
+    box-sizing: border-box;
+}
+/* Starred but not attending → open ring in track color. */
+.nn-branch-dot-starred-off {
+    background: transparent !important;
+    border: 1.5px solid currentColor;
+}
+/* Not starred → small filled dot in track color. Smaller than a
+   starred dot to visually de-emphasize sessions off the user's plan. */
+.nn-branch-dot-unstarred {
+    width: 3px;
+    height: 3px;
+    align-self: center;
+    border: none;
 }
 .nn-branch-chev {
     font-family: 'Google Sans', sans-serif;
@@ -3555,7 +3594,7 @@ button.nn-hero-hint:focus-visible .nn-hint-edit {
     flex-direction: column;
     align-items: center;
     gap: 1px;
-    padding: 2px 4px;
+    padding: 0 4px;
     border-radius: 6px;
     background: transparent;
     border: 0;
@@ -3563,6 +3602,10 @@ button.nn-hero-hint:focus-visible .nn-hint-edit {
     font: inherit;
     color: inherit;
     line-height: 1;
+    /* Anchor for the absolutely-positioned top/bottom stubs so they
+       can extend past the marker's visual bounds and bridge the gap
+       to the surrounding cards without affecting marker layout. */
+    position: relative;
 }
 button.nn-node-marker {
     cursor: pointer;
@@ -3609,6 +3652,28 @@ button.nn-node-marker:focus-visible {
     margin: 0 auto;
     overflow: visible;
 }
+/* Top/bottom stub lines: short vertical strokes that visually
+   attach the marker to the surrounding session cards above and
+   below, so the path reads as a continuous line through the
+   transition rather than a floating diagram. They are absolutely
+   positioned so they don't influence the marker's intrinsic
+   height (which would otherwise shift the centered curve), and
+   they extend far enough past the marker's bounds to clear the
+   row-wrap padding plus the card-list gap on each side. */
+.nn-node-stub {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    overflow: visible;
+    pointer-events: none;
+}
+.nn-node-stub-top {
+    bottom: 100%;
+}
+.nn-node-stub-bottom {
+    top: 100%;
+}
 
 /* Stay-merged marker stack (deprecated visual: kept for any
    old callers, but no rules — markers now render inline
@@ -3641,6 +3706,15 @@ button.nn-node-marker:focus-visible {
 }
 .nn-node-row-wrap > .nn-node-marker {
     flex: 0 0 auto;
+    /* Stretch the marker to the row-wrap's full height so its top
+       and bottom edges align with the row-wrap (and the stubs,
+       which anchor at marker top/bottom, sit flush against the
+       row-wrap's content edges). The marker's inner contents
+       remain visually centered via the row contents themselves
+       (small dots + SVG = ~26px tall, naturally near-centered in
+       a ~30–34px row). */
+    align-self: stretch;
+    justify-content: center;
 }
 button.nn-node-row-wrap {
     cursor: pointer;
@@ -3705,8 +3779,13 @@ button.nn-node-row-wrap:focus-visible {
     background: rgba(254, 243, 199, 0.75);
 }
 .nn-node-row-wrap.is-forced {
-    /* Forced edges are now clickable buttons; inherit
-       hover/cursor from .nn-node-row-wrap base rule. */
+    /* Forced edges are clickable buttons when there are
+       alternatives to switch to; inherit hover/cursor from
+       button.nn-node-row-wrap. When non-interactive (only one
+       option exists at this boundary), the wrap is rendered as
+       a div and gets no cursor/hover. */
+}
+button.nn-node-row-wrap.is-forced {
     cursor: pointer;
 }
 
